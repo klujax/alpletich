@@ -1,0 +1,27 @@
+{
+    "css.validate": false,
+    "less.validate": false,
+    "scss.validate": false,
+    "css.lint.unknownAtRules": "ignore",
+    "scss.lint.unknownAtRules": "ignore",
+    "files.associations": {
+        "*.css": "scss"
+    },
+    "editor.quickSuggestions": {
+        "strings": true
+    },
+    "tailwindCSS.experimental.classRegex": [
+        [
+            "cva\\(([^)]*)\\)",
+            "[\"'`]([^\"'`]*).*?[\"'`]"
+        ],
+        [
+            "cn\\(([^)]*)\\)",
+            "[\"'`]([^\"'`]*).*?[\"'`]"
+        ]
+    ],
+    "tailwindCSS.includeLanguages": {
+        "typescript": "javascript",
+        "typescriptreact": "javascript"
+    }
+}

@@ -1,36 +1,119 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Alperen Spor - Fitness Coaching Platform
 
-## Getting Started
+Modern, dinamik ve kullanıcı dostu bir fitness koçluk platformu.
 
-First, run the development server:
+## 🚀 Özellikler
 
+### Koç Paneli
+- **Branşlar:** Özel spor kategorileri oluşturma (Basketbol, Futbol, Yoga vb.)
+- **Paketler:** Satılabilir eğitim paketleri oluşturma ve yönetme
+- **Öğrenciler:** Kayıtlı öğrencileri görüntüleme ve yönetme
+- **Mesajlar:** Öğrencilerle anlık mesajlaşma
+- **Beslenme:** Öğrencilere beslenme planları atama
+- **Egzersizler:** Egzersiz kütüphanesi ve antrenman planları
+- **Ayarlar:** Profil düzenleme ve yeni hoca ekleme
+
+### Öğrenci Paneli
+- **Dashboard:** Kişiselleştirilmiş panel
+- **Antrenman:** Haftalık antrenman programı
+- **Koçumla Sohbet:** Koç ile mesajlaşma (paket özelliğine bağlı)
+- **Beslenme:** Atanan beslenme planları
+- **Gelişim:** İlerleme takibi ve fotoğraf yükleme
+
+## 🛠️ Teknolojiler
+
+- **Frontend:** Next.js 14 (App Router)
+- **Styling:** Tailwind CSS
+- **Backend:** Supabase (PostgreSQL + Auth)
+- **State:** React Hooks + LocalStorage (mock mode)
+- **Icons:** Lucide React
+- **Notifications:** Sonner
+
+## 📦 Kurulum
+
+### 1. Bağımlılıkları yükleyin
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Environment değişkenlerini ayarlayın
+```bash
+# .env.local.example dosyasını kopyalayın
+cp .env.local.example .env.local
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# Supabase bilgilerinizi girin
+NEXT_PUBLIC_SUPABASE_URL=your-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Veritabanını oluşturun
+Supabase SQL Editor'de `supabase/migrations/001_schema.sql` dosyasını çalıştırın.
 
-## Learn More
+### 4. Uygulamayı başlatın
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 🔧 Modlar
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Mock Modu (Geliştirme)
+Supabase yapılandırılmadığında uygulama otomatik olarak mock modunda çalışır. Tüm veriler localStorage'da tutulur.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Demo Hesapları:**
+- Koç: `koc@test.com` / `123456`
+- Öğrenci: `ogrenci@test.com` / `123456`
 
-## Deploy on Vercel
+### Production Modu
+`.env.local` dosyasına Supabase bilgilerini ekledikten ve migration'ı çalıştırdıktan sonra gerçek veritabanı kullanılır.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📁 Proje Yapısı
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+├── app/
+│   ├── (auth)/          # Login, Register sayfaları
+│   ├── (dashboard)/     # Ana uygulama
+│   │   ├── coach/       # Koç paneli sayfaları
+│   │   └── student/     # Öğrenci paneli sayfaları
+│   └── page.tsx         # Landing page
+├── components/
+│   └── ui/              # Yeniden kullanılabilir UI bileşenleri
+├── lib/
+│   ├── api.ts           # Backend abstraction layer
+│   ├── mock-service.ts  # Mock data ve servisler
+│   ├── supabase.ts      # Supabase client
+│   └── utils.ts         # Utility fonksiyonlar
+├── types/
+│   └── database.ts      # TypeScript tipleri
+└── supabase/
+    └── migrations/      # SQL migration dosyaları
+```
+
+## 🎨 Tasarım Özellikleri
+
+- Modern glassmorphism efektleri
+- Dinamik animasyonlar
+- Responsive tasarım
+- Dark/Light mode desteği (yakında)
+- Özelleştirilebilir tema renkleri
+
+## 📝 TODO
+
+- [ ] Push notifications
+- [ ] Video görüşme entegrasyonu
+- [ ] Ödeme sistemi (Stripe/iyzico)
+- [ ] Mobil uygulama (React Native)
+- [ ] Analytics dashboard
+- [ ] E-posta bildirimleri
+
+## 🤝 Katkıda Bulunma
+
+1. Fork yapın
+2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
+3. Commit yapın (`git commit -m 'Add amazing feature'`)
+4. Push yapın (`git push origin feature/amazing-feature`)
+5. Pull Request açın
+
+## 📄 Lisans
+
+MIT License - Detaylar için [LICENSE](LICENSE) dosyasına bakın.
