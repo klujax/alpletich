@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Zap, Target, BarChart3, Dumbbell, Sparkles, Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/components/theme-provider';
@@ -73,16 +74,18 @@ export default function LandingPage() {
         className="container mx-auto p-6 relative z-10 flex justify-between items-center animate-in fade-in slide-in-from-top-4 duration-700"
       >
         <div className="flex items-center gap-3">
-          <div className="relative">
-            <div
-              className="w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center shadow-lg transition-colors duration-300"
-              style={{
-                background: `linear-gradient(135deg, var(--landing-primary), var(--landing-cta-gradient-to))`,
-                boxShadow: `0 10px 25px -5px var(--landing-card-shadow)`
-              }}
-            >
-              <Dumbbell className="text-white w-5 h-5 md:w-6 md:h-6" />
-            </div>
+          <div
+            className="relative w-10 h-10 md:w-12 md:h-12 rounded-2xl overflow-hidden shadow-lg transition-transform duration-300 hover:scale-105"
+            style={{
+              boxShadow: `0 10px 25px -5px var(--landing-card-shadow)`
+            }}
+          >
+            <Image
+              src="/shark-logo.jpg"
+              alt="Alphletich Logo"
+              fill
+              className="object-cover"
+            />
           </div>
           <span className="text-xl md:text-2xl font-black tracking-tight" style={{ color: 'var(--landing-text)' }}>
             ALPHLETICH
@@ -355,10 +358,14 @@ export default function LandingPage() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
             <div
-              className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors duration-300"
-              style={{ background: `linear-gradient(135deg, var(--landing-primary), var(--landing-cta-gradient-to))` }}
+              className="relative w-8 h-8 rounded-xl overflow-hidden shadow-sm transition-transform duration-300 hover:scale-105"
             >
-              <Dumbbell className="w-4 h-4 text-white" />
+              <Image
+                src="/shark-logo.jpg"
+                alt="Alphletich Logo"
+                fill
+                className="object-cover"
+              />
             </div>
             <span className="font-black" style={{ color: 'var(--landing-text)' }}>ALPHLETICH</span>
           </div>
