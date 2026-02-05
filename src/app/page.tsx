@@ -75,41 +75,25 @@ export default function LandingPage() {
         <div className="flex items-center gap-3">
           <div className="relative">
             <div
-              className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-colors duration-300"
+              className="w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center shadow-lg transition-colors duration-300"
               style={{
                 background: `linear-gradient(135deg, var(--landing-primary), var(--landing-cta-gradient-to))`,
                 boxShadow: `0 10px 25px -5px var(--landing-card-shadow)`
               }}
             >
-              <Dumbbell className="text-white w-6 h-6" />
+              <Dumbbell className="text-white w-5 h-5 md:w-6 md:h-6" />
             </div>
           </div>
-          <span className="text-2xl font-black tracking-tight" style={{ color: 'var(--landing-text)' }}>
+          <span className="text-xl md:text-2xl font-black tracking-tight" style={{ color: 'var(--landing-text)' }}>
             ALPHLETICH
           </span>
         </div>
 
         <div className="flex gap-3 items-center">
-          {/* Theme Toggle Button */}
-          <button
-            onClick={toggleTheme}
-            className="p-2.5 rounded-xl border-2 transition-all duration-200 hover:scale-105 active:scale-95"
-            style={{
-              backgroundColor: isDark ? '#1e293b' : '#f1f5f9',
-              borderColor: isDark ? '#475569' : '#e2e8f0'
-            }}
-            aria-label="Tema değiştir"
-          >
-            {isDark ? (
-              <Sun className="w-5 h-5 text-yellow-400" />
-            ) : (
-              <Moon className="w-5 h-5 text-slate-700" />
-            )}
-          </button>
-
           <Link href="/login">
             <Button
               variant="ghost"
+              size="sm"
               className="transition-colors duration-200"
               style={{ color: 'var(--landing-text-muted)' }}
             >
@@ -118,6 +102,7 @@ export default function LandingPage() {
           </Link>
           <Link href="/register">
             <Button
+              size="sm"
               className="border-0 transition-colors duration-300"
               style={{
                 background: `linear-gradient(135deg, var(--landing-primary), var(--landing-cta-gradient-to))`,
@@ -129,6 +114,26 @@ export default function LandingPage() {
           </Link>
         </div>
       </header>
+
+      {/* Fixed Theme Toggle Button */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <button
+          onClick={toggleTheme}
+          className="p-3 rounded-full shadow-xl transition-all duration-200 hover:scale-110 active:scale-95 border-2"
+          style={{
+            backgroundColor: isDark ? '#1e293b' : '#ffffff',
+            borderColor: isDark ? '#334155' : '#e2e8f0',
+            color: isDark ? '#fbbf24' : '#475569'
+          }}
+          aria-label="Tema değiştir"
+        >
+          {isDark ? (
+            <Sun className="w-6 h-6" />
+          ) : (
+            <Moon className="w-6 h-6" />
+          )}
+        </button>
+      </div>
 
       {/* Hero Section */}
       <main className="container mx-auto px-6 py-24 text-center relative z-10">
