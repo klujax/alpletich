@@ -15,7 +15,7 @@ export default function GlobalError({
             <head>
                 <meta charSet="UTF-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-                <title>Hata - Alphletich</title>
+                <title>Hata - Alpletich</title>
             </head>
             <body style={{ margin: 0, padding: 0 }}>
                 <div style={{

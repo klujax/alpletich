@@ -88,7 +88,7 @@ export default function LandingPage() {
             />
           </div>
           <span className="text-xl md:text-2xl font-black tracking-tight" style={{ color: 'var(--landing-text)' }}>
-            ALPHLETICH
+            ALPLETICH
           </span>
         </div>
 
@@ -263,7 +263,7 @@ export default function LandingPage() {
       >
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-black mb-4" style={{ color: 'var(--landing-text)' }}>
-            Neden Alphletich?
+            Neden Alpletich?
           </h2>
           <p className="max-w-xl mx-auto font-medium" style={{ color: 'var(--landing-text-muted)' }}>
             En son teknoloji ile geliştirilmiş araçlarımızla fitness yolculuğunuzu bir üst seviyeye taşıyın.
@@ -362,15 +362,15 @@ export default function LandingPage() {
             >
               <Image
                 src="/shark-logo.jpg"
-                alt="Alphletich Logo"
+                alt="Alpletich Logo"
                 fill
                 className="object-cover"
               />
             </div>
-            <span className="font-black" style={{ color: 'var(--landing-text)' }}>ALPHLETICH</span>
+            <span className="font-black" style={{ color: 'var(--landing-text)' }}>ALPLETICH</span>
           </div>
           <p className="text-sm font-medium" style={{ color: 'var(--landing-text-muted2)' }}>
-            © 2026 Alphletich. Tüm hakları saklıdır.
+            © 2026 Alpletich. Tüm hakları saklıdır.
           </p>
         </div>
       </footer>

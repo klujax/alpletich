@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Alphletich - Fitness Platformu",
+  title: "Alpletich - Fitness Platformu",
   description: "Kişiselleştirilmiş antrenman programları ve profesyonel koç desteği",
   icons: {
     icon: '/shark-logo.jpg',

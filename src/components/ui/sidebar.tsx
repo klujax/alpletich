@@ -131,14 +131,14 @@ export function Sidebar({ role }: SidebarProps) {
                         <div className="relative w-20 h-20 overflow-hidden">
                             <Image
                                 src="/shark-logo.jpg"
-                                alt="Alphletich Logo"
+                                alt="Alpletich Logo"
                                 fill
                                 className="object-contain mix-blend-multiply"
                                 priority
                             />
                         </div>
                         <h1 className="text-lg font-black text-slate-900 tracking-[0.15em] leading-none">
-                            ALPHLETICH
+                            ALPLETICH
                         </h1>
                     </div>
                 </div>

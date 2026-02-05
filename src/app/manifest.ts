@@ -2,8 +2,8 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: 'Alphletich Fitness',
-        short_name: 'Alphletich',
+        name: 'Alpletich Fitness',
+        short_name: 'Alpletich',
         description: 'Kişiselleştirilmiş antrenman programları ve profesyonel koç desteği',
         start_url: '/',
         display: 'standalone',

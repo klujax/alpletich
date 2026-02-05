@@ -37,7 +37,7 @@ export default function AuthLayout({
                         <Dumbbell className="text-white w-5 h-5" />
                     </div>
                     <span className="text-xl font-black tracking-tight text-slate-900 group-hover:text-green-600 transition-colors">
-                        ALPHLETICH
+                        ALPLETICH
                     </span>
                 </Link>
             </header>
@@ -49,7 +49,7 @@ export default function AuthLayout({
 
             {/* Footer */}
             <footer className="absolute bottom-0 left-0 right-0 p-6 text-center text-sm text-slate-400">
-                © 2026 Alphletich. Tüm hakları saklıdır.
+                © 2026 Alpletich. Tüm hakları saklıdır.
             </footer>
         </div>
     );
