@@ -288,11 +288,12 @@ export const authService = {
                     if (profileError) return { user: null, error: 'Profil bilgileri alınamadı.' };
 
                     if (profile) {
+                        const userProfile = profile as Profile;
                         if (typeof window !== 'undefined') {
-                            localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(profile));
-                            document.cookie = `mock_role=${profile.role}; path=/`;
+                            localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(userProfile));
+                            document.cookie = `mock_role=${userProfile.role}; path=/`;
                         }
-                        return { user: profile, error: null };
+                        return { user: userProfile, error: null };
                     }
                 }
                 return { user: null, error: 'Kullanıcı bulunamadı.' };
