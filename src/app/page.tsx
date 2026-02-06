@@ -207,7 +207,7 @@ export default function LandingPage() {
             <p className="mb-6 font-medium" style={{ color: 'var(--landing-text-muted)' }}>
               Hedefine uygun programı bul, güvenle satın al ve gelişime başla.
             </p>
-            <Link href="/marketplace">
+            <Link href="/register?role=student">
               <Button className="w-full h-12 text-lg font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/20">
                 Program Keşfet
                 <ArrowRight className="w-5 h-5 ml-2" />

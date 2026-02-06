@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Star, Filter, MapPin, TrendingUp, DollarSign } from 'lucide-react';
@@ -57,6 +58,16 @@ const MOCK_COACHES = [
 
 export default function MarketplacePage() {
     const [searchQuery, setSearchQuery] = useState('');
+    const router = useRouter();
+
+    // Protect the route
+    useEffect(() => {
+        // Simple client-side auth check
+        const session = localStorage.getItem('user_session');
+        if (!session) {
+            router.push('/register?role=student');
+        }
+    }, [router]);
 
     const filteredCoaches = MOCK_COACHES.filter(coach =>
         coach.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
