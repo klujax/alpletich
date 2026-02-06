@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, MapPin, Clock, ShieldCheck, ChevronLeft, ShoppingCart, Plus, Minus } from 'lucide-react';
+import { Star, Clock, ShieldCheck, ChevronLeft, ShoppingCart, Plus, Minus } from 'lucide-react';
 
 // Mock Data (In a real app, fetch from Supabase based on ID)
 const COACH_DETAILS = {
@@ -121,10 +121,6 @@ export default function CoachShopPage() {
                             <p className="text-slate-500 font-medium mb-4">{COACH_DETAILS.title}</p>
 
                             <div className="flex flex-wrap gap-4 text-sm text-slate-500 mb-4">
-                                <div className="flex items-center gap-1">
-                                    <MapPin className="w-4 h-4" />
-                                    {COACH_DETAILS.location}
-                                </div>
                                 <div className="flex items-center gap-1">
                                     <Clock className="w-4 h-4" />
                                     Cevap süresi: <span className="text-green-600 font-bold">{COACH_DETAILS.responseTime}</span>

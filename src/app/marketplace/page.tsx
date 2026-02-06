@@ -72,12 +72,6 @@ export default function MarketplacePage() {
                         <h1 className="text-xl font-black text-slate-800 flex items-center gap-2">
                             <span className="text-green-600">Alpletich</span> Pazaryeri
                         </h1>
-                        <div className="flex gap-2">
-                            <Button variant="outline" size="sm" className="hidden md:flex">
-                                <MapPin className="w-4 h-4 mr-2" />
-                                Konum
-                            </Button>
-                        </div>
                     </div>
 
                     <div className="relative max-w-2xl mx-auto">
