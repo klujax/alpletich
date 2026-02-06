@@ -26,7 +26,7 @@ function RegisterContent() {
             setStep('register');
         } else if (initialRole === 'student') {
             setRole('student');
-            setStep('sport'); // Student flow starts with sport selection
+            setStep('register'); // Student flow now starts directly with register
         }
     }, [initialRole]);
 
@@ -62,11 +62,7 @@ function RegisterContent() {
 
     const handleRoleSelect = (selectedRole: 'student' | 'coach') => {
         setRole(selectedRole);
-        if (selectedRole === 'coach') {
-            setStep('register');
-        } else {
-            setStep('sport');
-        }
+        setStep('register'); // Both roles go directly to register
     }
 
     const handleRegister = async (e: React.FormEvent) => {
@@ -75,15 +71,6 @@ function RegisterContent() {
         setError(null);
 
         try {
-            if (role === 'student' && typeof window !== 'undefined') {
-                localStorage.setItem('user_sport_package', JSON.stringify({
-                    sport: selectedSport,
-                    packageId: selectedPackage?.id,
-                    packageData: selectedPackage,
-                    createdAt: new Date().toISOString(),
-                }));
-            }
-
             // Coach metadata inclusion
             const metadata = role === 'coach' ? { storeName: formData.storeName } : {}; // You'd need to update signIn signature to accept metadata or handle separately
 
@@ -100,7 +87,7 @@ function RegisterContent() {
                 if (role === 'coach') {
                     router.push('/coach'); // Redirect to coach dashboard
                 } else {
-                    router.push('/student'); // Redirect to student dashboard
+                    router.push('/marketplace'); // Redirect to marketplace for students to browse
                 }
             }
 
@@ -170,100 +157,100 @@ function RegisterContent() {
     }
 
     // Render existing student flow (Sport -> Package)
-    if (step === 'sport') {
-        // ... (Keep existing Sport UI but update buttons)
-        return (
-            <div className="animate-in slide-in-from-right-8 fade-in duration-300 w-full max-w-4xl mx-auto">
-                <Button variant="ghost" onClick={() => setStep('role_selection')} className="mb-4">
-                    <ArrowLeft className="w-4 h-4 mr-2" /> Rol Seçimine Dön
-                </Button>
-                <Card variant="default" className="border-slate-200 bg-white shadow-xl shadow-slate-200/50">
-                    <CardHeader className="text-center pb-2">
-                        <CardTitle className="text-2xl text-slate-900 font-bold tracking-tight">🎯 Spor Dalını Seç</CardTitle>
-                        <CardDescription className="text-slate-500 font-medium">Hangi alanda gelişmek istiyorsun?</CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-6">
-                        <div className="grid grid-cols-2 gap-4">
-                            {availableSports.map((sport) => (
-                                <button
-                                    key={sport.id}
-                                    onClick={() => setSelectedSport(sport.id)}
-                                    className={cn(
-                                        "p-6 rounded-2xl border-2 text-left transition-all",
-                                        selectedSport === sport.id
-                                            ? `${getSportColor(sport.color, 'bg')} ${getSportColor(sport.color, 'border')} ring-2 ring-offset-2 ${getSportColor(sport.color, 'ring')}`
-                                            : "bg-white border-slate-200 hover:border-slate-300"
-                                    )}
-                                >
-                                    <div className="text-4xl mb-3">{sport.icon}</div>
-                                    <h3 className={cn("font-bold text-lg mb-1", selectedSport === sport.id ? getSportColor(sport.color, 'text') : "text-slate-900")}>
-                                        {sport.name}
-                                    </h3>
-                                    {selectedSport === sport.id && (
-                                        <div className={cn("mt-3 inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full", getSportColor(sport.color, 'bg'), getSportColor(sport.color, 'text'))}>
-                                            <Check className="w-3 h-3" /> Seçildi
-                                        </div>
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-                        <Button fullWidth className="mt-6" disabled={!selectedSport} onClick={() => setStep('package')} rightIcon={<ArrowRight className="w-4 h-4" />}>
-                            Devam Et
-                        </Button>
-                    </CardContent>
-                </Card>
-            </div>
-        );
-    }
+    // if (step === 'sport') {
+    //     // ... (Keep existing Sport UI but update buttons)
+    //     return (
+    //         <div className="animate-in slide-in-from-right-8 fade-in duration-300 w-full max-w-4xl mx-auto">
+    //             <Button variant="ghost" onClick={() => setStep('role_selection')} className="mb-4">
+    //                 <ArrowLeft className="w-4 h-4 mr-2" /> Rol Seçimine Dön
+    //             </Button>
+    //             <Card variant="default" className="border-slate-200 bg-white shadow-xl shadow-slate-200/50">
+    //                 <CardHeader className="text-center pb-2">
+    //                     <CardTitle className="text-2xl text-slate-900 font-bold tracking-tight">🎯 Spor Dalını Seç</CardTitle>
+    //                     <CardDescription className="text-slate-500 font-medium">Hangi alanda gelişmek istiyorsun?</CardDescription>
+    //                 </CardHeader>
+    //                 <CardContent className="pt-6">
+    //                     <div className="grid grid-cols-2 gap-4">
+    //                         {availableSports.map((sport) => (
+    //                             <button
+    //                                 key={sport.id}
+    //                                 onClick={() => setSelectedSport(sport.id)}
+    //                                 className={cn(
+    //                                     "p-6 rounded-2xl border-2 text-left transition-all",
+    //                                     selectedSport === sport.id
+    //                                         ? `${getSportColor(sport.color, 'bg')} ${getSportColor(sport.color, 'border')} ring-2 ring-offset-2 ${getSportColor(sport.color, 'ring')}`
+    //                                         : "bg-white border-slate-200 hover:border-slate-300"
+    //                                 )}
+    //                             >
+    //                                 <div className="text-4xl mb-3">{sport.icon}</div>
+    //                                 <h3 className={cn("font-bold text-lg mb-1", selectedSport === sport.id ? getSportColor(sport.color, 'text') : "text-slate-900")}>
+    //                                     {sport.name}
+    //                                 </h3>
+    //                                 {selectedSport === sport.id && (
+    //                                     <div className={cn("mt-3 inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full", getSportColor(sport.color, 'bg'), getSportColor(sport.color, 'text'))}>
+    //                                         <Check className="w-3 h-3" /> Seçildi
+    //                                     </div>
+    //                                 )}
+    //                             </button>
+    //                         ))}
+    //                     </div>
+    //                     <Button fullWidth className="mt-6" disabled={!selectedSport} onClick={() => setStep('package')} rightIcon={<ArrowRight className="w-4 h-4" />}>
+    //                         Devam Et
+    //                     </Button>
+    //                 </CardContent>
+    //             </Card>
+    //         </div>
+    //     );
+    // }
 
-    if (step === 'package') {
-        // ... (Keep existing Package UI)
-        return (
-            <div className="animate-in slide-in-from-right-8 fade-in duration-300 w-full max-w-4xl mx-auto">
-                <Card variant="default" className="border-slate-200 bg-white shadow-xl shadow-slate-200/50">
-                    <CardHeader className="text-center pb-2">
-                        <div className="flex items-center justify-center gap-2 mb-2">
-                            <span className="text-3xl">{selectedSportData?.icon}</span>
-                            <span className={cn("font-bold text-lg", getSportColor(selectedSportData?.color || 'blue', 'text'))}>{selectedSportData?.name}</span>
-                        </div>
-                        <CardTitle className="text-2xl text-slate-900 font-bold tracking-tight">💎 Paketini Seç</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-6">
-                        {filteredPackages.length === 0 ? (
-                            <div className="text-center py-12">
-                                <p className="text-slate-500 font-medium">Bu spor dalı için henüz aktif paket bulunmamaktadır.</p>
-                                <Button variant="ghost" onClick={() => setStep('sport')} className="mt-4">Geri Dön</Button>
-                            </div>
-                        ) : (
-                            <div className="grid md:grid-cols-2 gap-4">
-                                {filteredPackages.map((pkg) => (
-                                    <button key={pkg.id} onClick={() => setSelectedPackage(pkg)} className={cn("p-6 rounded-2xl border-2 text-left transition-all relative overflow-hidden", selectedPackage?.id === pkg.id ? "bg-green-50 border-green-300 ring-2 ring-offset-2 ring-green-500" : "bg-white border-slate-200 hover:border-slate-300")}>
-                                        <div className="absolute top-3 right-3"><div className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1">{pkg.totalWeeks} Hafta</div></div>
-                                        <h3 className="font-bold text-lg mb-2 text-slate-900 pr-12">{pkg.name}</h3>
-                                        <div className="flex items-baseline gap-1 mb-4"><span className="text-3xl font-black text-slate-900">₺{pkg.price}</span><span className="text-slate-500 text-sm">/ {pkg.accessDuration}</span></div>
-                                        <div className="space-y-2 mb-4">
-                                            {pkg.features.slice(0, 4).map((feature, i) => (<div key={i} className="flex items-center gap-2 text-sm"><Check className="w-4 h-4 text-green-600 flex-shrink-0" /><span className="text-slate-700 line-clamp-1">{feature}</span></div>))}
-                                        </div>
-                                        {selectedPackage?.id === pkg.id && (<div className="mt-2 inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full bg-green-100 text-green-700"><Check className="w-3 h-3" /> Seçildi</div>)}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                        <div className="flex gap-3 mt-6">
-                            <Button variant="ghost" onClick={() => setStep('sport')} leftIcon={<ArrowLeft className="w-4 h-4" />}>Geri</Button>
-                            <Button fullWidth disabled={!selectedPackage} onClick={() => setStep('register')} rightIcon={<ArrowRight className="w-4 h-4" />}>Devam Et</Button>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-        );
-    }
+    // if (step === 'package') {
+    //     // ... (Keep existing Package UI)
+    //     return (
+    //         <div className="animate-in slide-in-from-right-8 fade-in duration-300 w-full max-w-4xl mx-auto">
+    //             <Card variant="default" className="border-slate-200 bg-white shadow-xl shadow-slate-200/50">
+    //                 <CardHeader className="text-center pb-2">
+    //                     <div className="flex items-center justify-center gap-2 mb-2">
+    //                         <span className="text-3xl">{selectedSportData?.icon}</span>
+    //                         <span className={cn("font-bold text-lg", getSportColor(selectedSportData?.color || 'blue', 'text'))}>{selectedSportData?.name}</span>
+    //                     </div>
+    //                     <CardTitle className="text-2xl text-slate-900 font-bold tracking-tight">💎 Paketini Seç</CardTitle>
+    //                 </CardHeader>
+    //                 <CardContent className="pt-6">
+    //                     {filteredPackages.length === 0 ? (
+    //                         <div className="text-center py-12">
+    //                             <p className="text-slate-500 font-medium">Bu spor dalı için henüz aktif paket bulunmamaktadır.</p>
+    //                             <Button variant="ghost" onClick={() => setStep('sport')} className="mt-4">Geri Dön</Button>
+    //                         </div>
+    //                     ) : (
+    //                         <div className="grid md:grid-cols-2 gap-4">
+    //                             {filteredPackages.map((pkg) => (
+    //                                 <button key={pkg.id} onClick={() => setSelectedPackage(pkg)} className={cn("p-6 rounded-2xl border-2 text-left transition-all relative overflow-hidden", selectedPackage?.id === pkg.id ? "bg-green-50 border-green-300 ring-2 ring-offset-2 ring-green-500" : "bg-white border-slate-200 hover:border-slate-300")}>
+    //                                     <div className="absolute top-3 right-3"><div className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1">{pkg.totalWeeks} Hafta</div></div>
+    //                                     <h3 className="font-bold text-lg mb-2 text-slate-900 pr-12">{pkg.name}</h3>
+    //                                     <div className="flex items-baseline gap-1 mb-4"><span className="text-3xl font-black text-slate-900">₺{pkg.price}</span><span className="text-slate-500 text-sm">/ {pkg.accessDuration}</span></div>
+    //                                     <div className="space-y-2 mb-4">
+    //                                         {pkg.features.slice(0, 4).map((feature, i) => (<div key={i} className="flex items-center gap-2 text-sm"><Check className="w-4 h-4 text-green-600 flex-shrink-0" /><span className="text-slate-700 line-clamp-1">{feature}</span></div>))}
+    //                                     </div>
+    //                                     {selectedPackage?.id === pkg.id && (<div className="mt-2 inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full bg-green-100 text-green-700"><Check className="w-3 h-3" /> Seçildi</div>)}
+    //                                 </button>
+    //                             ))}
+    //                         </div>
+    //                     )}
+    //                     <div className="flex gap-3 mt-6">
+    //                         <Button variant="ghost" onClick={() => setStep('sport')} leftIcon={<ArrowLeft className="w-4 h-4" />}>Geri</Button>
+    //                         <Button fullWidth disabled={!selectedPackage} onClick={() => setStep('register')} rightIcon={<ArrowRight className="w-4 h-4" />}>Devam Et</Button>
+    //                     </div>
+    //                 </CardContent>
+    //             </Card>
+    //         </div>
+    //     );
+    // }
 
     // Register Form (Unified for both roles)
     return (
         <div className="animate-in slide-in-from-right-8 fade-in duration-300 w-full max-w-md mx-auto">
-            <Button variant="ghost" onClick={() => role === 'coach' ? setStep('role_selection') : setStep('package')} className="mb-4">
-                <ArrowLeft className="w-4 h-4 mr-2" /> Geri Dön
+            <Button variant="ghost" onClick={() => setStep('role_selection')} className="mb-4">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Rol Seçimine Dön
             </Button>
             <Card variant="default" className="border-slate-200 bg-white shadow-xl shadow-slate-200/50">
                 <CardHeader className="text-center pb-2">
@@ -277,12 +264,11 @@ function RegisterContent() {
                         </div>
                     ) : (
                         <div className="mb-4">
-                            {/* Selected Package Summary */}
-                            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full mb-4 mx-auto bg-green-100 text-green-800">
-                                <span className="text-xl">{selectedSportData?.icon}</span>
-                                <span className="font-bold">{selectedSportData?.name}</span>
+                            <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <Target className="w-8 h-8" />
                             </div>
-                            <CardTitle className="text-2xl text-slate-900 font-bold tracking-tight">Kayıt Ol</CardTitle>
+                            <CardTitle className="text-2xl text-slate-900 font-bold tracking-tight">Öğrenci Kaydı</CardTitle>
+                            <CardDescription className="text-slate-500 font-medium">Hemen hesabını oluştur ve koçları keşfet.</CardDescription>
                         </div>
                     )}
                 </CardHeader>
@@ -333,20 +319,27 @@ function RegisterContent() {
                             </div>
                         )}
 
-                        {role === 'student' && selectedPackage && (
+                        {/* {role === 'student' && selectedPackage && (
                             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
                                 <div className="flex justify-between items-center pt-2">
                                     <span className="text-slate-600 font-medium">Ödenecek Tutar</span>
                                     <span className="font-black text-xl text-green-600">₺{selectedPackage.price}</span>
                                 </div>
                             </div>
-                        )}
+                        )} */}
 
                         <Button type="submit" fullWidth isLoading={isLoading} rightIcon={<ArrowRight className="w-4 h-4" />}>
-                            {role === 'coach' ? 'Dükkanı Oluştur' : 'Kayıt Ol ve Öde'}
+                            {role === 'coach' ? 'Dükkanı Oluştur' : 'Kayıt Ol'}
                         </Button>
                     </form>
                 </CardContent>
+                {role === 'student' && (
+                    <CardFooter className="flex flex-col space-y-4 text-center text-sm border-t border-slate-100 pt-6">
+                        <p className="text-xs text-slate-400">
+                            Kayıt olduktan sonra <span className="font-bold text-green-600">Pazaryeri</span> üzerinden sana uygun programı seçebilirsin.
+                        </p>
+                    </CardFooter>
+                )}
             </Card>
         </div>
     );
