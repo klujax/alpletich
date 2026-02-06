@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Zap, Target, BarChart3, Dumbbell, Sparkles, Moon, Sun } from 'lucide-react';
+import { ArrowRight, Zap, Target, BarChart3, Dumbbell, Sparkles, Moon, Sun, Store } from 'lucide-react';
 import { useTheme } from '@/components/theme-provider';
 
 // Static data
@@ -150,14 +150,14 @@ export default function LandingPage() {
           }}
         >
           <Sparkles className="w-4 h-4" />
-          <span className="text-sm font-bold">Yeni Nesil Fitness Platformu</span>
+          <span className="text-sm font-bold">Türkiye'nin İlk Fitness Pazaryeri</span>
         </div>
 
         {/* Main Title */}
         <h1
           className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 tracking-tight leading-none animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100"
         >
-          <span style={{ color: 'var(--landing-text)' }}>Gücünü</span>
+          <span style={{ color: 'var(--landing-text)' }}>Fitness</span>
           <br />
           <span
             className="inline-block bg-clip-text text-transparent transition-all duration-300"
@@ -165,70 +165,52 @@ export default function LandingPage() {
               backgroundImage: `linear-gradient(135deg, var(--landing-primary), var(--landing-primary-light), var(--landing-cta-gradient-to))`
             }}
           >
-            Keşfet
+            Dünyan
           </span>
         </h1>
 
         <div
-          className="text-lg md:text-xl max-w-2xl mx-auto mb-8 leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200"
+          className="text-lg md:text-xl max-w-2xl mx-auto mb-12 leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200"
           style={{ color: 'var(--landing-text-muted)' }}
         >
-          Kişiselleştirilmiş antrenman programları, beslenme takibi ve profesyonel koç
-          desteği ile <span className="font-bold" style={{ color: 'var(--landing-primary)' }}>sınırlarını aş.</span>
+          İster <span className="font-bold text-green-600">Koç</span> ol dükkanını aç, ister <span className="font-bold text-blue-600">Öğrenci</span> ol hayalindeki programa ulaş.
+          Sporun buluşma noktası Alpletich.
         </div>
 
-        {/* Quote */}
-        <div
-          className="relative max-w-xl mx-auto mb-12 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300"
-        >
-          <div
-            className="absolute -left-4 top-0 text-6xl font-serif leading-none select-none transition-colors duration-300"
-            style={{ color: 'var(--landing-quote-color)' }}
-          >"</div>
-          <blockquote
-            className="text-lg md:text-xl italic font-medium pl-6"
-            style={{ color: 'var(--landing-text-muted2)' }}
-          >
-            Bugün yaptığın seçimler, yarın kim olacağını belirler.
-          </blockquote>
-          <div
-            className="absolute -right-2 bottom-0 text-6xl font-serif leading-none select-none transition-colors duration-300"
-            style={{ color: 'var(--landing-quote-color)' }}
-          >"</div>
-        </div>
-
-        {/* CTA Buttons */}
-        <div
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-500"
-        >
-          <div>
-            <Link href="/register">
-              <Button
-                size="lg"
-                className="px-8 border-0 text-lg h-14 rounded-2xl group transition-all duration-300"
-                style={{
-                  background: `linear-gradient(135deg, var(--landing-primary), var(--landing-cta-gradient-to))`,
-                  boxShadow: `0 10px 30px -5px var(--landing-card-shadow)`
-                }}
-              >
-                Hemen Başla
-                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+        {/* Dual CTA Section for Marketplace */}
+        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-16 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
+          {/* Coach Card */}
+          <div className="p-8 rounded-3xl border-2 hover:border-green-500 transition-all duration-300 group relative overflow-hidden bg-white/5 backdrop-blur-sm"
+            style={{ borderColor: 'var(--landing-card-border)' }}>
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Dumbbell className="w-24 h-24" />
+            </div>
+            <h3 className="text-2xl font-black mb-2" style={{ color: 'var(--landing-text)' }}>Koçlar İçin</h3>
+            <p className="mb-6 font-medium" style={{ color: 'var(--landing-text-muted)' }}>
+              Kendi fitness dükkanını aç, programlarını listele ve binlerce öğrenciye ulaş.
+            </p>
+            <Link href="/register?role=coach">
+              <Button className="w-full h-12 text-lg font-bold bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/20">
+                Dükkanını Aç
+                <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
           </div>
-          <div>
-            <Link href="/login">
-              <Button
-                size="lg"
-                variant="secondary"
-                className="px-8 border-2 text-lg h-14 rounded-2xl shadow-lg transition-colors duration-300"
-                style={{
-                  backgroundColor: 'var(--landing-secondary-btn-bg)',
-                  borderColor: 'var(--landing-secondary-btn-border)',
-                  color: 'var(--landing-secondary-btn-text)'
-                }}
-              >
-                Giriş Yap
+
+          {/* Student Card */}
+          <div className="p-8 rounded-3xl border-2 hover:border-blue-500 transition-all duration-300 group relative overflow-hidden bg-white/5 backdrop-blur-sm"
+            style={{ borderColor: 'var(--landing-card-border)' }}>
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Target className="w-24 h-24" />
+            </div>
+            <h3 className="text-2xl font-black mb-2" style={{ color: 'var(--landing-text)' }}>Öğrenciler İçin</h3>
+            <p className="mb-6 font-medium" style={{ color: 'var(--landing-text-muted)' }}>
+              Hedefine uygun programı bul, güvenle satın al ve gelişime başla.
+            </p>
+            <Link href="/marketplace">
+              <Button className="w-full h-12 text-lg font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/20">
+                Program Keşfet
+                <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
           </div>
@@ -236,24 +218,20 @@ export default function LandingPage() {
 
         {/* Stats */}
         <div
-          className="flex flex-wrap justify-center gap-8 md:gap-16 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-700"
+          className="flex flex-wrap justify-center gap-8 md:gap-16 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-500"
         >
-          {stats.map((stat, i) => (
-            <div key={i} className="text-center group">
-              <div
-                className="text-3xl md:text-4xl font-black group-hover:scale-110 transition-transform"
-                style={{ color: 'var(--landing-primary)' }}
-              >
-                {stat.value}
-              </div>
-              <div
-                className="text-sm font-bold uppercase tracking-wider"
-                style={{ color: 'var(--landing-text-muted2)' }}
-              >
-                {stat.label}
-              </div>
-            </div>
-          ))}
+          <div className="text-center group">
+            <div className="text-3xl md:text-4xl font-black text-green-600 group-hover:scale-110 transition-transform">100+</div>
+            <div className="text-sm font-bold uppercase tracking-wider" style={{ color: 'var(--landing-text-muted2)' }}>Onaylı Koç</div>
+          </div>
+          <div className="text-center group">
+            <div className="text-3xl md:text-4xl font-black text-blue-600 group-hover:scale-110 transition-transform">500+</div>
+            <div className="text-sm font-bold uppercase tracking-wider" style={{ color: 'var(--landing-text-muted2)' }}>Program</div>
+          </div>
+          <div className="text-center group">
+            <div className="text-3xl md:text-4xl font-black text-purple-600 group-hover:scale-110 transition-transform">5k+</div>
+            <div className="text-sm font-bold uppercase tracking-wider" style={{ color: 'var(--landing-text-muted2)' }}>Mutlu Öğrenci</div>
+          </div>
         </div>
       </main>
 
@@ -266,37 +244,67 @@ export default function LandingPage() {
             Neden Alpletich?
           </h2>
           <p className="max-w-xl mx-auto font-medium" style={{ color: 'var(--landing-text-muted)' }}>
-            En son teknoloji ile geliştirilmiş araçlarımızla fitness yolculuğunuzu bir üst seviyeye taşıyın.
+            Sporcular ve Koçlar için tasarlanmış ekosistem.
           </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
-          {features.map((feature, i) => (
-            <div
-              key={i}
-              className="group p-8 rounded-3xl border-2 backdrop-blur-sm transition-all duration-300"
-              style={{
-                backgroundColor: 'var(--landing-card-bg)',
-                borderColor: 'var(--landing-card-border)'
-              }}
-            >
-              <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-lg transition-colors duration-300"
-                style={{
-                  background: `linear-gradient(135deg, var(--landing-primary), var(--landing-cta-gradient-to))`,
-                  boxShadow: `0 10px 25px -5px var(--landing-card-shadow)`
-                }}
-              >
-                <feature.icon className="w-7 h-7 text-white" />
-              </div>
-              <h3 className="text-xl font-black mb-3" style={{ color: 'var(--landing-text)' }}>
-                {feature.title}
-              </h3>
-              <p className="leading-relaxed font-medium" style={{ color: 'var(--landing-text-muted)' }}>
-                {feature.description}
-              </p>
+          {/* Feature 1 */}
+          <div
+            className="group p-8 rounded-3xl border-2 backdrop-blur-sm transition-all duration-300"
+            style={{
+              backgroundColor: 'var(--landing-card-bg)',
+              borderColor: 'var(--landing-card-border)'
+            }}
+          >
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-lg bg-green-100 text-green-600">
+              <Store className="w-7 h-7" />
             </div>
-          ))}
+            <h3 className="text-xl font-black mb-3" style={{ color: 'var(--landing-text)' }}>
+              Koç Dükkanı
+            </h3>
+            <p className="leading-relaxed font-medium" style={{ color: 'var(--landing-text-muted)' }}>
+              Kendi profilini oluştur, programlarını yükle ve satışa başla. Tüm yönetim sende.
+            </p>
+          </div>
+
+          {/* Feature 2 */}
+          <div
+            className="group p-8 rounded-3xl border-2 backdrop-blur-sm transition-all duration-300"
+            style={{
+              backgroundColor: 'var(--landing-card-bg)',
+              borderColor: 'var(--landing-card-border)'
+            }}
+          >
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-lg bg-blue-100 text-blue-600">
+              <Sparkles className="w-7 h-7" />
+            </div>
+            <h3 className="text-xl font-black mb-3" style={{ color: 'var(--landing-text)' }}>
+              Doğrulanmış İçerik
+            </h3>
+            <p className="leading-relaxed font-medium" style={{ color: 'var(--landing-text-muted)' }}>
+              Uzman koçlar tarafından hazırlanmış, bilimsel ve sonuç odaklı antrenman programları.
+            </p>
+          </div>
+
+          {/* Feature 3 */}
+          <div
+            className="group p-8 rounded-3xl border-2 backdrop-blur-sm transition-all duration-300"
+            style={{
+              backgroundColor: 'var(--landing-card-bg)',
+              borderColor: 'var(--landing-card-border)'
+            }}
+          >
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-lg bg-purple-100 text-purple-600">
+              <Zap className="w-7 h-7" />
+            </div>
+            <h3 className="text-xl font-black mb-3" style={{ color: 'var(--landing-text)' }}>
+              Hızlı Etkileşim
+            </h3>
+            <p className="leading-relaxed font-medium" style={{ color: 'var(--landing-text-muted)' }}>
+              Satın aldığın programı hemen uygulamaya başla, koçunla mesajlaş ve gelişimi takip et.
+            </p>
+          </div>
         </div>
       </section>
 
