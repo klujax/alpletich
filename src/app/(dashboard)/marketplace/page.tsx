@@ -77,42 +77,14 @@ export default function MarketplacePage() {
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
             {/* Header / Search Section */}
-            <div className="bg-white border-b sticky top-0 z-30 shadow-sm">
-                <div className="container mx-auto px-4 py-4">
-                    <div className="flex items-center justify-between mb-4">
-                        <h1 className="text-xl font-black text-slate-800 flex items-center gap-2">
-                            <span className="text-green-600">Alpletich</span> Pazaryeri
-                        </h1>
-                    </div>
-
-                    <div className="relative max-w-2xl mx-auto">
-                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                            <Search className="w-5 h-5 text-slate-400" />
-                        </div>
-                        <Input
-                            type="text"
-                            placeholder="Koç, branş veya program ara..."
-                            className="pl-10 h-12 bg-slate-100 border-transparent focus:bg-white transition-all rounded-xl text-lg"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                        <div className="absolute inset-y-0 right-3 flex items-center">
-                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-full">
-                                <Filter className="w-4 h-4 text-slate-500" />
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Categories / Filters Scroll */}
-                <div className="container mx-auto px-4 pb-4 overflow-x-auto scrollbar-hide">
-                    <div className="flex gap-2">
-                        {['Tümü', 'Vücut Geliştirme', 'Yoga', 'Pilates', 'Crossfit', 'Kilo Verme', 'Beslenme'].map((cat) => (
-                            <button key={cat} className="px-4 py-2 rounded-full bg-slate-100 text-slate-600 font-medium text-sm whitespace-nowrap hover:bg-slate-200 transition-colors">
-                                {cat}
-                            </button>
-                        ))}
-                    </div>
+            {/* Categories / Filters - Updated Look */}
+            <div className="container mx-auto px-4 py-4 pt-6">
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                    {['Tümü', 'Vücut Geliştirme', 'Yoga', 'Pilates', 'Crossfit', 'Kilo Verme', 'Beslenme'].map((cat) => (
+                        <button key={cat} className="px-5 py-2.5 rounded-2xl bg-white border border-slate-200 text-slate-600 font-bold text-sm whitespace-nowrap hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">
+                            {cat}
+                        </button>
+                    ))}
                 </div>
             </div>
 
