@@ -306,7 +306,17 @@ export const authService = {
         // Simüle edilmiş bekleme süresi
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        const user = MOCK_USERS.find(u => u.email === email);
+        let user = MOCK_USERS.find(u => u.email === email);
+
+        // If not found in static mock data, check localStorage for registered students
+        if (!user && typeof window !== 'undefined') {
+            const storedStudents = JSON.parse(localStorage.getItem('mock_students') || '[]');
+            user = storedStudents.find((u: Profile) => u.email === email);
+
+            // Also check for coach if we had storage for them (future proofing)
+            // const storedCoaches = ...
+        }
+
         if (user) {
             if (typeof window !== 'undefined') {
                 localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));

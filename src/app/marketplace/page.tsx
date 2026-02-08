@@ -62,8 +62,8 @@ export default function MarketplacePage() {
 
     // Protect the route
     useEffect(() => {
-        // Simple client-side auth check
-        const session = localStorage.getItem('user_session');
+        // Check for user session using the correct key
+        const session = localStorage.getItem('alperen_spor_user');
         if (!session) {
             router.push('/register?role=student');
         }
