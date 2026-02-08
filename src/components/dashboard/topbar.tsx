@@ -68,10 +68,7 @@ export function DashboardTopbar() {
             {/* Right Side: Panel Name, User Actions */}
             <div className="flex items-center gap-4">
 
-                {/* Panel Name */}
-                <div className="hidden md:block font-bold text-slate-700 text-sm">
-                    {user.role === 'coach' ? 'Koç Paneli' : 'Öğrenci Paneli'}
-                </div>
+
 
                 {/* User Dropdown */}
                 <DropdownMenu>
