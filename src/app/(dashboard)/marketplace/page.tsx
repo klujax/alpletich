@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Star, Filter, MapPin, TrendingUp, DollarSign } from 'lucide-react';
+import { Search, Star, Filter, MapPin, TrendingUp, DollarSign, Store } from 'lucide-react';
 
 // Mock Data for Marketplace
 const MOCK_COACHES = [
@@ -77,49 +77,17 @@ export default function MarketplacePage() {
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
             {/* Header / Search Section */}
-            {/* Categories / Filters - Updated Look */}
-            <div className="container mx-auto px-4 py-4 pt-6">
-                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                    {['Tümü', 'Vücut Geliştirme', 'Yoga', 'Pilates', 'Crossfit', 'Kilo Verme', 'Beslenme'].map((cat) => (
-                        <button key={cat} className="px-5 py-2.5 rounded-2xl bg-white border border-slate-200 text-slate-600 font-bold text-sm whitespace-nowrap hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">
-                            {cat}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
             {/* Main Content */}
             <div className="container mx-auto px-4 py-8">
 
-                {/* Banners / Featured */}
-                <div className="grid md:grid-cols-2 gap-4 mb-8">
-                    <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-6 text-white relative overflow-hidden">
-                        <div className="relative z-10">
-                            <h3 className="text-2xl font-bold mb-2">Yaz Kampanyası</h3>
-                            <p className="mb-4 text-green-100">Seçili koçlarda %20 indirim fırsatı başladı.</p>
-                            <Button variant="secondary" size="sm" className="text-green-700">Fırsatları Gör</Button>
-                        </div>
-                        <div className="absolute right-[-20px] bottom-[-20px] opacity-20">
-                            <TrendingUp className="w-40 h-40" />
-                        </div>
-                    </div>
-                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white relative overflow-hidden hidden md:block">
-                        <div className="relative z-10">
-                            <h3 className="text-2xl font-bold mb-2">Yeni Başlayanlar</h3>
-                            <p className="mb-4 text-blue-100">Spora yeni başlayanlar için en iyi programlar.</p>
-                            <Button variant="secondary" size="sm" className="text-blue-700">Keşfet</Button>
-                        </div>
-                        <div className="absolute right-[-20px] bottom-[-20px] opacity-20">
-                            <Star className="w-40 h-40" />
-                        </div>
-                    </div>
-                </div>
-
                 {/* Section Title */}
-                <h2 className="text-lg font-bold text-slate-800 mb-4 px-1">Popüler Dükkanlar</h2>
+                <h2 className="text-xl font-bold text-slate-800 mb-6 px-1 flex items-center gap-2">
+                    <span className="bg-green-100 text-green-700 p-1.5 rounded-lg"><Store className="w-5 h-5" /></span>
+                    Popüler Dükkanlar
+                </h2>
 
                 {/* Coach Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
                     {filteredCoaches.map((coach) => (
                         <Link href={`/marketplace/${coach.id}`} key={coach.id} className="group">
                             <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-300 hover:border-green-200">
@@ -135,6 +103,7 @@ export default function MarketplacePage() {
                                         <Star className="w-3 h-3 text-orange-500 fill-orange-500" />
                                         {coach.rating} <span className="text-slate-400 font-normal">({coach.reviewCount})</span>
                                     </div>
+                                    {/* ... rest of card ... */}
                                     {coach.isOnline && (
                                         <div className="absolute top-3 right-3 bg-green-500 text-white px-2 py-1 rounded-lg text-xs font-bold shadow-sm animate-pulse-slow">
                                             Müsait
@@ -177,6 +146,30 @@ export default function MarketplacePage() {
                             </div>
                         </Link>
                     ))}
+                </div>
+
+                {/* Banners / Featured - Moved Bottom */}
+                <div className="grid md:grid-cols-2 gap-4 mb-8">
+                    <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-6 text-white relative overflow-hidden">
+                        <div className="relative z-10">
+                            <h3 className="text-2xl font-bold mb-2">Yaz Kampanyası</h3>
+                            <p className="mb-4 text-green-100">Seçili koçlarda %20 indirim fırsatı başladı.</p>
+                            <Button variant="secondary" size="sm" className="text-green-700">Fırsatları Gör</Button>
+                        </div>
+                        <div className="absolute right-[-20px] bottom-[-20px] opacity-20">
+                            <TrendingUp className="w-40 h-40" />
+                        </div>
+                    </div>
+                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white relative overflow-hidden hidden md:block">
+                        <div className="relative z-10">
+                            <h3 className="text-2xl font-bold mb-2">Yeni Başlayanlar</h3>
+                            <p className="mb-4 text-blue-100">Spora yeni başlayanlar için en iyi programlar.</p>
+                            <Button variant="secondary" size="sm" className="text-blue-700">Keşfet</Button>
+                        </div>
+                        <div className="absolute right-[-20px] bottom-[-20px] opacity-20">
+                            <Star className="w-40 h-40" />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -35,27 +35,20 @@ export function DashboardTopbar() {
 
     return (
         <header className="sticky top-0 z-30 flex items-center justify-between w-full h-16 px-4 border-b bg-white/80 backdrop-blur-md border-slate-200 mb-6 lg:rounded-2xl lg:mb-8 lg:mt-2 lg:mx-auto lg:max-w-7xl lg:top-4 transition-all">
-            {/* Left Side: Motivation or Search */}
+            {/* Left Side: Search Bar */}
             <div className="flex flex-1 items-center gap-4">
-                {/* Motivation Text (Simplified) */}
-                <div className="hidden lg:flex items-center text-sm font-medium text-slate-500 italic">
-                    <span className="mr-2">💡</span>
-                    <span>"Asla pes etme. Bugünün zorluğu, yarının gücüdür."</span>
+                <div className="relative hidden md:block w-72 lg:w-96">
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                    <Input
+                        type="search"
+                        placeholder="Koç, program veya branş ara..."
+                        className="pl-10 h-10 bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-full text-sm"
+                    />
                 </div>
             </div>
 
-            {/* Right Side: Search, Panel Name, User Actions */}
+            {/* Right Side: Panel Name, User Actions */}
             <div className="flex items-center gap-4">
-
-                {/* Search Bar */}
-                <div className="relative hidden md:block w-64">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
-                    <Input
-                        type="search"
-                        placeholder="Ara..."
-                        className="pl-9 h-9 bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-full text-sm"
-                    />
-                </div>
 
                 {/* Panel Name */}
                 <div className="hidden md:block font-bold text-slate-700 text-sm">
