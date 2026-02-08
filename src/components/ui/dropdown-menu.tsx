@@ -44,7 +44,7 @@ export function DropdownMenu({ children }: DropdownMenuProps) {
 export function DropdownMenuTrigger({ asChild, children, ...props }: any) {
     const { isOpen, setIsOpen } = React.useContext(DropdownContext);
 
-    const child = React.Children.only(children) as React.ReactElement;
+    const child = React.Children.only(children) as any;
 
     return React.cloneElement(child, {
         onClick: (e: React.MouseEvent) => {
