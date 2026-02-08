@@ -78,72 +78,72 @@ export default function MarketplacePage() {
 
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
-            <div className="container mx-auto px-4 pt-4">
+            <div className="w-full pt-2 mb-4">
                 <MotivationQuote />
             </div>
             {/* Header / Search Section */}
             {/* Main Content */}
-            <div className="container mx-auto px-4 py-8">
+            <div className="w-full">
 
                 {/* Section Title */}
-                <h2 className="text-xl font-bold text-slate-800 mb-6 px-1 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-slate-800 mb-4 px-1 flex items-center gap-2">
                     <span className="bg-green-100 text-green-700 p-1.5 rounded-lg"><Store className="w-5 h-5" /></span>
                     Popüler Dükkanlar
                 </h2>
 
                 {/* Coach Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 mb-8">
                     {filteredCoaches.map((coach) => (
                         <Link href={`/marketplace/${coach.id}`} key={coach.id} className="group">
-                            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-300 hover:border-green-200">
+                            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-300 hover:border-green-200 h-full flex flex-col">
                                 {/* Cover Image / Header */}
-                                <div className="h-48 relative bg-slate-100">
+                                <div className="h-40 relative bg-slate-100 shrink-0">
                                     <Image
                                         src={coach.image}
                                         alt={coach.name}
                                         fill
                                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                                     />
-                                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-bold text-slate-800 shadow-sm flex items-center gap-1">
+                                    <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-md text-[10px] font-bold text-slate-800 shadow-sm flex items-center gap-1">
                                         <Star className="w-3 h-3 text-orange-500 fill-orange-500" />
                                         {coach.rating} <span className="text-slate-400 font-normal">({coach.reviewCount})</span>
                                     </div>
                                     {/* ... rest of card ... */}
                                     {coach.isOnline && (
-                                        <div className="absolute top-3 right-3 bg-green-500 text-white px-2 py-1 rounded-lg text-xs font-bold shadow-sm animate-pulse-slow">
+                                        <div className="absolute top-2 right-2 bg-green-500 text-white px-1.5 py-0.5 rounded-md text-[10px] font-bold shadow-sm animate-pulse-slow">
                                             Müsait
                                         </div>
                                     )}
                                 </div>
 
                                 {/* Content */}
-                                <div className="p-4">
-                                    <div className="flex justify-between items-start mb-2">
+                                <div className="p-3 flex-1 flex flex-col">
+                                    <div className="flex justify-between items-start mb-1">
                                         <div>
-                                            <h3 className="font-bold text-slate-900 group-hover:text-green-600 transition-colors text-lg">{coach.name}</h3>
-                                            <p className="text-sm text-slate-500">{coach.title}</p>
+                                            <h3 className="font-bold text-slate-900 group-hover:text-green-600 transition-colors text-base line-clamp-1">{coach.name}</h3>
+                                            <p className="text-xs text-slate-500 line-clamp-1">{coach.title}</p>
                                         </div>
-                                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center border-2 border-white shadow-sm -mt-10 z-10">
-                                            <span className="font-bold text-slate-700 text-sm">{coach.name.charAt(0)}</span>
+                                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center border-2 border-white shadow-sm -mt-8 z-10 shrink-0">
+                                            <span className="font-bold text-slate-700 text-xs">{coach.name.charAt(0)}</span>
                                         </div>
                                     </div>
 
                                     {/* Tags */}
-                                    <div className="flex flex-wrap gap-1.5 mb-4">
-                                        {coach.tags.map(tag => (
-                                            <span key={tag} className="text-[10px] font-medium px-2 py-1 bg-slate-100 text-slate-600 rounded-md">
+                                    <div className="flex flex-wrap gap-1 mb-3 mt-1">
+                                        {coach.tags.slice(0, 2).map(tag => (
+                                            <span key={tag} className="text-[9px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">
                                                 {tag}
                                             </span>
                                         ))}
                                     </div>
 
                                     {/* Footer / Price */}
-                                    <div className="flex items-center justify-between pt-3 border-t border-slate-50">
+                                    <div className="flex items-center justify-between pt-2 border-t border-slate-50 mt-auto">
                                         <div className="flex flex-col">
-                                            <span className="text-xs text-slate-400">Başlangıç</span>
-                                            <span className="font-bold text-green-700 text-lg">₺{coach.minPrice}</span>
+                                            <span className="text-[10px] text-slate-400">Başlangıç</span>
+                                            <span className="font-bold text-green-700 text-base">₺{coach.minPrice}</span>
                                         </div>
-                                        <Button size="sm" className="rounded-xl px-6 bg-slate-900 text-white hover:bg-green-600 transition-colors">
+                                        <Button size="sm" className="h-7 text-xs rounded-lg px-3 bg-slate-900 text-white hover:bg-green-600 transition-colors">
                                             Dükkana Git
                                         </Button>
                                     </div>

@@ -32,7 +32,7 @@ export function MotivationQuote() {
     return (
         <div
             className={`
-        relative overflow-hidden rounded-xl mb-8
+        relative overflow-hidden rounded-xl
         bg-gradient-to-r from-primary/10 via-primary/5 to-transparent
         border border-primary/10 shadow-sm
         transition-all duration-700 ease-out transform
