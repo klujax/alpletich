@@ -128,17 +128,8 @@ export function Sidebar({ role }: SidebarProps) {
             >
                 <div className="p-6 pb-4 flex flex-col items-center border-b border-slate-50">
                     <div className="flex flex-col items-center gap-3 w-full">
-                        <div className="relative w-20 h-20 overflow-hidden">
-                            <Image
-                                src="/shark-logo.jpg"
-                                alt="Alpletich Logo"
-                                fill
-                                className="object-contain mix-blend-multiply"
-                                priority
-                            />
-                        </div>
-                        <h1 className="text-lg font-black text-slate-900 tracking-[0.15em] leading-none">
-                            ALPLETICH
+                        <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+                            Alpletich
                         </h1>
                     </div>
                 </div>

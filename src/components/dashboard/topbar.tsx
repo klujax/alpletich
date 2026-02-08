@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -13,7 +14,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, LogOut, Settings, Package, ShoppingBag, Menu } from 'lucide-react';
+import { User, LogOut, Settings, Package, ShoppingBag, Menu, Search, Store } from 'lucide-react';
 import { authService } from '@/lib/mock-service';
 
 export function DashboardTopbar() {
@@ -34,46 +35,32 @@ export function DashboardTopbar() {
 
     return (
         <header className="sticky top-0 z-30 flex items-center justify-between w-full h-16 px-4 border-b bg-white/80 backdrop-blur-md border-slate-200 mb-6 lg:rounded-2xl lg:mb-8 lg:mt-2 lg:mx-auto lg:max-w-7xl lg:top-4 transition-all">
-            {/* Left Side: Mobile Menu Trigger (handled by Sidebar usually) or Title */}
-            <div className="flex items-center gap-4">
-                {/* Sidebar mobile trigger is in sidebar component, so we just show simple breadcrumb or title here if needed */}
-                {/* For now let's show a nice greeting or current section name logic could go here */}
-                <div className="hidden md:block font-bold text-slate-700">
-                    {user.role === 'coach' ? (
-                        <span className="flex items-center gap-2 text-green-700 bg-green-50 px-3 py-1 rounded-full text-xs uppercase tracking-wider">
-                            <User className="w-3 h-3" /> Koç Paneli
-                        </span>
-                    ) : (
-                        <span className="flex items-center gap-2 text-blue-700 bg-blue-50 px-3 py-1 rounded-full text-xs uppercase tracking-wider">
-                            <User className="w-3 h-3" /> Öğrenci Paneli
-                        </span>
-                    )}
+            {/* Left Side: Motivation or Search */}
+            <div className="flex flex-1 items-center gap-4">
+                {/* Motivation Text (Simplified) */}
+                <div className="hidden lg:flex items-center text-sm font-medium text-slate-500 italic">
+                    <span className="mr-2">💡</span>
+                    <span>"Asla pes etme. Bugünün zorluğu, yarının gücüdür."</span>
                 </div>
             </div>
 
-            {/* Right Side: User Actions */}
-            <div className="flex items-center gap-2 md:gap-4">
+            {/* Right Side: Search, Panel Name, User Actions */}
+            <div className="flex items-center gap-4">
 
-                {/* 'My Packages' or 'Go to Shop' shortcut for Students */}
-                {user.role === 'student' && (
-                    <Link href="/marketplace">
-                        <Button size="sm" variant="ghost" className="hidden md:flex text-slate-600 hover:text-green-600 hover:bg-green-50">
-                            <ShoppingBag className="w-4 h-4 mr-2" />
-                            Pazaryeri
-                        </Button>
-                    </Link>
-                )}
+                {/* Search Bar */}
+                <div className="relative hidden md:block w-64">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+                    <Input
+                        type="search"
+                        placeholder="Ara..."
+                        className="pl-9 h-9 bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-full text-sm"
+                    />
+                </div>
 
-                {/* For Coaches */}
-                {user.role === 'coach' && (
-                    <Link href="/marketplace">
-                        <Button size="sm" variant="ghost" className="hidden md:flex text-slate-600 hover:text-green-600 hover:bg-green-50">
-                            <Store className="w-4 h-4 mr-2" />
-                            Dükkanım
-                        </Button>
-                    </Link>
-                )}
-
+                {/* Panel Name */}
+                <div className="hidden md:block font-bold text-slate-700 text-sm">
+                    {user.role === 'coach' ? 'Koç Paneli' : 'Öğrenci Paneli'}
+                </div>
 
                 {/* User Dropdown */}
                 <DropdownMenu>
@@ -102,10 +89,10 @@ export function DashboardTopbar() {
                         {user.role === 'student' && (
                             <DropdownMenuItem onClick={() => router.push('/student/packages')} className="cursor-pointer">
                                 <Package className="mr-2 h-4 w-4" />
-                                <span>Paketlerim</span>
+                                <span className="flex-1">Paketlerim</span>
                             </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem onClick={() => router.push('/marketplace')} className="cursor-pointer lg:hidden">
+                        <DropdownMenuItem onClick={() => router.push('/marketplace')} className="cursor-pointer">
                             <ShoppingBag className="mr-2 h-4 w-4" />
                             <span>Pazaryeri</span>
                         </DropdownMenuItem>
