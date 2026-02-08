@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 
 import Link from 'next/link';
+import { MotivationQuote } from '@/components/dashboard/motivation-quote';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,6 +35,7 @@ export default function StudentDashboard() {
 
     return (
         <div className="space-y-8 animate-fade-in pb-10">
+            <MotivationQuote />
             {/* Hero/Welcome Section */}
             <div className="relative overflow-hidden rounded-[2rem] bg-white border border-slate-200 p-8 md:p-12 shadow-2xl shadow-green-500/5">
                 <div className="absolute -top-24 -right-24 w-96 h-96 bg-green-600/5 rounded-full blur-3xl"></div>

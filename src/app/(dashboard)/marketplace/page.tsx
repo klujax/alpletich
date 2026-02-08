@@ -56,6 +56,8 @@ const MOCK_COACHES = [
     },
 ];
 
+import { MotivationQuote } from '@/components/dashboard/motivation-quote';
+
 export default function MarketplacePage() {
     const [searchQuery, setSearchQuery] = useState('');
     const router = useRouter();
@@ -76,6 +78,9 @@ export default function MarketplacePage() {
 
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
+            <div className="container mx-auto px-4 pt-4">
+                <MotivationQuote />
+            </div>
             {/* Header / Search Section */}
             {/* Main Content */}
             <div className="container mx-auto px-4 py-8">

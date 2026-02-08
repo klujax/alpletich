@@ -35,7 +35,7 @@ export function DashboardTopbar() {
 
     return (
         <header className="sticky top-0 z-30 flex items-center justify-between w-full h-16 px-4 border-b bg-white/80 backdrop-blur-md border-slate-200 mb-6 lg:rounded-2xl lg:mb-8 lg:mt-2 lg:mx-auto lg:max-w-7xl lg:top-4 transition-all">
-            {/* Left Side: Search Bar */}
+            {/* Left Side: Search Bar & Quick Actions */}
             <div className="flex flex-1 items-center gap-4">
                 <div className="relative hidden md:block w-72 lg:w-96">
                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
@@ -45,6 +45,24 @@ export function DashboardTopbar() {
                         className="pl-10 h-10 bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-full text-sm"
                     />
                 </div>
+
+                {/* Quick Link to Marketplace/Store */}
+                {user.role === 'student' && (
+                    <Link href="/marketplace">
+                        <Button size="sm" variant="ghost" className="hidden md:flex text-slate-600 hover:text-green-600 hover:bg-green-50 font-bold">
+                            <ShoppingBag className="w-4 h-4 mr-2" />
+                            Pazaryeri
+                        </Button>
+                    </Link>
+                )}
+                {user.role === 'coach' && (
+                    <Link href="/marketplace">
+                        <Button size="sm" variant="ghost" className="hidden md:flex text-slate-600 hover:text-green-600 hover:bg-green-50 font-bold">
+                            <Store className="w-4 h-4 mr-2" />
+                            Dükkanım
+                        </Button>
+                    </Link>
+                )}
             </div>
 
             {/* Right Side: Panel Name, User Actions */}
@@ -85,7 +103,8 @@ export function DashboardTopbar() {
                                 <span className="flex-1">Paketlerim</span>
                             </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem onClick={() => router.push('/marketplace')} className="cursor-pointer">
+                        {/* Marketplace Link also in dropdown for mobile access primarily */}
+                        <DropdownMenuItem onClick={() => router.push('/marketplace')} className="cursor-pointer md:hidden">
                             <ShoppingBag className="mr-2 h-4 w-4" />
                             <span>Pazaryeri</span>
                         </DropdownMenuItem>

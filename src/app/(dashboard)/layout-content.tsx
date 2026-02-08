@@ -44,7 +44,7 @@ export function DashboardLayoutContent({
             <main className="flex-1 lg:pl-72 min-h-screen transition-all duration-300">
                 <DashboardTopbar />
                 <div className="max-w-7xl mx-auto p-4 md:p-8 lg:p-12">
-                    <MotivationQuote />
+
                     {children}
                 </div>
             </main>
