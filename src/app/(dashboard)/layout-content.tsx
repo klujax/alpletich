@@ -7,6 +7,7 @@ import { authService } from '@/lib/mock-service';
 import { Loader2 } from 'lucide-react';
 
 import { MotivationQuote } from '@/components/dashboard/motivation-quote';
+import { DashboardTopbar } from '@/components/dashboard/topbar';
 
 export function DashboardLayoutContent({
     children,
@@ -41,6 +42,7 @@ export function DashboardLayoutContent({
         <div className="flex min-h-screen bg-background">
             <Sidebar role={role} />
             <main className="flex-1 lg:pl-72 min-h-screen transition-all duration-300">
+                <DashboardTopbar />
                 <div className="max-w-7xl mx-auto p-4 md:p-8 lg:p-12">
                     <MotivationQuote />
                     {children}
