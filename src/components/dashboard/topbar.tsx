@@ -34,7 +34,7 @@ export function DashboardTopbar() {
     if (!user) return null;
 
     return (
-        <header className="sticky top-0 z-30 flex items-center justify-between w-full h-16 px-4 border-b bg-white/80 backdrop-blur-md border-slate-200 mb-6 lg:rounded-2xl lg:mb-8 lg:mt-2 lg:mx-auto lg:max-w-7xl lg:top-4 transition-all">
+        <header className="sticky top-0 z-30 flex items-center justify-between w-full h-16 px-4 border-b bg-white/80 backdrop-blur-md border-slate-200 mb-2 lg:rounded-2xl lg:mb-4 lg:mt-2 lg:mx-auto lg:max-w-7xl lg:top-4 transition-all">
             {/* Left Side: Search Bar & Quick Actions */}
             <div className="flex flex-1 items-center gap-4">
                 <div className="relative hidden md:block w-full max-w-2xl">

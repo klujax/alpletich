@@ -84,7 +84,7 @@ export default function MarketplacePage() {
 
             <div className="relative z-10 w-full px-4 sm:px-6">
                 {/* Motivation Section */}
-                <div className="pt-2 mb-8">
+                <div className="mb-4">
                     <MotivationQuote />
                 </div>
 

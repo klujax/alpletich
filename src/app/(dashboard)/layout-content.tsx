@@ -43,7 +43,7 @@ export function DashboardLayoutContent({
             <Sidebar role={role} />
             <main className="flex-1 lg:pl-72 min-h-screen transition-all duration-300">
                 <DashboardTopbar />
-                <div className="w-full max-w-[1920px] mx-auto p-2 md:p-4 lg:p-6">
+                <div className="w-full max-w-[1920px] mx-auto pt-0 p-2 md:p-4 lg:p-6">
                     {children}
                 </div>
             </main>
