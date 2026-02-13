@@ -11,6 +11,21 @@ import { toast } from 'sonner';
 
 export const dynamic = 'force-dynamic';
 
+const COLOR_MAP: Record<string, string> = {
+    green: 'bg-green-500',
+    blue: 'bg-blue-500',
+    orange: 'bg-orange-500',
+    purple: 'bg-purple-500',
+    red: 'bg-red-500',
+    pink: 'bg-pink-500',
+    teal: 'bg-teal-500',
+    slate: 'bg-slate-500',
+    cyan: 'bg-cyan-500',
+    sky: 'bg-sky-500',
+    amber: 'bg-amber-500',
+    yellow: 'bg-yellow-500',
+};
+
 export default function CoachSportsPage() {
     const [sports, setSports] = useState<SportCategory[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -92,7 +107,7 @@ export default function CoachSportsPage() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {sports.map((sport) => (
                     <Card key={sport.id} className={`relative group overflow-hidden border-slate-200 hover:shadow-xl transition-all ${sport.isSystemDefault ? 'bg-slate-50/50' : 'bg-white'}`}>
-                        <div className={`absolute top-0 left-0 w-full h-1.5 bg-${sport.color}-500`} />
+                        <div className={`absolute top-0 left-0 w-full h-1.5 ${COLOR_MAP[sport.color] || 'bg-slate-500'}`} />
 
                         <CardHeader className="pb-4">
                             <div className="flex justify-between items-start mb-2">
@@ -163,11 +178,9 @@ export default function CoachSportsPage() {
                                     key={c}
                                     type="button"
                                     onClick={() => setColor(c)}
-                                    className={`w-8 h-8 rounded-full transition-all ${color === c ? 'ring-2 ring-slate-900 ring-offset-2 scale-110' : 'hover:scale-110'}`}
-                                    style={{ backgroundColor: `var(--${c}-500, ${c})` }}
+                                    className={`w-8 h-8 rounded-full transition-all flex items-center justify-center ${color === c ? 'ring-2 ring-slate-900 ring-offset-2 scale-110' : 'hover:scale-110'}`}
                                 >
-                                    {/* Fallback for colors not in tailwind safelist if needed */}
-                                    <span className={`block w-full h-full rounded-full bg-${c}-500`} style={{ backgroundColor: c === 'teal' ? '#14b8a6' : c === 'pink' ? '#ec4899' : '' }} />
+                                    <span className={`block w-full h-full rounded-full ${COLOR_MAP[c]}`} />
                                 </button>
                             ))}
                         </div>

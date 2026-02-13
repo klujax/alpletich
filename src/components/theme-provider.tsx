@@ -27,8 +27,10 @@ function ThemeScript() {
                     (function() {
                         try {
                             var theme = localStorage.getItem('alphletich-theme');
-                            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                            if (theme === 'dark') {
                                 document.documentElement.classList.add('dark');
+                            } else {
+                                document.documentElement.classList.remove('dark');
                             }
                         } catch (e) {}
                     })();
@@ -39,42 +41,18 @@ function ThemeScript() {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-    const [theme, setTheme] = useState<Theme>('light');
-    const [mounted, setMounted] = useState(false);
-
+    // Force light theme and disable dark mode
     useEffect(() => {
-        setMounted(true);
-        // Check localStorage or system preference on mount
-        const savedTheme = localStorage.getItem('alphletich-theme') as Theme | null;
-        if (savedTheme) {
-            setTheme(savedTheme);
-        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            setTheme('dark');
-        }
-    }, []);
-
-    const toggleTheme = useCallback(() => {
-        setTheme(prev => {
-            const newTheme = prev === 'light' ? 'dark' : 'light';
-            localStorage.setItem('alphletich-theme', newTheme);
-
-            // Update DOM class
-            if (newTheme === 'dark') {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-
-            return newTheme;
-        });
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('alphletich-theme', 'light');
     }, []);
 
     const value = useMemo(() => ({
-        theme,
-        toggleTheme,
-        isDark: theme === 'dark',
-        mounted
-    }), [theme, toggleTheme, mounted]);
+        theme: 'light' as Theme,
+        toggleTheme: () => { },
+        isDark: false,
+        mounted: true
+    }), []);
 
     return (
         <ThemeContext.Provider value={value}>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Play, Clock, BarChart, ChevronRight, Dumbbell, Edit2, Trash2, X, Save } from 'lucide-react';
+import { Play, Clock, BarChart, ChevronRight, Dumbbell, Edit2, Trash2, X, Save, Activity, Video } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
@@ -103,38 +103,72 @@ export function ExerciseCard({ exercise, isAdmin, onComplete, onEdit, onDelete }
         setIsOpen(false);
     };
 
-    const thumbnailUrl = exercise.animation_url && isYouTubeUrl(exercise.animation_url)
+    const isYoutube = exercise.animation_url ? isYouTubeUrl(exercise.animation_url) : false;
+    const thumbnailUrl = exercise.animation_url && isYoutube
         ? getYouTubeThumbnail(exercise.animation_url)
         : null;
 
     return (
         <>
             <Card
-                hover
-                className="group relative overflow-hidden bg-white border-slate-200 shadow-xl shadow-slate-200/50 cursor-pointer"
+                className="group relative overflow-hidden bg-white dark:bg-black border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none cursor-pointer rounded-[2rem] transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 border-2 hover:border-primary/20"
                 onClick={() => setIsOpen(true)}
             >
-                {/* Header: Visual area */}
-                <div className="relative h-48 bg-slate-50 flex items-center justify-center overflow-hidden border-b border-slate-100">
-                    <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent z-0" />
-                    <div
-                        className="relative z-10 w-24 h-24 bg-white rounded-3xl shadow-2xl flex items-center justify-center text-green-600 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6"
-                    >
-                        <Dumbbell className="w-12 h-12" />
+                {/* Header: Visual area with Image/Thumbnail */}
+                <div className="relative h-56 bg-slate-900 overflow-hidden">
+                    {thumbnailUrl ? (
+                        <>
+                            <img
+                                src={thumbnailUrl}
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100"
+                                alt={exercise.name}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60" />
+                        </>
+                    ) : exercise.animation_url && !isYoutube ? (
+                        <div className="w-full h-full relative">
+                            <video
+                                src={exercise.animation_url}
+                                className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity"
+                                preload="metadata"
+                                muted
+                                onMouseOver={(e) => (e.target as HTMLVideoElement).play()}
+                                onMouseOut={(e) => {
+                                    const v = e.target as HTMLVideoElement;
+                                    v.pause();
+                                    v.currentTime = 0;
+                                }}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60" />
+                        </div>
+                    ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center">
+                            <div className="w-20 h-20 bg-white/5 rounded-[2rem] border border-white/10 flex items-center justify-center text-primary group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                                <Dumbbell className="w-10 h-10" />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Play Overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="w-16 h-16 bg-white/20 backdrop-blur-xl border border-white/30 rounded-full flex items-center justify-center text-white scale-75 group-hover:scale-100 transition-transform duration-500">
+                            <Play className="w-8 h-8 fill-current ml-1" />
+                        </div>
                     </div>
 
-                    {/* Badges */}
-                    <div className="absolute top-4 left-4 z-20 flex gap-2">
+                    {/* Top Badges */}
+                    <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
                         <span className={cn(
-                            "text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border-2 shadow-sm",
-                            difficultyStyles[exercise.difficulty]
+                            "text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border backdrop-blur-md shadow-lg",
+                            difficultyStyles[exercise.difficulty],
+                            "bg-white/90 border-transparent shadow-black/5"
                         )}>
                             {getDifficultyLabel(exercise.difficulty)}
                         </span>
                         {exercise.animation_url && (
-                            <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border-2 shadow-sm bg-blue-50 text-blue-700 border-blue-100 flex items-center gap-1">
-                                <Play className="w-3 h-3 fill-current" />
-                                Video
+                            <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border border-white/20 bg-black/40 text-white backdrop-blur-md flex items-center gap-1 shadow-lg">
+                                <Play className="w-3 h-3 fill-current text-red-500" />
+                                VIDEO
                             </span>
                         )}
                     </div>
@@ -144,45 +178,47 @@ export function ExerciseCard({ exercise, isAdmin, onComplete, onEdit, onDelete }
                         <div className="absolute top-4 right-4 z-20 flex gap-2">
                             <button
                                 onClick={(e) => { e.stopPropagation(); setIsOpen(true); setIsEditing(true); }}
-                                className="w-8 h-8 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white shadow-lg transition-colors"
+                                className="w-10 h-10 rounded-2xl bg-white/90 backdrop-blur-md border border-slate-200 flex items-center justify-center text-slate-900 shadow-xl transition-all hover:bg-white hover:scale-110"
                             >
                                 <Edit2 className="w-4 h-4" />
                             </button>
                             <button
                                 onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }}
-                                className="w-8 h-8 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center text-white shadow-lg transition-colors"
+                                className="w-10 h-10 rounded-2xl bg-red-500/90 backdrop-blur-md flex items-center justify-center text-white shadow-xl transition-all hover:bg-red-500 hover:scale-110"
                             >
                                 <Trash2 className="w-4 h-4" />
                             </button>
                         </div>
                     )}
+
+                    {/* Duration Bottom Left */}
+                    <div className="absolute bottom-4 left-4 bg-white/90 dark:bg-black/90 backdrop-blur-md border border-slate-100 dark:border-slate-800 px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-lg group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-500">
+                        <Clock className="w-3.5 h-3.5 text-primary" />
+                        <span className="text-xs font-black text-slate-900 dark:text-white">{Math.floor((exercise.duration_seconds || 60) / 60)} DK</span>
+                    </div>
                 </div>
 
-                <div className="p-6 space-y-3">
-                    <div className="flex justify-between items-center">
-                        <h3 className="text-xl font-black text-slate-900 tracking-tight line-clamp-1">{exercise.name}</h3>
+                <div className="p-6 space-y-4">
+                    <div className="space-y-1">
+                        <div className="flex justify-between items-start">
+                            <h3 className="text-xl font-black text-slate-950 dark:text-white tracking-tight group-hover:text-primary transition-colors duration-300">{exercise.name}</h3>
+                        </div>
+                        {exercise.description && (
+                            <p className="text-slate-500 text-xs font-bold line-clamp-2 leading-relaxed h-8">
+                                {exercise.description}
+                            </p>
+                        )}
                     </div>
 
-                    <div className="flex items-center gap-4 text-xs font-bold text-slate-500">
-                        <div className="flex items-center gap-1.5">
-                            <Clock className="w-4 h-4 text-green-500" />
-                            {Math.floor((exercise.duration_seconds || 60) / 60)} dk
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                            <BarChart className="w-4 h-4 text-green-500" />
-                            {getDifficultyLabel(exercise.difficulty)}
-                        </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2">
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800/50">
                         <div className="flex flex-wrap gap-1.5">
                             {exercise.muscle_groups?.slice(0, 2).map((muscle: string, i: number) => (
-                                <span key={i} className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
+                                <span key={i} className="text-[10px] font-black uppercase tracking-wider text-slate-900 dark:text-slate-200 bg-slate-100 dark:bg-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 group-hover:bg-primary/10 group-hover:border-primary/20 group-hover:text-primary transition-colors">
                                     {muscle}
                                 </span>
                             ))}
                         </div>
-                        <div className="text-green-600 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+                        <div className="w-9 h-9 bg-slate-50 dark:bg-slate-900 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white group-hover:rotate-[-45deg] transition-all duration-500">
                             <ChevronRight className="w-5 h-5" />
                         </div>
                     </div>
@@ -297,14 +333,32 @@ export function ExerciseCard({ exercise, isAdmin, onComplete, onEdit, onDelete }
                         </div>
 
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-2">YouTube Video URL</label>
-                            <input
-                                type="url"
-                                value={editVideoUrl}
-                                onChange={(e) => setEditVideoUrl(e.target.value)}
-                                placeholder="https://www.youtube.com/watch?v=..."
-                                className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all font-medium"
-                            />
+                            <label className="block text-sm font-bold text-slate-700 mb-2">Egzersiz Videosu</label>
+                            {editVideoUrl ? (
+                                <div className="relative aspect-video rounded-xl overflow-hidden bg-slate-100 group">
+                                    <video src={editVideoUrl} className="w-full h-full object-cover" controls />
+                                    <button
+                                        onClick={() => setEditVideoUrl('')}
+                                        className="absolute top-2 right-2 p-1.5 bg-rose-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            ) : (
+                                <label className="flex flex-col items-center justify-center aspect-video rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 hover:bg-white hover:border-green-500 transition-all cursor-pointer">
+                                    <Video className="w-8 h-8 text-slate-300 mb-2" />
+                                    <span className="text-xs font-bold text-slate-400">Video Yükle</span>
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        accept="video/*"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) setEditVideoUrl(URL.createObjectURL(file));
+                                        }}
+                                    />
+                                </label>
+                            )}
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -334,26 +388,22 @@ export function ExerciseCard({ exercise, isAdmin, onComplete, onEdit, onDelete }
                 ) : (
                     // View Mode
                     <div className="space-y-8 py-2">
-                        {/* Video Preview */}
-                        <div className="aspect-video w-full rounded-3xl bg-slate-900 border-2 border-slate-100 overflow-hidden relative shadow-inner">
+                        {/* Video / Visual Section */}
+                        <div className="aspect-video w-full rounded-[2.5rem] bg-slate-950 border-4 border-slate-100 overflow-hidden relative shadow-2xl group/video">
                             {exercise.animation_url ? (
-                                // Check if it's a YouTube URL
                                 isYouTubeUrl(exercise.animation_url) ? (
                                     <div className="relative w-full h-full">
                                         {!videoLoaded ? (
-                                            // Show thumbnail first - click to load video
                                             <div
-                                                className="w-full h-full cursor-pointer group relative"
+                                                className="w-full h-full cursor-pointer relative"
                                                 onClick={() => setVideoLoaded(true)}
                                             >
-                                                {/* Thumbnail */}
                                                 {thumbnailUrl && (
                                                     <img
                                                         src={thumbnailUrl}
                                                         alt={exercise.name}
-                                                        className="w-full h-full object-cover"
+                                                        className="w-full h-full object-cover opacity-60 transition-opacity duration-500 group-hover/video:opacity-80"
                                                         onError={(e) => {
-                                                            // Fallback to medium quality if maxres doesn't exist
                                                             const target = e.target as HTMLImageElement;
                                                             if (target.src.includes('maxresdefault')) {
                                                                 target.src = target.src.replace('maxresdefault', 'hqdefault');
@@ -361,18 +411,18 @@ export function ExerciseCard({ exercise, isAdmin, onComplete, onEdit, onDelete }
                                                         }}
                                                     />
                                                 )}
-                                                {/* Play button overlay */}
-                                                <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
-                                                    <div className="w-20 h-20 rounded-full bg-red-600 group-hover:bg-red-700 flex items-center justify-center shadow-2xl transition-all group-hover:scale-110">
-                                                        <Play className="w-10 h-10 text-white fill-current ml-1" />
+                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                    <div className="w-24 h-24 rounded-full bg-white/10 backdrop-blur-2xl border border-white/20 flex items-center justify-center text-white scale-90 group-hover/video:scale-110 transition-all duration-700 shadow-2xl">
+                                                        <div className="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center shadow-lg group-hover/video:bg-red-700">
+                                                            <Play className="w-8 h-8 fill-current ml-1" />
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm font-bold bg-black/50 px-4 py-2 rounded-full">
-                                                    Videoyu izlemek için tıklayın
-                                                </p>
+                                                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/90 text-xs font-black tracking-widest uppercase bg-black/40 backdrop-blur-xl border border-white/10 px-6 py-2.5 rounded-2xl shadow-2xl">
+                                                    VİDEOYU BAŞLATMAK İÇİN TIKLAYIN
+                                                </div>
                                             </div>
                                         ) : (
-                                            // Load video after click
                                             <iframe
                                                 src={`${getYouTubeEmbedUrl(exercise.animation_url)}?rel=0&modestbranding=1&autoplay=1&playsinline=1`}
                                                 className="w-full h-full"
@@ -382,20 +432,8 @@ export function ExerciseCard({ exercise, isAdmin, onComplete, onEdit, onDelete }
                                                 style={{ border: 'none' }}
                                             />
                                         )}
-                                        {/* Fallback button to open in YouTube */}
-                                        <a
-                                            href={exercise.animation_url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="absolute bottom-3 right-3 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg flex items-center gap-2 shadow-lg transition-colors z-10"
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            <Play className="w-3 h-3 fill-current" />
-                                            YouTube'da Aç
-                                        </a>
                                     </div>
                                 ) : (
-                                    // Direct video URL
                                     <video
                                         src={exercise.animation_url}
                                         controls
@@ -405,55 +443,75 @@ export function ExerciseCard({ exercise, isAdmin, onComplete, onEdit, onDelete }
                                     </video>
                                 )
                             ) : (
-                                // No video - show placeholder
-                                <>
-                                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-green-100/50 to-transparent" />
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="relative z-10 text-center">
-                                            <div className="w-20 h-20 bg-white rounded-full shadow-2xl flex items-center justify-center mx-auto mb-4 border border-slate-100">
-                                                <Play className="w-10 h-10 text-green-600 fill-current ml-1" />
-                                            </div>
-                                            <p className="text-slate-900 font-black text-lg">Video Eklenmemiş</p>
-                                            <p className="text-slate-500 text-sm mt-1">Bu egzersiz için henüz video yok</p>
+                                <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center">
+                                    <div className="text-center">
+                                        <div className="w-24 h-24 bg-white/5 rounded-[2.5rem] border border-white/10 flex items-center justify-center mx-auto mb-6 text-slate-500">
+                                            <Dumbbell className="w-12 h-12" />
                                         </div>
+                                        <p className="text-white font-black text-xl">Video Bulunmuyor</p>
+                                        <p className="text-slate-500 font-bold mt-2">Bu egzersiz için rehber video henüz eklenmemiş.</p>
                                     </div>
-                                </>
+                                </div>
                             )}
                         </div>
 
-                        {/* Stats */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-slate-50 rounded-2xl p-4 text-center border border-slate-100">
-                                <div className="text-3xl font-black text-slate-900 tabular-nums">{Math.floor((exercise.duration_seconds || 60) / 60)}</div>
-                                <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Dakika</div>
+                        {/* Info Grid */}
+                        <div className="grid grid-cols-3 gap-4">
+                            <div className="bg-slate-50 rounded-[2rem] p-6 text-center border-2 border-slate-100/50 hover:border-green-200 transition-colors group/stat">
+                                <Clock className="w-6 h-6 text-green-600 mx-auto mb-2 group-hover/stat:scale-110 transition-transform" />
+                                <div className="text-2xl font-black text-slate-950 tabular-nums leading-none">
+                                    {Math.floor((exercise.duration_seconds || 60) / 60)}
+                                </div>
+                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">DAKİKA</div>
                             </div>
-                            <div className="bg-slate-50 rounded-2xl p-4 text-center border border-slate-100">
-                                <div className="text-lg font-black text-slate-900">{getDifficultyLabel(exercise.difficulty)}</div>
-                                <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Zorluk</div>
+
+                            <div className="bg-slate-50 rounded-[2rem] p-6 text-center border-2 border-slate-100/50 hover:border-green-200 transition-colors group/stat">
+                                <BarChart className="w-6 h-6 text-green-600 mx-auto mb-2 group-hover/stat:scale-110 transition-transform" />
+                                <div className="text-lg font-black text-slate-950 leading-none">
+                                    {getDifficultyLabel(exercise.difficulty).toUpperCase()}
+                                </div>
+                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">ZORLUK</div>
+                            </div>
+
+                            <div className="bg-slate-50 rounded-[2rem] p-6 text-center border-2 border-slate-100/50 hover:border-green-200 transition-colors group/stat">
+                                <Activity className="w-6 h-6 text-green-600 mx-auto mb-2 group-hover/stat:scale-110 transition-transform" />
+                                <div className="text-lg font-black text-slate-950 leading-none">
+                                    {exercise.muscle_groups?.[0]?.toUpperCase() || 'TÜM VÜCUT'}
+                                </div>
+                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">ANA BÖLGE</div>
                             </div>
                         </div>
 
-                        {/* Description */}
-                        {exercise.description && (
-                            <div>
-                                <h4 className="text-sm font-black text-slate-900 uppercase tracking-wider mb-2">Açıklama</h4>
-                                <p className="text-slate-600 leading-relaxed font-medium">{exercise.description}</p>
-                            </div>
-                        )}
-
-                        {/* Target Muscles */}
-                        {exercise.muscle_groups && exercise.muscle_groups.length > 0 && (
-                            <div>
-                                <h4 className="text-sm font-black text-slate-900 uppercase tracking-wider mb-3">Hedef Kaslar</h4>
-                                <div className="flex flex-wrap gap-2">
-                                    {exercise.muscle_groups.map((muscle: string, i: number) => (
-                                        <span key={i} className="text-sm font-bold text-green-700 bg-green-50 px-4 py-2 rounded-full border border-green-100">
-                                            {muscle}
-                                        </span>
-                                    ))}
+                        {/* Content Sections */}
+                        <div className="space-y-8 bg-slate-50/50 p-8 rounded-[2.5rem] border-2 border-slate-100">
+                            {exercise.description && (
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-1.5 h-6 bg-green-600 rounded-full" />
+                                        <h4 className="text-lg font-black text-slate-950 tracking-tight uppercase">NASIL YAPILIR?</h4>
+                                    </div>
+                                    <p className="text-slate-600 leading-relaxed font-bold text-lg">
+                                        {exercise.description}
+                                    </p>
                                 </div>
-                            </div>
-                        )}
+                            )}
+
+                            {exercise.muscle_groups && exercise.muscle_groups.length > 0 && (
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-1.5 h-6 bg-green-600 rounded-full" />
+                                        <h4 className="text-lg font-black text-slate-950 tracking-tight uppercase">HEDEF KAS GRUPLARI</h4>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {exercise.muscle_groups.map((muscle: string, i: number) => (
+                                            <span key={i} className="text-xs font-black text-green-700 bg-green-100/50 border border-green-200/50 px-5 py-2.5 rounded-2xl shadow-sm">
+                                                {muscle.toUpperCase()}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
             </Modal>

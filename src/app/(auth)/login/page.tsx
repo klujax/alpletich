@@ -3,12 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-
-import { authService } from '@/lib/mock-service'; // Mock Service kullanıyoruz
+import { authService } from '@/lib/mock-service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Mail, Lock, ArrowRight } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Mail, Lock, ArrowRight, Loader2, Sparkles, MoveRight, ArrowLeft } from 'lucide-react';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -21,20 +19,15 @@ export default function LoginPage() {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
+        await new Promise(resolve => setTimeout(resolve, 600));
 
         try {
-            // Login
             const { user, error } = await authService.signIn(email, password);
-
             if (error) throw new Error(error);
-
             if (user) {
-                // Role göre yönlendirme
-                if (user.role === 'coach') {
-                    router.push('/coach');
-                } else {
-                    router.push('/student');
-                }
+                if (user.role === 'admin') router.push('/admin');
+                else if (user.role === 'coach') router.push('/coach');
+                else router.push('/student');
             }
         } catch (err: any) {
             setError(err.message || 'Giriş yapılamadı');
@@ -44,68 +37,68 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <Card variant="default" className="border-slate-200 bg-white shadow-xl shadow-slate-200/50">
-                <CardHeader className="space-y-1">
-                    <CardTitle className="text-2xl text-center text-slate-900 font-bold tracking-tight">
-                        Giriş Yap
-                    </CardTitle>
-                    <CardDescription className="text-center text-slate-500 font-medium">
-                        Hesabınıza giriş yapın
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleLogin} className="space-y-4">
-                        <div className="space-y-4">
-                            <Input
-                                type="email"
-                                placeholder="ornek@email.com"
-                                label="E-posta"
-                                leftIcon={<Mail className="w-4 h-4" />}
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
-                            <Input
-                                type="password"
-                                placeholder="••••••••"
-                                label="Şifre"
-                                leftIcon={<Lock className="w-4 h-4" />}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
+        <div className="w-full max-w-[400px] flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="w-full mb-10 text-center">
+                <button onClick={() => router.push('/')} className="text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-green-600 flex items-center gap-1 mx-auto mb-4">
+                    <ArrowLeft className="w-3 h-3" /> Ana Sayfaya Dön
+                </button>
+                <h1 className="text-4xl font-black text-slate-900 mb-2 tracking-tighter">Tekrar Hoşgeldiniz</h1>
+                <p className="text-sm font-bold text-slate-400">Devam etmek için giriş yapın.</p>
+            </div>
+
+            <form onSubmit={handleLogin} className="w-full space-y-4">
+                <div className="space-y-4">
+                    <Input
+                        type="email"
+                        placeholder="E-posta"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="h-12 border-2 border-slate-100 focus:border-green-600 rounded-2xl px-5 font-bold"
+                    />
+                    <div className="space-y-2">
+                        <Input
+                            type="password"
+                            placeholder="Şifre"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            className="h-12 border-2 border-slate-100 focus:border-green-600 rounded-2xl px-5 font-bold"
+                        />
+                        <div className="text-right">
+                            <Link href="#" className="text-xs font-bold text-slate-400 hover:text-green-600 transition-colors">
+                                Şifremi Unuttum?
+                            </Link>
                         </div>
-
-                        {error && (
-                            <div className="p-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm text-center font-medium">
-                                {error}
-                            </div>
-                        )}
-
-                        <Button
-                            type="submit"
-                            fullWidth
-                            isLoading={isLoading}
-                            className="mt-6"
-                            rightIcon={<ArrowRight className="w-4 h-4" />}
-                        >
-                            Giriş Yap
-                        </Button>
-                    </form>
-                </CardContent>
-                <CardFooter className="flex flex-col space-y-4 text-center text-sm border-t border-slate-100 pt-6">
-                    <div className="text-slate-500 font-medium">
-                        Hesabınız yok mu?{' '}
-                        <Link
-                            href="/register"
-                            className="text-green-600 hover:text-green-700 font-bold transition-colors hover:underline"
-                        >
-                            Kayıt Ol
-                        </Link>
                     </div>
-                </CardFooter>
-            </Card>
+                </div>
+
+                {error && <p className="text-xs font-bold text-red-500 text-center">{error}</p>}
+
+                <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-14 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-black text-lg transition-transform active:scale-95 shadow-lg shadow-green-600/20"
+                >
+                    {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
+                        <span className="flex items-center gap-2">
+                            Giriş Yap <ArrowRight className="w-4 h-4" />
+                        </span>
+                    )}
+                </Button>
+            </form>
+
+            <div className="mt-10 text-center px-6 py-4 rounded-3xl border-2 border-slate-50">
+                <p className="text-sm font-bold text-slate-400 mb-3">
+                    Henüz bir hesabınız yok mu?
+                </p>
+                <Link
+                    href="/register"
+                    className="text-slate-900 font-black hover:text-green-600 underline underline-offset-4 decoration-2 decoration-green-300 hover:decoration-green-600 transition-all flex items-center justify-center gap-2"
+                >
+                    Hemen Kayıt Ol <MoveRight className="w-4 h-4" />
+                </Link>
+            </div>
         </div>
     );
 }

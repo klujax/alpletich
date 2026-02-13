@@ -41,17 +41,20 @@ export function Modal({
     }, []);
 
     useEffect(() => {
+        let timeout: NodeJS.Timeout;
         if (isOpen) {
             document.body.style.overflow = 'hidden';
-            // Delay for animation
             requestAnimationFrame(() => {
                 setVisible(true);
             });
         } else {
             setVisible(false);
-            document.body.style.overflow = 'unset';
+            timeout = setTimeout(() => {
+                document.body.style.overflow = 'unset';
+            }, 200); // Wait for transition
         }
         return () => {
+            clearTimeout(timeout);
             document.body.style.overflow = 'unset';
         };
     }, [isOpen]);

@@ -206,20 +206,20 @@ export default function CoachShopPage() {
             {/* Floating Cart Button (Mobile/Web) */}
             {totalItems > 0 && (
                 <div className="fixed bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-96 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300">
-                    <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between cursor-pointer hover:bg-slate-800 transition-colors">
+                    <div className="bg-white text-slate-900 border-2 border-green-100 p-4 rounded-2xl shadow-2xl shadow-green-500/10 flex items-center justify-between cursor-pointer hover:bg-green-50 transition-colors">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center relative">
-                                <ShoppingCart className="w-6 h-6 text-green-400" />
-                                <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-slate-900">
+                            <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center relative">
+                                <ShoppingCart className="w-6 h-6 text-green-600" />
+                                <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-white">
                                     {totalItems}
                                 </span>
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-xs text-slate-400 uppercase font-bold tracking-wider">Toplam Tutar</span>
-                                <span className="text-xl font-black">₺{totalPrice}</span>
+                                <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">Toplam Tutar</span>
+                                <span className="text-xl font-black text-green-700">₺{totalPrice}</span>
                             </div>
                         </div>
-                        <Button className="bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl px-6 h-12">
+                        <Button className="bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl px-6 h-12 shadow-lg shadow-green-500/20">
                             Sepeti Onayla
                         </Button>
                     </div>

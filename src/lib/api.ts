@@ -89,7 +89,7 @@ export const authAPI = {
         if (!isSupabaseConfigured) {
             // Senkron mock
             if (typeof window !== 'undefined') {
-                const stored = localStorage.getItem('alperen_spor_user');
+                const stored = localStorage.getItem('sportaly_user');
                 if (stored) return JSON.parse(stored);
             }
             return null;
@@ -103,11 +103,11 @@ export const authAPI = {
     updateProfile: async (userId: string, updates: Partial<Profile>) => {
         if (!isSupabaseConfigured) {
             if (typeof window !== 'undefined') {
-                const stored = localStorage.getItem('alperen_spor_user');
+                const stored = localStorage.getItem('sportaly_user');
                 if (stored) {
                     const user = JSON.parse(stored);
                     const updated = { ...user, ...updates };
-                    localStorage.setItem('alperen_spor_user', JSON.stringify(updated));
+                    localStorage.setItem('sportaly_user', JSON.stringify(updated));
                 }
             }
             return { error: null };
@@ -157,7 +157,7 @@ export const studentsAPI = {
     addStudent: async (fullName: string, email: string): Promise<Profile> => {
         if (!isSupabaseConfigured) {
             const { dataService } = await import('./mock-service');
-            return dataService.addStudent(fullName, email);
+            return (dataService as any).addStudent(fullName, email);
         }
 
         // Supabase için
@@ -195,7 +195,7 @@ export const exercisesAPI = {
     getExercises: async (): Promise<Exercise[]> => {
         if (!isSupabaseConfigured) {
             const { dataService } = await import('./mock-service');
-            return dataService.getExercises();
+            return (dataService as any).getExercises();
         }
 
         const sb = getSupabase();
@@ -213,7 +213,7 @@ export const exercisesAPI = {
     createExercise: async (exercise: Omit<Exercise, 'id' | 'created_at' | 'updated_at'>): Promise<Exercise> => {
         if (!isSupabaseConfigured) {
             const { dataService } = await import('./mock-service');
-            return dataService.addExercise(exercise);
+            return (dataService as any).addExercise(exercise);
         }
 
         const sb = getSupabase();
@@ -237,7 +237,7 @@ export const nutritionAPI = {
     getNutritionPlans: async (): Promise<NutritionPlan[]> => {
         if (!isSupabaseConfigured) {
             const { dataService } = await import('./mock-service');
-            return dataService.getNutritionPlans();
+            return (dataService as any).getNutritionPlans();
         }
 
         const sb = getSupabase();
@@ -259,7 +259,7 @@ export const nutritionAPI = {
     getStudentNutritionPlan: async (studentId: string): Promise<NutritionPlan | null> => {
         if (!isSupabaseConfigured) {
             const { dataService } = await import('./mock-service');
-            return dataService.getNutritionPlan(studentId);
+            return (dataService as any).getNutritionPlan(studentId);
         }
 
         const sb = getSupabase();
@@ -280,7 +280,7 @@ export const nutritionAPI = {
     createNutritionPlan: async (plan: any): Promise<NutritionPlan> => {
         if (!isSupabaseConfigured) {
             const { dataService } = await import('./mock-service');
-            return dataService.addNutritionPlan(plan);
+            return (dataService as any).addNutritionPlan(plan) as unknown as NutritionPlan;
         }
 
         const sb = getSupabase();
@@ -304,7 +304,7 @@ export const progressAPI = {
     getProgressLogs: async (studentId: string): Promise<any[]> => {
         if (!isSupabaseConfigured) {
             const { dataService } = await import('./mock-service');
-            return dataService.getProgressHistory(studentId);
+            return (dataService as any).getProgressHistory(studentId);
         }
 
         const sb = getSupabase();
@@ -323,7 +323,7 @@ export const progressAPI = {
     addProgressLog: async (studentId: string, log: any): Promise<ProgressLog | null> => {
         if (!isSupabaseConfigured) {
             const { dataService } = await import('./mock-service');
-            return dataService.addProgressLog(log) as any;
+            return (dataService as any).addProgressLog(log) as any;
         }
 
         const sb = getSupabase();

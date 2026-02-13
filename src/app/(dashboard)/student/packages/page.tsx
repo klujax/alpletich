@@ -49,7 +49,7 @@ export default function StudentPackagesPage() {
     const [packages] = useState(MOCK_PACKAGES);
 
     return (
-        <div className="space-y-8 animate-fade-in pb-10">
+        <div className="space-y-8 animate-fade-in pb-24 lg:pb-10">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
@@ -57,7 +57,7 @@ export default function StudentPackagesPage() {
                     <p className="text-slate-500 mt-1">Satın aldığın eğitim paketlerini ve aboneliklerini buradan yönetebilirsin.</p>
                 </div>
                 <Link href="/marketplace">
-                    <Button className="bg-slate-900 hover:bg-slate-800 text-white gap-2">
+                    <Button className="bg-green-600 hover:bg-green-700 text-white gap-2">
                         <ShoppingBag className="w-4 h-4" />
                         Yeni Paket Al
                     </Button>
@@ -67,17 +67,20 @@ export default function StudentPackagesPage() {
             {/* Packages Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {packages.map((pkg) => {
-                    // Logic: Programs are always accessible even if "expired" (completed)
-                    const isAccessible = pkg.status === 'active' || pkg.type === 'program';
+                    // Logic: Users want to access content even after expiration
+                    const isActive = pkg.status === 'active';
+                    const isProgram = pkg.type === 'program';
+                    // We only highlight active items or lifetime programs with green
+                    const isHighlighted = isActive || isProgram;
 
                     return (
                         <div
                             key={pkg.id}
                             className={`
                                 relative bg-white rounded-2xl border transition-all duration-300 overflow-hidden group
-                                ${isAccessible
+                                ${isHighlighted
                                     ? 'border-green-200 shadow-lg shadow-green-900/5 hover:shadow-xl hover:shadow-green-900/10 hover:-translate-y-1'
-                                    : 'border-slate-200 opacity-80 hover:opacity-100 hover:shadow-lg'
+                                    : 'border-slate-200 hover:border-slate-300 hover:shadow-lg hover:-translate-y-1'
                                 }
                             `}
                         >
@@ -107,7 +110,7 @@ export default function StudentPackagesPage() {
                             <div className="p-6">
                                 {/* Icon & Title */}
                                 <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                                    <Package className={`w-6 h-6 ${isAccessible ? 'text-green-600' : 'text-slate-400'}`} />
+                                    <Package className={`w-6 h-6 ${isHighlighted ? 'text-green-600' : 'text-slate-400'}`} />
                                 </div>
 
                                 <h3 className="text-xl font-bold text-slate-900 mb-1">{pkg.name}</h3>
@@ -166,19 +169,18 @@ export default function StudentPackagesPage() {
                             {/* Action Footer */}
                             <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
                                 <span className="text-sm font-bold text-slate-900">₺{pkg.price}</span>
-                                {isAccessible ? (
-                                    <Link href={`/student/workouts`}>
-                                        <Button size="sm" variant="outline" className="border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 hover:border-green-300">
-                                            Programı Görüntüle
-                                        </Button>
-                                    </Link>
-                                ) : (
-                                    <Link href={`/marketplace`}>
-                                        <Button size="sm" variant="ghost" className="text-slate-500 hover:text-slate-700">
-                                            Tekrar Satın Al
-                                        </Button>
-                                    </Link>
-                                )}
+                                <Link href={`/student/workouts`}>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className={isHighlighted
+                                            ? "border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 hover:border-green-300"
+                                            : "border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300"
+                                        }
+                                    >
+                                        Programı Görüntüle
+                                    </Button>
+                                </Link>
                             </div>
                         </div>
                     );

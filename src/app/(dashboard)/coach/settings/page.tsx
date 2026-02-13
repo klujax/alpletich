@@ -225,12 +225,12 @@ export default function SettingsPage() {
                 {/* Sağ Taraf: Hoca Ekleme */}
                 <div className="space-y-8">
                     <Card className="border-slate-200 shadow-sm h-fit sticky top-6">
-                        <CardHeader className="bg-gradient-to-br from-slate-900 to-slate-800 text-white border-b border-white/10 pb-6 rounded-t-xl">
+                        <CardHeader className="bg-gradient-to-br from-green-600 to-green-700 text-white border-b border-white/10 pb-6 rounded-t-xl">
                             <div className="flex items-center gap-2 mb-1">
-                                <UserPlus className="w-5 h-5 text-green-400" />
+                                <UserPlus className="w-5 h-5 text-white" />
                                 <CardTitle className="text-lg text-white">Yeni Hoca Ekle</CardTitle>
                             </div>
-                            <CardDescription className="text-slate-300">
+                            <CardDescription className="text-green-50">
                                 Sisteme yeni bir antrenör veya yardımcı koç ekleyin.
                             </CardDescription>
                         </CardHeader>
@@ -265,7 +265,7 @@ export default function SettingsPage() {
                                         type="submit"
                                         fullWidth
                                         isLoading={isAddingCoach}
-                                        className="bg-slate-900 hover:bg-slate-800 text-white"
+                                        className="bg-green-600 hover:bg-green-700 text-white"
                                     >
                                         <Plus className="w-4 h-4 mr-2" />
                                         Hocayı Kaydet

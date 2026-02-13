@@ -2,8 +2,8 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: 'Alpletich Fitness',
-        short_name: 'Alpletich',
+        name: 'Sportaly - Fitness Platformu',
+        short_name: 'Sportaly',
         description: 'Kişiselleştirilmiş antrenman programları ve profesyonel koç desteği',
         start_url: '/',
         display: 'standalone',

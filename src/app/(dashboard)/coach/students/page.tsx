@@ -1,135 +1,114 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { dataService } from '@/lib/mock-service';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, Plus, User, Mail } from 'lucide-react';
-import { getInitials } from '@/lib/utils';
+import {
+    Users, Mail, MessageCircle, Star, ChevronRight, Search
+} from 'lucide-react';
+import { dataService, authService, Purchase } from '@/lib/mock-service';
 import { Profile } from '@/types/database';
-import { Modal } from '@/components/ui/modal';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
-export default function StudentsPage() {
+export default function CoachStudentsPage() {
     const [students, setStudents] = useState<Profile[]>([]);
+    const [purchases, setPurchases] = useState<Purchase[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
 
-    // Modal State
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [newStudentName, setNewStudentName] = useState('');
-    const [newStudentEmail, setNewStudentEmail] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    useEffect(() => { loadData(); }, []);
 
-    async function loadStudents() {
+    const loadData = async () => {
         setIsLoading(true);
-        const data = await dataService.getStudents();
-        setStudents(data);
+        const user = authService.getUser();
+        if (!user) return;
+        const [studentData, purchaseData] = await Promise.all([
+            dataService.getStudentsByCoach(user.id),
+            dataService.getPurchases(),
+        ]);
+        setStudents(studentData);
+        setPurchases(purchaseData.filter((p: Purchase) => p.coachId === user.id));
         setIsLoading(false);
-    }
-
-    useEffect(() => {
-        loadStudents();
-    }, []);
-
-    const handleAddStudent = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-
-        try {
-            await dataService.addStudent(newStudentName, newStudentEmail);
-            setIsModalOpen(false);
-            setNewStudentName('');
-            setNewStudentEmail('');
-            // Listeyi yenile
-            await loadStudents();
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setIsSubmitting(false);
-        }
     };
 
+    if (isLoading) return (
+        <div className="flex items-center justify-center h-[60vh]">
+            <div className="w-10 h-10 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
+        </div>
+    );
+
+    const filteredStudents = students.filter(s =>
+        s.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) || s.email?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
-        <div className="space-y-6 animate-fade-in">
-            <div className="flex justify-between items-center">
+        <div className="space-y-8 animate-fade-in pb-24 lg:pb-10">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900">Öğrencilerim</h1>
-                    <p className="text-slate-500 font-medium">Tüm öğrencilerinin gelişimi ve takibi burada.</p>
+                    <h1 className="text-3xl font-black text-slate-900 tracking-tight">Öğrencilerim</h1>
+                    <p className="text-slate-500 font-medium">Paketlerini satın alan öğrencilerin</p>
                 </div>
-                <Button onClick={() => setIsModalOpen(true)}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Yeni Öğrenci
-                </Button>
+                <div className="relative w-full max-w-xs">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input
+                        type="text" placeholder="Öğrenci ara..." value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border-2 border-slate-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 font-medium text-sm"
+                    />
+                </div>
             </div>
 
-            <div className="grid gap-4">
-                {students.map((student) => (
-                    <Link href={`/coach/students/${student.id}`} key={student.id}>
-                        <Card hover className="bg-white border-slate-200 cursor-pointer transition-all hover:border-green-500/50 group">
-                            <CardContent className="flex items-center p-4">
-                                <div className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center text-white font-bold text-lg mr-4 shadow-lg shadow-green-500/20 group-hover:scale-105 transition-transform">
-                                    {getInitials(student.full_name || '')}
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="text-lg font-semibold text-slate-900 group-hover:text-green-700 transition-colors">{student.full_name}</h3>
-                                    <p className="text-sm text-slate-500 font-medium">{student.email}</p>
-                                </div>
-                                <div className="flex gap-2">
-                                    <Button variant="outline" size="sm" className="hidden sm:flex">Profili İncele</Button>
-                                    <Button variant="ghost" size="sm" className="px-2">
-                                        <MoreVertical className="w-4 h-4" />
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </Link>
-                ))}
-                {students.length === 0 && !isLoading && (
-                    <div className="text-slate-400 text-center py-16 border border-dashed border-slate-200 rounded-2xl bg-slate-50">
-                        <User className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                        <p className="font-medium">Henüz öğrenci bulunmuyor.</p>
-                        <Button variant="ghost" className="mt-2 text-green-600 font-bold" onClick={() => setIsModalOpen(true)}>İlk öğrenciyi ekle</Button>
-                    </div>
-                )}
-            </div>
+            {filteredStudents.length === 0 ? (
+                <div className="text-center py-16">
+                    <Users className="w-16 h-16 text-slate-200 mx-auto mb-4" />
+                    <h2 className="text-xl font-bold text-slate-900 mb-2">
+                        {searchQuery ? 'Öğrenci bulunamadı' : 'Henüz kayıtlı öğrencin yok'}
+                    </h2>
+                    <p className="text-slate-500">Paketlerini satışa sun, öğrenciler seni bulsun</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredStudents.map((student) => {
+                        const studentPurchases = purchases.filter(p => p.studentId === student.id);
+                        const activePurchases = studentPurchases.filter(p => p.status === 'active');
 
-            {/* Add Student Modal */}
-            <Modal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                title="Yeni Öğrenci Ekle"
-                description="Öğrencinin bilgilerini girerek sisteme kaydet."
-                size="sm"
-            >
-                <form onSubmit={handleAddStudent} className="space-y-4">
-                    <Input
-                        label="Ad Soyad"
-                        placeholder="Örn: Ahmet Yılmaz"
-                        value={newStudentName}
-                        onChange={(e) => setNewStudentName(e.target.value)}
-                        required
-                        leftIcon={<User className="w-4 h-4" />}
-                    />
-                    <Input
-                        label="E-posta"
-                        placeholder="ogrenci@mail.com"
-                        type="email"
-                        value={newStudentEmail}
-                        onChange={(e) => setNewStudentEmail(e.target.value)}
-                        required
-                        leftIcon={<Mail className="w-4 h-4" />}
-                    />
+                        return (
+                            <Card key={student.id} className="border-slate-200 hover:shadow-xl transition-all overflow-hidden group">
+                                <CardContent className="p-6">
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className="w-14 h-14 rounded-2xl bg-green-100 flex items-center justify-center text-green-700 font-black text-lg">
+                                            {student.full_name?.charAt(0)?.toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <h3 className="font-black text-slate-900 text-lg">{student.full_name}</h3>
+                                            <p className="text-sm text-slate-500 font-medium">{student.email}</p>
+                                        </div>
+                                    </div>
 
-                    <div className="flex justify-end gap-3 pt-4">
-                        <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>İptal</Button>
-                        <Button type="submit" isLoading={isSubmitting}>Kaydet</Button>
-                    </div>
-                </form>
-            </Modal>
+                                    <div className="space-y-2 mb-4">
+                                        {activePurchases.map(p => (
+                                            <div key={p.id} className="text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-lg border border-green-100">
+                                                📦 {p.packageName}
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <Link href={`/chat?partner=${student.id}`} className="flex-1">
+                                            <Button variant="outline" fullWidth className="border-slate-200 font-bold text-sm">
+                                                <MessageCircle className="w-4 h-4 mr-2" /> Mesaj
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
+                </div>
+            )}
         </div>
     );
 }
-

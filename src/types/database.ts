@@ -2,7 +2,7 @@
 // DATABASE TYPES FOR FITNESS COACHING APP
 // =============================================
 
-export type UserRole = 'coach' | 'student';
+export type UserRole = 'coach' | 'student' | 'admin';
 
 export type RelationshipStatus = 'pending' | 'active' | 'inactive';
 
@@ -23,8 +23,94 @@ export interface Profile {
   avatar_url: string | null;
   role: UserRole;
   phone: string | null;
+  bio?: string | null;
+  sports?: string | null;
+  interested_sports?: string[];
   created_at: string;
   updated_at: string;
+}
+
+export interface GymStore {
+  id: string;
+  owner_id: string;
+  name: string;
+  description: string | null;
+  slug: string | null;
+  logo_emoji: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  instagram_handle: string | null;
+  youtube_url: string | null;
+  rating: number | null;
+  review_count: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SalesPackageDB {
+  id: string;
+  shop_id: string;
+  coach_id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  image_url: string | null;
+  highlight_color: string | null;
+  package_type: 'program' | 'coaching' | 'bundle';
+  duration_weeks: number | null;
+  features: any | null; // JSONB
+  workout_plan: any | null; // JSONB
+  nutrition_plan: any | null; // JSONB
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface PurchaseDB {
+  id: string;
+  user_id: string;
+  shop_id: string;
+  package_id: string;
+  amount_paid: number;
+  status: 'active' | 'expired' | 'cancelled';
+  purchased_at: string;
+  expires_at: string | null;
+  package_snapshot: any | null;
+}
+
+export interface GroupClassDB {
+  id: string;
+  coach_id: string;
+  shop_id: string;
+  title: string;
+  description: string | null;
+  sport: string | null;
+  scheduled_at: string;
+  duration_minutes: number | null;
+  max_participants: number | null;
+  meeting_link: string | null;
+  price: number | null;
+  status: 'scheduled' | 'live' | 'completed' | 'cancelled';
+  recurrence: 'none' | 'weekly';
+  recurrence_days: number[] | null;
+  recurrence_time: string | null;
+  created_at: string;
+}
+
+export interface ClassEnrollmentDB {
+  id: string;
+  class_id: string;
+  user_id: string;
+  enrolled_at: string;
+}
+
+export interface MessageDB {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  image_url: string | null;
+  is_read: boolean;
+  created_at: string;
 }
 
 export interface CoachStudent {
@@ -167,48 +253,9 @@ export interface WeeklyPlan {
   };
 }
 
-export interface Message {
+export interface RelationshipDB {
+  // Legacy support
   id: string;
-  sender_id: string;
-  receiver_id: string;
-  content: string;
-  image_url: string | null;
-  is_read: boolean;
-  created_at: string;
-  // Mock compatibility
-  senderId?: string;
-  receiverId?: string;
-  timestamp?: string;
-  read?: boolean;
-  imageUrl?: string;
-}
-
-export interface SportCategory {
-  id: string;
-  coach_id: string | null;
-  name: string;
-  icon: string | null;
-  description: string | null;
-  color: string;
-  is_system_default: boolean;
-  created_at: string;
-}
-
-export interface SalesPackage {
-  id: string;
-  coach_id: string;
-  name: string;
-  description: string | null;
-  price: number;
-  access_duration: string;
-  package_type: 'workout' | 'nutrition' | 'bundle';
-  total_weeks: number;
-  sport_category_id: string | null;
-  features: string[] | null;
-  has_chat_support: boolean;
-  is_published: boolean;
-  created_at: string;
-  updated_at: string;
 }
 
 // =============================================
@@ -222,6 +269,36 @@ export interface Database {
         Row: Profile;
         Insert: Omit<Profile, 'created_at' | 'updated_at'>;
         Update: Partial<Omit<Profile, 'id' | 'created_at'>>;
+      };
+      gym_stores: {
+        Row: GymStore;
+        Insert: Omit<GymStore, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<GymStore, 'id' | 'created_at'>>;
+      };
+      sales_packages: {
+        Row: SalesPackageDB;
+        Insert: Omit<SalesPackageDB, 'id' | 'created_at'>;
+        Update: Partial<Omit<SalesPackageDB, 'id' | 'created_at'>>;
+      };
+      purchases: {
+        Row: PurchaseDB;
+        Insert: Omit<PurchaseDB, 'id' | 'purchased_at'>;
+        Update: Partial<Omit<PurchaseDB, 'id' | 'purchased_at'>>;
+      };
+      group_classes: {
+        Row: GroupClassDB;
+        Insert: Omit<GroupClassDB, 'id' | 'created_at'>;
+        Update: Partial<Omit<GroupClassDB, 'id' | 'created_at'>>;
+      };
+      class_enrollments: {
+        Row: ClassEnrollmentDB;
+        Insert: Omit<ClassEnrollmentDB, 'id' | 'enrolled_at'>;
+        Update: Partial<Omit<ClassEnrollmentDB, 'id' | 'enrolled_at'>>;
+      };
+      messages: {
+        Row: MessageDB;
+        Insert: Omit<MessageDB, 'id' | 'created_at' | 'is_read'>;
+        Update: Partial<Omit<MessageDB, 'id' | 'created_at'>>;
       };
       coach_students: {
         Row: CoachStudent;

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from '@/components/providers';
@@ -14,12 +14,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Alpletich - Fitness Platformu",
+  title: "Sportaly - Fitness Platformu",
   description: "Kişiselleştirilmiş antrenman programları ve profesyonel koç desteği",
+  manifest: '/manifest.json',
   icons: {
     icon: '/shark-logo.jpg',
     apple: '/shark-logo.jpg',
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#16a34a',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
