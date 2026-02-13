@@ -163,11 +163,7 @@ export interface Message {
 }
 
 export interface Conversation {
-    partnerId: string;
-    partnerName: string;
-    partnerRole: string;
-    lastMessage: string;
-    timestamp: string;
+    partner: Profile;
+    lastMessage?: Message;
     unreadCount: number;
-    partnerAvatar?: string;
 }

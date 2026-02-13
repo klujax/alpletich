@@ -269,7 +269,11 @@ export const supabaseDataService = {
             .or(`and(sender_id.eq.${userId},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${userId})`)
             .order('timestamp', { ascending: true });
 
-        return toCamels(data || []);
+        const camelData = toCamels(data || []);
+        return camelData.map((m: any) => ({
+            ...m,
+            read: m.isRead !== undefined ? m.isRead : m.read
+        }));
     },
 
     async markMessagesAsRead(userId: string, senderId: string) {
@@ -284,11 +288,60 @@ export const supabaseDataService = {
     // --- MESSAGES (Basic) ---
     async getConversations(userId: string): Promise<Conversation[]> {
         const sb = getSupabase() as any;
-        // This query works if we have a robust message history.
-        // For simplicity, we might just query profiles of known contacts.
-        // Complex to rewrite entire 'group by' logic in Supabase client without RPC.
-        // Placeholder:
-        return [];
+
+        const { data: messages, error } = await sb
+            .from('messages')
+            .select('*')
+            .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+            .order('timestamp', { ascending: false });
+
+        if (error || !messages) return [];
+
+        const camelMessagesRaw = toCamels(messages);
+        const camelMessages = (camelMessagesRaw || []).map((m: any) => ({
+            ...m,
+            read: m.isRead !== undefined ? m.isRead : m.read
+        })) as Message[];
+        const partnerIds = new Set<string>();
+        const lastMessages = new Map<string, Message>();
+        const unreadCounts = new Map<string, number>();
+
+        camelMessages.forEach((msg) => {
+            const isSender = msg.senderId === userId;
+            const partnerId = isSender ? msg.receiverId : msg.senderId;
+
+            if (!partnerIds.has(partnerId)) {
+                partnerIds.add(partnerId);
+                lastMessages.set(partnerId, msg);
+            }
+
+            if (!isSender && !msg.read) {
+                unreadCounts.set(partnerId, (unreadCounts.get(partnerId) || 0) + 1);
+            }
+        });
+
+        if (partnerIds.size === 0) return [];
+
+        const { data: profiles } = await sb
+            .from('profiles')
+            .select('*')
+            .in('id', Array.from(partnerIds));
+
+        if (!profiles) return [];
+
+        // Profiles might not have camelCase keys if coming straight from DB via select('*')? 
+        // toCamels handles it if we wrap it, but Profile interface usually expects snake_case from DB raw or we need mapping?
+        // Wait, supabaseDataService uses toCamels everywhere. Let's use it for profiles too.
+        const camelProfiles = toCamels(profiles) as Profile[];
+
+        return camelProfiles.map((partner) => {
+            const lastMsg = lastMessages.get(partner.id);
+            return {
+                partner,
+                lastMessage: lastMsg,
+                unreadCount: unreadCounts.get(partner.id) || 0
+            };
+        });
     },
 
     async sendMessage(senderId: string, receiverId: string, content: string, imageUrl?: string) {
@@ -300,7 +353,11 @@ export const supabaseDataService = {
             image_url: imageUrl
         }).select().single();
         if (error) throw error;
-        return toCamels(data);
+        const camelData = toCamels(data);
+        return {
+            ...camelData,
+            read: camelData.isRead !== undefined ? camelData.isRead : camelData.read
+        };
     },
 
     // --- ADMIN ---
