@@ -58,7 +58,7 @@ export function DashboardTopbar() {
                     <div className="text-right hidden sm:block">
                         <p className="text-sm font-black text-slate-900 leading-none mb-1">{user.full_name}</p>
                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none">
-                            {user.role === 'coach' ? 'Eğitmen' : 'Öğrenci'}
+                            {user.role === 'admin' ? 'Yönetici' : (user.role === 'coach' ? 'Eğitmen' : 'Öğrenci')}
                         </p>
                     </div>
                     <Avatar className="h-10 w-10 border border-slate-100 shadow-sm">
