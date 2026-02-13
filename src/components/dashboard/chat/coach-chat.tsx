@@ -58,7 +58,7 @@ export function CoachChat() {
     };
 
     const loadConversations = async (userId: string) => {
-        const activeConvs = await dataService.getConversations(userId);
+        const activeConvs = (await dataService.getConversations(userId)) as unknown as Conversation[];
         let allConversations: Conversation[] = [...activeConvs];
 
         if (currentUser?.role === 'coach') {
