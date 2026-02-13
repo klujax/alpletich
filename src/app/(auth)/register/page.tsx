@@ -83,7 +83,8 @@ function RegisterContent() {
                 formData.fullName,
                 formData.password,
                 formData.phone,
-                role === 'student' ? interestedSports : undefined
+                role === 'student' ? interestedSports : undefined,
+                formData.storeName
             );
 
             if (error) throw new Error(error);

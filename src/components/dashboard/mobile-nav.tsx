@@ -93,7 +93,7 @@ export function MobileBottomNav({ role }: MobileBottomNavProps) {
 
     return (
         <div className="fixed bottom-0 left-0 right-0 z-[9999] bg-white/95 backdrop-blur-lg border-t border-slate-100 lg:hidden pb-safe shadow-[0_-5px_20px_rgba(0,0,0,0.03)]">
-            <div className="flex items-center overflow-x-auto no-scrollbar h-[4.5rem] px-1">
+            <div className="flex items-center justify-evenly w-full overflow-x-auto no-scrollbar h-[4.5rem] px-1">
                 {links.map((link) => {
                     const isDashboardRoot = link.href === '/student' || link.href === '/coach' || link.href === '/admin';
                     const isActive = link.href === pathname || (!isDashboardRoot && pathname.startsWith(link.href));

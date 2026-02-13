@@ -113,6 +113,18 @@ export interface MessageDB {
   created_at: string;
 }
 
+export interface ReviewDB {
+  id: string;
+  student_id: string;
+  student_name: string;
+  coach_id: string;
+  shop_id: string;
+  package_id: string | null;
+  rating: number;
+  comment: string;
+  created_at: string;
+}
+
 export interface CoachStudent {
   id: string;
   coach_id: string;
@@ -299,6 +311,11 @@ export interface Database {
         Row: MessageDB;
         Insert: Omit<MessageDB, 'id' | 'created_at' | 'is_read'>;
         Update: Partial<Omit<MessageDB, 'id' | 'created_at'>>;
+      };
+      reviews: {
+        Row: ReviewDB;
+        Insert: Omit<ReviewDB, 'id' | 'created_at'>;
+        Update: Partial<Omit<ReviewDB, 'id' | 'created_at'>>;
       };
       coach_students: {
         Row: CoachStudent;

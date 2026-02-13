@@ -315,7 +315,7 @@ export const authService = {
         return { user: null, error: 'Kullanıcı bulunamadı (Mock: koc@test.com, ogrenci@test.com veya superadmin@sportaly.com deneyin)' };
     },
 
-    signUp: async (email: string, role: UserRole, fullName: string, password?: string, phone?: string, interestedSports?: string[]) => {
+    signUp: async (email: string, role: UserRole, fullName: string, password?: string, phone?: string, interestedSports?: string[], storeName?: string) => {
         if (isSupabaseConfigured && supabase) {
             try {
                 const { data, error } = await supabase.auth.signUp({
@@ -330,6 +330,25 @@ export const authService = {
                         interested_sports: interestedSports,
                         created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
                     };
+
+                    // If coach, create store
+                    if (role === 'coach' && storeName) {
+                        try {
+                            await supabaseDataService.createStore({
+                                coachId: newUser.id,
+                                name: storeName,
+                                category: 'Genel',
+                                slug: storeName.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
+                                isActive: true,
+                                isBanned: false
+                            });
+                        } catch (storeErr) {
+                            console.error("Store creation failed:", storeErr);
+                            // Should we fail the signup? Or just log? 
+                            // For now, allow signup but log error.
+                        }
+                    }
+
                     if (typeof window !== 'undefined') {
                         localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(newUser));
                         document.cookie = `mock_role=${role}; path=/`;
@@ -347,6 +366,27 @@ export const authService = {
             created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
         };
         MOCK_USERS.push(newUser);
+
+        // Mock Store Creation
+        if (role === 'coach' && storeName) {
+            const newStore: GymStore = {
+                id: 'shop_' + Math.random().toString(36).substr(2, 6),
+                coachId: newUser.id,
+                name: storeName,
+                slug: storeName.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
+                description: 'Yeni açılan dükkan.',
+                logoEmoji: '🏋️', themeColor: 'green', category: 'Genel',
+                isActive: true, isBanned: false, totalRevenue: 0, totalStudents: 0,
+                rating: 0, reviewCount: 0, createdAt: new Date().toISOString(),
+            };
+            MOCK_STORES.push(newStore);
+            if (typeof window !== 'undefined') {
+                const storedStores = JSON.parse(localStorage.getItem('mock_stores') || '[]');
+                storedStores.push(newStore);
+                localStorage.setItem('mock_stores', JSON.stringify(storedStores));
+            }
+        }
+
         if (typeof window !== 'undefined') {
             localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(newUser));
             document.cookie = `mock_role=${newUser.role}; path=/`;
@@ -360,6 +400,26 @@ export const authService = {
     },
 
     updateProfile: async (userId: string, updates: Partial<Profile>) => {
+        if (isSupabaseConfigured) {
+            try {
+                // Call Supabase service
+                await supabaseDataService.updateProfile(userId, updates);
+                // Also update local storage so getUser() returns fresh data
+                if (typeof window !== 'undefined') {
+                    const userStr = localStorage.getItem(STORAGE_KEY_USER);
+                    if (userStr) {
+                        const user = JSON.parse(userStr);
+                        const updatedUser = { ...user, ...updates };
+                        localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updatedUser));
+                        return { user: updatedUser, error: null };
+                    }
+                }
+                return { user: null, error: null }; // Should fetch fresh?
+            } catch (err: any) {
+                return { user: null, error: err.message };
+            }
+        }
+
         await new Promise(resolve => setTimeout(resolve, 800));
         if (typeof window !== 'undefined') {
             const userStr = localStorage.getItem(STORAGE_KEY_USER);
@@ -471,6 +531,7 @@ export const dataService = {
     },
 
     createStore: async (coachId: string, name: string, category: string) => {
+        if (isSupabaseConfigured) return supabaseDataService.createStore({ coachId, name, category, isActive: true, isBanned: false, totalRevenue: 0, totalStudents: 0, rating: 0, reviewCount: 0 });
         await new Promise(resolve => setTimeout(resolve, 500));
         const newStore: GymStore = {
             id: 'shop_' + Math.random().toString(36).substr(2, 6),
@@ -491,6 +552,7 @@ export const dataService = {
     },
 
     updateStore: async (storeData: GymStore) => {
+        if (isSupabaseConfigured) return supabaseDataService.updateStore(storeData);
         await new Promise(resolve => setTimeout(resolve, 400));
         if (typeof window !== 'undefined') {
             const stored = localStorage.getItem('mock_stores');
@@ -527,6 +589,7 @@ export const dataService = {
     },
 
     createPackage: async (pkg: any) => {
+        if (isSupabaseConfigured) return supabaseDataService.createPackage(pkg);
         await new Promise(resolve => setTimeout(resolve, 500));
         const newPackage: SalesPackage = {
             ...pkg,
@@ -544,6 +607,7 @@ export const dataService = {
     },
 
     updatePackage: async (pkg: SalesPackage) => {
+        if (isSupabaseConfigured) return supabaseDataService.updatePackage(pkg);
         await new Promise(resolve => setTimeout(resolve, 400));
         if (typeof window !== 'undefined') {
             const stored = localStorage.getItem('mock_packages');
@@ -555,6 +619,7 @@ export const dataService = {
     },
 
     deletePackage: async (packageId: string) => {
+        if (isSupabaseConfigured) return supabaseDataService.deletePackage(packageId);
         await new Promise(resolve => setTimeout(resolve, 300));
         if (typeof window !== 'undefined') {
             const stored = localStorage.getItem('mock_packages');
@@ -638,6 +703,7 @@ export const dataService = {
     },
 
     createGroupClass: async (gc: any) => {
+        if (isSupabaseConfigured) return supabaseDataService.createGroupClass(gc);
         await new Promise(resolve => setTimeout(resolve, 500));
         const newClass: GroupClass = {
             ...gc,
@@ -656,6 +722,7 @@ export const dataService = {
     },
 
     joinGroupClass: async (classId: string, studentId: string) => {
+        if (isSupabaseConfigured) return supabaseDataService.enrollClass(classId, studentId);
         await new Promise(resolve => setTimeout(resolve, 300));
         if (typeof window !== 'undefined') {
             const stored = localStorage.getItem('mock_group_classes');
@@ -672,7 +739,7 @@ export const dataService = {
 
     // -- PURCHASES / SATIN ALMALAR --
     getPurchases: async (studentId?: string) => {
-        if (isSupabaseConfigured && studentId) return supabaseDataService.getPurchases(studentId);
+        if (isSupabaseConfigured) return supabaseDataService.getPurchases(studentId);
         await new Promise(resolve => setTimeout(resolve, 300));
         let purchases = MOCK_PURCHASES;
         if (typeof window !== 'undefined') {
@@ -685,6 +752,7 @@ export const dataService = {
     },
 
     createPurchase: async (purchase: any) => {
+        if (isSupabaseConfigured) return supabaseDataService.purchasePackage(purchase.studentId, purchase.packageId);
         await new Promise(resolve => setTimeout(resolve, 500));
         const newPurchase: Purchase = {
             ...purchase,
@@ -703,6 +771,7 @@ export const dataService = {
 
     // -- REVIEWS / DEĞERLENDİRMELER --
     getReviews: async (shopId?: string, coachId?: string) => {
+        if (isSupabaseConfigured) return supabaseDataService.getReviews(shopId, coachId);
         await new Promise(resolve => setTimeout(resolve, 300));
         let reviews = MOCK_REVIEWS;
         if (typeof window !== 'undefined') {
@@ -716,6 +785,7 @@ export const dataService = {
     },
 
     createReview: async (review: any) => {
+        if (isSupabaseConfigured) return supabaseDataService.createReview(review);
         await new Promise(resolve => setTimeout(resolve, 500));
         const newReview: Review = {
             ...review,
@@ -733,6 +803,7 @@ export const dataService = {
 
     // -- MESSAGES / MESAJLAR --
     getMessages: async (userId: string, partnerId: string) => {
+        if (isSupabaseConfigured) return supabaseDataService.getMessages(userId, partnerId);
         await new Promise(resolve => setTimeout(resolve, 200));
         let messages = MOCK_MESSAGES;
         if (typeof window !== 'undefined') {
@@ -747,6 +818,7 @@ export const dataService = {
     },
 
     sendMessage: async (senderId: string, receiverId: string, content: string, imageUrl?: string) => {
+        if (isSupabaseConfigured) return supabaseDataService.sendMessage(senderId, receiverId, content, imageUrl);
         await new Promise(resolve => setTimeout(resolve, 200));
         const newMessage: Message = {
             id: Math.random().toString(36).substr(2, 9),
@@ -766,6 +838,7 @@ export const dataService = {
     },
 
     getConversations: async (userId: string) => {
+        if (isSupabaseConfigured) return supabaseDataService.getConversations(userId);
         await new Promise(resolve => setTimeout(resolve, 200));
         let messages = MOCK_MESSAGES;
         if (typeof window !== 'undefined') {
@@ -792,6 +865,7 @@ export const dataService = {
     },
 
     markMessagesAsRead: async (userId: string, senderId: string) => {
+        if (isSupabaseConfigured) return supabaseDataService.markMessagesAsRead(userId, senderId);
         if (typeof window !== 'undefined') {
             const stored = localStorage.getItem(STORAGE_KEY_MESSAGES);
             if (stored) {
@@ -804,6 +878,10 @@ export const dataService = {
 
     // -- STUDENTS --
     getStudents: async () => {
+        if (isSupabaseConfigured) {
+            const users = await supabaseDataService.getAllUsers();
+            return users.filter((u: any) => u.role === 'student');
+        }
         await new Promise(resolve => setTimeout(resolve, 300));
         if (typeof window !== 'undefined') {
             const stored = localStorage.getItem('mock_students');
@@ -843,6 +921,7 @@ export const dataService = {
 
     // -- ADMIN METHODS --
     getAllUsers: async () => {
+        if (isSupabaseConfigured) return supabaseDataService.getAllUsers();
         await new Promise(resolve => setTimeout(resolve, 400));
         if (typeof window !== 'undefined') {
             const stored = localStorage.getItem('mock_users_admin');
@@ -853,6 +932,7 @@ export const dataService = {
     },
 
     banUser: async (userId: string, reason?: string) => {
+        if (isSupabaseConfigured) return supabaseDataService.banUser(userId, reason);
         await new Promise(resolve => setTimeout(resolve, 400));
         if (typeof window !== 'undefined') {
             const stored = localStorage.getItem('mock_users_admin');
@@ -867,6 +947,7 @@ export const dataService = {
     },
 
     unbanUser: async (userId: string) => {
+        if (isSupabaseConfigured) return supabaseDataService.unbanUser(userId);
         await new Promise(resolve => setTimeout(resolve, 400));
         if (typeof window !== 'undefined') {
             const stored = localStorage.getItem('mock_users_admin');
@@ -881,6 +962,7 @@ export const dataService = {
     },
 
     deleteUser: async (userId: string) => {
+        if (isSupabaseConfigured) return supabaseDataService.deleteUser(userId);
         await new Promise(resolve => setTimeout(resolve, 400));
         if (typeof window !== 'undefined') {
             const stored = localStorage.getItem('mock_users_admin');
@@ -894,6 +976,7 @@ export const dataService = {
     },
 
     banStore: async (storeId: string, reason?: string) => {
+        if (isSupabaseConfigured) return supabaseDataService.updateStore({ id: storeId, isBanned: true, isActive: false, banReason: reason });
         await new Promise(resolve => setTimeout(resolve, 400));
         if (typeof window !== 'undefined') {
             const stored = localStorage.getItem('mock_stores');
@@ -908,6 +991,7 @@ export const dataService = {
     },
 
     unbanStore: async (storeId: string) => {
+        if (isSupabaseConfigured) return supabaseDataService.updateStore({ id: storeId, isBanned: false, isActive: true, banReason: undefined });
         await new Promise(resolve => setTimeout(resolve, 400));
         if (typeof window !== 'undefined') {
             const stored = localStorage.getItem('mock_stores');
@@ -980,6 +1064,17 @@ export const dataService = {
         const storePurchases = purchases.filter((p: Purchase) => p.shopId === storeId);
         const totalRevenue = storePurchases.reduce((sum: number, p: Purchase) => sum + p.price, 0);
 
+        const recentTransactions = storePurchases
+            .sort((a: Purchase, b: Purchase) => new Date(b.purchasedAt).getTime() - new Date(a.purchasedAt).getTime())
+            .slice(0, 5)
+            .map((p: Purchase) => ({
+                id: p.id,
+                type: 'income',
+                amount: p.price,
+                description: `Satış: ${p.packageName}`,
+                date: p.purchasedAt
+            }));
+
         return {
             storeId, totalRevenue,
             totalExpenses: Math.floor(totalRevenue * 0.1),
@@ -990,6 +1085,7 @@ export const dataService = {
                 { month: 'Şubat', revenue: 12200, expenses: 1220 },
                 { month: 'Mart', revenue: 15000, expenses: 1500 },
             ],
+            recentTransactions
         };
     },
 
