@@ -82,8 +82,11 @@ export default function SettingsPage() {
     const handleMetadataUpdate = async (key: string, value: boolean) => {
         if (!user) return;
 
-        const newSettings = { ...notifications, [key]: value };
-        setNotifications(newSettings);
+        // Store previous state for rollback
+        const previousSettings = { ...notifications };
+
+        // Optimistic update
+        setNotifications(prev => ({ ...prev, [key]: value }));
 
         try {
             const { error } = await authService.updateUserMetadata(user.id, {
@@ -91,15 +94,18 @@ export default function SettingsPage() {
             });
 
             if (error) {
-                toast.error('Ayarlar kaydedilemedi.');
-                // Revert on error
-                setNotifications({ ...notifications });
+                console.error('Metadata update error:', error);
+                toast.error('Ayarlar kaydedilemedi: ' + error.message);
+                // Revert to previous state
+                setNotifications(previousSettings);
             } else {
                 toast.success('Ayarlar güncellendi.');
             }
-        } catch (e) {
-            console.error(e);
+        } catch (e: any) {
+            console.error('Metadata update exception:', e);
             toast.error('Bağlantı hatası.');
+            // Revert to previous state
+            setNotifications(previousSettings);
         }
     };
 
