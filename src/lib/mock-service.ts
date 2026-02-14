@@ -15,43 +15,43 @@ export * from './types';
 
 export const DEFAULT_SPORTS: SportCategory[] = [
     // Takım Sporları
-    { id: 'football', coachId: 'system', name: 'Futbol', icon: '⚽', description: 'Taktik, kondisyon, top kontrolü', color: 'green', isSystemDefault: true },
-    { id: 'basketball', coachId: 'system', name: 'Basketbol', icon: '🏀', description: 'Şut, dribling, kondisyon', color: 'orange', isSystemDefault: true },
-    { id: 'volleyball', coachId: 'system', name: 'Voleybol', icon: '🏐', description: 'Smaç, manşet, takım oyunu', color: 'pink', isSystemDefault: true },
-    { id: 'handball', coachId: 'system', name: 'Hentbol', icon: '🤾', description: 'Hız, güç, koordinasyon', color: 'red', isSystemDefault: true },
+    { id: 'football', coachId: 'system', name: 'Futbol', icon: '⚽', description: 'Taktik, kondisyon, top kontrolü', color: 'green', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+    { id: 'basketball', coachId: 'system', name: 'Basketbol', icon: '🏀', description: 'Şut, dribling, kondisyon', color: 'orange', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+    { id: 'volleyball', coachId: 'system', name: 'Voleybol', icon: '🏐', description: 'Smaç, manşet, takım oyunu', color: 'pink', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+    { id: 'handball', coachId: 'system', name: 'Hentbol', icon: '🤾', description: 'Hız, güç, koordinasyon', color: 'red', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
 
     // Dövüş Sporları
-    { id: 'boxing', coachId: 'system', name: 'Boks', icon: '🥊', description: 'Yumruk teknikleri, savunma, kondisyon', color: 'red', isSystemDefault: true },
-    { id: 'kickboxing', coachId: 'system', name: 'Kick Boks', icon: '🦵', description: 'Tekme, yumruk kombinasyonları', color: 'orange', isSystemDefault: true },
-    { id: 'taekwondo', coachId: 'system', name: 'Tekvando', icon: '🥋', description: 'Yüksek tekme teknikleri, disiplin', color: 'blue', isSystemDefault: true },
-    { id: 'muaythai', coachId: 'system', name: 'Muay Thai', icon: '👊', description: 'Diz, dirsek, sert vuruşlar', color: 'red', isSystemDefault: true },
-    { id: 'mma', coachId: 'system', name: 'MMA', icon: '🤼', description: 'Karma dövüş sanatları', color: 'slate', isSystemDefault: true },
-    { id: 'wrestling', coachId: 'system', name: 'Güreş', icon: '🤼‍♂️', description: 'Grekoromen ve serbest stil teknikleri', color: 'yellow', isSystemDefault: true },
-    { id: 'judo', coachId: 'system', name: 'Judo', icon: '🥋', description: 'Fırlatma, tutuş teknikleri', color: 'blue', isSystemDefault: true },
-    { id: 'karate', coachId: 'system', name: 'Karate', icon: '🥋', description: 'Kata, kumite, disiplin', color: 'red', isSystemDefault: true },
+    { id: 'boxing', coachId: 'system', name: 'Boks', icon: '🥊', description: 'Yumruk teknikleri, savunma, kondisyon', color: 'red', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+    { id: 'kickboxing', coachId: 'system', name: 'Kick Boks', icon: '🦵', description: 'Tekme, yumruk kombinasyonları', color: 'orange', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+    { id: 'taekwondo', coachId: 'system', name: 'Tekvando', icon: '🥋', description: 'Yüksek tekme teknikleri, disiplin', color: 'blue', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+    { id: 'muaythai', coachId: 'system', name: 'Muay Thai', icon: '👊', description: 'Diz, dirsek, sert vuruşlar', color: 'red', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+    { id: 'mma', coachId: 'system', name: 'MMA', icon: '🤼', description: 'Karma dövüş sanatları', color: 'slate', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+    { id: 'wrestling', coachId: 'system', name: 'Güreş', icon: '🤼‍♂️', description: 'Grekoromen ve serbest stil teknikleri', color: 'yellow', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+    { id: 'judo', coachId: 'system', name: 'Judo', icon: '🥋', description: 'Fırlatma, tutuş teknikleri', color: 'blue', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+    { id: 'karate', coachId: 'system', name: 'Karate', icon: '🥋', description: 'Kata, kumite, disiplin', color: 'red', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
 
     // Raket Sporları
-    { id: 'tennis', coachId: 'system', name: 'Tenis', icon: '🎾', description: 'Servis, forehand, backhand', color: 'green', isSystemDefault: true },
-    { id: 'table_tennis', coachId: 'system', name: 'Masa Tenisi', icon: '🏓', description: 'Hız, refleks, spin', color: 'blue', isSystemDefault: true },
-    { id: 'badminton', coachId: 'system', name: 'Badminton', icon: '🏸', description: 'Çeviklik, hız, teknik', color: 'teal', isSystemDefault: true },
+    { id: 'tennis', coachId: 'system', name: 'Tenis', icon: '🎾', description: 'Servis, forehand, backhand', color: 'green', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+    { id: 'table_tennis', coachId: 'system', name: 'Masa Tenisi', icon: '🏓', description: 'Hız, refleks, spin', color: 'blue', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+    { id: 'badminton', coachId: 'system', name: 'Badminton', icon: '🏸', description: 'Çeviklik, hız, teknik', color: 'teal', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
 
     // Su Sporları
-    { id: 'swimming', coachId: 'system', name: 'Yüzme', icon: '🏊', description: 'Serbest, sırtüstü, kelebek', color: 'blue', isSystemDefault: true },
-    { id: 'water_polo', coachId: 'system', name: 'Sutopu', icon: '🤽', description: 'Su içi kondisyon ve takım oyunu', color: 'cyan', isSystemDefault: true },
+    { id: 'swimming', coachId: 'system', name: 'Yüzme', icon: '🏊', description: 'Serbest, sırtüstü, kelebek', color: 'blue', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+    { id: 'water_polo', coachId: 'system', name: 'Sutopu', icon: '🤽', description: 'Su içi kondisyon ve takım oyunu', color: 'cyan', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
 
     // Fitness & Wellness
-    { id: 'fitness', coachId: 'system', name: 'Fitness', icon: '🏋️', description: 'Vücut geliştirme, güç, hipertrofi', color: 'slate', isSystemDefault: true },
-    { id: 'pilates', coachId: 'system', name: 'Pilates', icon: '🧘‍♀️', description: 'Core gücü, esneklik, duruş', color: 'pink', isSystemDefault: true },
-    { id: 'yoga', coachId: 'system', name: 'Yoga', icon: '🧘', description: 'Zihin-beden dengesi, esneklik', color: 'purple', isSystemDefault: true },
-    { id: 'crossfit', coachId: 'system', name: 'CrossFit', icon: '⛓️', description: 'Yüksek yoğunluklu fonksiyonel antrenman', color: 'slate', isSystemDefault: true },
-    { id: 'calisthenics', coachId: 'system', name: 'Kalistenik', icon: '🤸‍♂️', description: 'Vücut ağırlığı ile antrenman', color: 'orange', isSystemDefault: true },
+    { id: 'fitness', coachId: 'system', name: 'Fitness', icon: '🏋️', description: 'Vücut geliştirme, güç, hipertrofi', color: 'slate', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+    { id: 'pilates', coachId: 'system', name: 'Pilates', icon: '🧘‍♀️', description: 'Core gücü, esneklik, duruş', color: 'pink', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+    { id: 'yoga', coachId: 'system', name: 'Yoga', icon: '🧘', description: 'Zihin-beden dengesi, esneklik', color: 'purple', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+    { id: 'crossfit', coachId: 'system', name: 'CrossFit', icon: '⛓️', description: 'Yüksek yoğunluklu fonksiyonel antrenman', color: 'slate', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+    { id: 'calisthenics', coachId: 'system', name: 'Kalistenik', icon: '🤸‍♂️', description: 'Vücut ağırlığı ile antrenman', color: 'orange', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
 
     // Atletizm & Doğa
-    { id: 'athletics', coachId: 'system', name: 'Atletizm', icon: '🏃', description: 'Koşu, atlama, atma branşları', color: 'yellow', isSystemDefault: true },
-    { id: 'running', coachId: 'system', name: 'Koşu', icon: '🏃‍♂️', description: 'Maraton, sprint, jogging', color: 'green', isSystemDefault: true },
-    { id: 'cycling', coachId: 'system', name: 'Bisiklet', icon: '🚴', description: 'Yol, dağ bisikleti kondisyonu', color: 'sky', isSystemDefault: true },
-    { id: 'archery', coachId: 'system', name: 'Okçuluk', icon: '🏹', description: 'Odaklanma, isabet, teknik', color: 'amber', isSystemDefault: true },
-    { id: 'gymnastics', coachId: 'system', name: 'Cimnastik', icon: '🤸‍♀️', description: 'Esneklik, denge, güç', color: 'purple', isSystemDefault: true },
+    { id: 'athletics', coachId: 'system', name: 'Atletizm', icon: '🏃', description: 'Koşu, atlama, atma branşları', color: 'yellow', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+    { id: 'running', coachId: 'system', name: 'Koşu', icon: '🏃‍♂️', description: 'Maraton, sprint, jogging', color: 'green', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+    { id: 'cycling', coachId: 'system', name: 'Bisiklet', icon: '🚴', description: 'Yol, dağ bisikleti kondisyonu', color: 'sky', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+    { id: 'archery', coachId: 'system', name: 'Okçuluk', icon: '🏹', description: 'Odaklanma, isabet, teknik', color: 'amber', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+    { id: 'gymnastics', coachId: 'system', name: 'Cimnastik', icon: '🤸‍♀️', description: 'Esneklik, denge, güç', color: 'purple', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
 ];
 
 export const MOCK_USERS: Profile[] = [
@@ -219,23 +219,23 @@ export const MOCK_GROUP_CLASSES: GroupClass[] = [
 
 export const MOCK_PURCHASES: Purchase[] = [
     {
-        id: 'pur_1', studentId: '2', coachId: '1', shopId: 'shop_1', packageId: 'pkg_1',
-        type: 'package', packageName: 'Elit Basketbol Programı', price: 999,
+        id: 'pur_1', studentId: '2', userId: '2', coachId: '1', shopId: 'shop_1', packageId: 'pkg_1',
+        type: 'package', packageName: 'Elit Basketbol Programı', price: 999, amountPaid: 999,
         status: 'active', purchasedAt: '2026-01-15T10:00:00Z', expiresAt: '2026-02-15T10:00:00Z'
     },
     {
-        id: 'pur_2', studentId: '2', coachId: '1', shopId: 'shop_1', packageId: 'pkg_4',
-        type: 'package', packageName: 'Grup Basketbol Antrenmanı', price: 450,
+        id: 'pur_2', studentId: '2', userId: '2', coachId: '1', shopId: 'shop_1', packageId: 'pkg_4',
+        type: 'package', packageName: 'Grup Basketbol Antrenmanı', price: 450, amountPaid: 450,
         status: 'active', purchasedAt: '2026-01-20T14:00:00Z', expiresAt: '2026-02-20T14:00:00Z'
     },
     {
-        id: 'pur_3', studentId: '3', coachId: '4', shopId: 'shop_2', packageId: 'pkg_3',
-        type: 'package', packageName: 'Yüzme Kondisyon Paketi', price: 1200,
+        id: 'pur_3', studentId: '3', userId: '3', coachId: '4', shopId: 'shop_2', packageId: 'pkg_3',
+        type: 'package', packageName: 'Yüzme Kondisyon Paketi', price: 1200, amountPaid: 1200,
         status: 'active', purchasedAt: '2026-01-10T09:00:00Z', expiresAt: '2026-04-10T09:00:00Z'
     },
     {
-        id: 'pur_4', studentId: '5', coachId: '1', shopId: 'shop_1', packageId: 'pkg_2',
-        type: 'package', packageName: 'Fitness Başlangıç Programı', price: 750,
+        id: 'pur_4', studentId: '5', userId: '5', coachId: '1', shopId: 'shop_1', packageId: 'pkg_2',
+        type: 'package', packageName: 'Fitness Başlangıç Programı', price: 750, amountPaid: 750,
         status: 'active', purchasedAt: '2026-02-01T11:00:00Z', expiresAt: '2026-04-01T11:00:00Z'
     },
 ];
@@ -484,9 +484,13 @@ export const dataService = {
         return DEFAULT_SPORTS;
     },
 
-    createSport: async (sport: Omit<SportCategory, 'id'>) => {
+    createSport: async (sport: Omit<SportCategory, 'id' | 'createdAt'> & { createdAt?: string }) => {
         await new Promise(resolve => setTimeout(resolve, 300));
-        const newSport: SportCategory = { ...sport, id: sport.name.toLowerCase().replace(/ /g, '-') + '-' + Math.random().toString(36).substr(2, 5) };
+        const newSport: SportCategory = {
+            createdAt: new Date().toISOString(),
+            ...sport,
+            id: sport.name.toLowerCase().replace(/ /g, '-') + '-' + Math.random().toString(36).substr(2, 5)
+        };
         if (typeof window !== 'undefined') {
             const stored = localStorage.getItem('mock_sports');
             const sports = stored ? JSON.parse(stored) : DEFAULT_SPORTS;
@@ -755,6 +759,8 @@ export const dataService = {
         if (isSupabaseConfigured) return supabaseDataService.purchasePackage(purchase.studentId, purchase.packageId);
         await new Promise(resolve => setTimeout(resolve, 500));
         const newPurchase: Purchase = {
+            userId: purchase.userId || purchase.studentId,
+            amountPaid: purchase.amountPaid || purchase.price,
             ...purchase,
             id: 'pur_' + Math.random().toString(36).substr(2, 6),
             status: 'active',
