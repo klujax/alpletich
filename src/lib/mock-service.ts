@@ -506,12 +506,32 @@ export const authService = {
         return { user: null, error: 'Kullanıcı bulunamadı.' };
     },
 
+    resetPassword: async (email: string) => {
+        if (isSupabaseConfigured) return supabaseDataService.resetPassword(email);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return { data: {}, error: null };
+    },
+
+    updateUserMetadata: async (userId: string, metadata: any) => {
+        if (isSupabaseConfigured) return supabaseDataService.updateUserMetadata(userId, metadata);
+        // Mock implementation could save to local storage if user object structure supported it
+        return { data: { user: { user_metadata: metadata } }, error: null };
+    },
+
     signOut: async () => {
         if (isSupabaseConfigured && supabase) await supabase.auth.signOut();
         if (typeof window !== 'undefined') {
             localStorage.removeItem(STORAGE_KEY_USER);
             document.cookie = "mock_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
         }
+    },
+
+    getSessionUser: async () => {
+        if (isSupabaseConfigured && supabase) {
+            const { data: { user }, error } = await supabase.auth.getUser();
+            return { user, error };
+        }
+        return { user: null, error: null };
     },
 
     getUser: () => {
@@ -628,6 +648,67 @@ export const dataService = {
             localStorage.setItem('mock_stores', JSON.stringify(stores));
         }
         return newStore;
+    },
+
+    purchasePackage: async (studentId: string, packageId: string) => {
+        if (isSupabaseConfigured) return supabaseDataService.purchasePackage(studentId, packageId);
+
+        await new Promise(resolve => setTimeout(resolve, 800));
+        // Mock purchase
+        const pkg = (await dataService.getPackages()).find(p => p.id === packageId);
+        if (!pkg) throw new Error("Paket bulunamadı");
+
+        const newPurchase: Purchase = {
+            id: 'pur_' + Math.random().toString(36).substr(2, 9),
+            studentId,
+            shopId: pkg.shopId,
+            packageId: pkg.id,
+            packageName: pkg.name,
+            packageSnapshot: pkg,
+            amountPaid: pkg.price,
+            status: 'active',
+            purchasedAt: new Date().toISOString(),
+            expiresAt: pkg.accessDuration !== 'lifetime' && pkg.totalWeeks ?
+                new Date(Date.now() + pkg.totalWeeks * 7 * 24 * 60 * 60 * 1000).toISOString() : undefined,
+            coachId: pkg.coachId
+        } as any;
+
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('mock_purchases');
+            const purchases = stored ? JSON.parse(stored) : MOCK_PURCHASES;
+            purchases.push(newPurchase);
+            localStorage.setItem('mock_purchases', JSON.stringify(purchases));
+        }
+        return newPurchase;
+    },
+
+    enrollClass: async (classId: string, studentId: string) => {
+        if (isSupabaseConfigured) return supabaseDataService.enrollClass(classId, studentId);
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Update mock class participants
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('mock_classes');
+            const classes = stored ? JSON.parse(stored) : MOCK_GROUP_CLASSES;
+            const clsIndex = classes.findIndex((c: GroupClass) => c.id === classId);
+
+            if (clsIndex >= 0) {
+                if (!classes[clsIndex].enrolledParticipants.includes(studentId)) {
+                    classes[clsIndex].enrolledParticipants.push(studentId);
+                    localStorage.setItem('mock_classes', JSON.stringify(classes));
+                }
+            } else {
+                // Clone MOCK_GROUP_CLASSES if not in local storage yet (edge case)
+                const defaultClsIndex = MOCK_GROUP_CLASSES.findIndex(c => c.id === classId);
+                if (defaultClsIndex >= 0) {
+                    const updatedClasses = JSON.parse(JSON.stringify(MOCK_GROUP_CLASSES));
+                    updatedClasses[defaultClsIndex].enrolledParticipants.push(studentId);
+                    localStorage.setItem('mock_classes', JSON.stringify(updatedClasses));
+                }
+            }
+        }
+        return true;
     },
 
     // -- REALTIME --

@@ -62,6 +62,22 @@ export const supabaseDataService = {
         return await sb.from('profiles').update(dbUpdates).eq('id', userId);
     },
 
+    async resetPassword(email: string) {
+        const sb = getSupabase() as any;
+        return await sb.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.origin + '/settings',
+        });
+    },
+
+    async updateUserMetadata(userId: string, metadata: any) {
+        const sb = getSupabase() as any;
+        // Supabase Auth stores metadata in raw_user_meta_data column on auth.users table
+        // We can update it via updateUser method
+        return await sb.auth.updateUser({
+            data: metadata
+        });
+    },
+
     // --- SPORTS ---
     async getSports(): Promise<any[]> {
         // Return static list for now as per mock-service

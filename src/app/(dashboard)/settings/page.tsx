@@ -23,14 +23,31 @@ export default function SettingsPage() {
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
 
+    const [notifications, setNotifications] = useState({
+        workout_reminders: true,
+        message_alerts: true,
+        two_factor: false
+    });
+
     useEffect(() => {
         const loadUser = async () => {
+            setIsLoading(true);
             const userData = await authService.getUser();
             if (userData) {
                 setUser(userData);
                 setFullName(userData.full_name || '');
                 setEmail(userData.email || '');
                 setPhone(userData.phone || '');
+            }
+
+            // Load metadata for settings
+            const { user: sessionUser } = await authService.getSessionUser();
+            if (sessionUser && sessionUser.user_metadata) {
+                setNotifications({
+                    workout_reminders: sessionUser.user_metadata.workout_reminders ?? true,
+                    message_alerts: sessionUser.user_metadata.message_alerts ?? true,
+                    two_factor: sessionUser.user_metadata.two_factor ?? false
+                });
             }
             setIsLoading(false);
         };
@@ -41,23 +58,59 @@ export default function SettingsPage() {
         if (!user) return;
         setIsSaving(true);
         try {
-            // supabase-service updateProfile might return slightly different structure, check it
-            const { user: updatedUser, error } = await authService.updateProfile(user.id, {
+            const { error } = await authService.updateProfile(user.id, {
                 full_name: fullName,
                 phone: phone,
                 email: email
             });
 
             if (error) {
-                toast.error(error.message || 'Güncelleme hatası');
-            } else if (updatedUser) {
-                setUser(updatedUser);
+                toast.error('Güncelleme hatası: ' + error.message);
+            } else {
                 toast.success('Profil bilgileriniz güncellendi.');
+                // Refresh user data
+                const updated = await authService.getUser();
+                if (updated) setUser(updated);
             }
         } catch (error) {
             toast.error('Bir hata oluştu.');
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleMetadataUpdate = async (key: string, value: boolean) => {
+        if (!user) return;
+
+        const newSettings = { ...notifications, [key]: value };
+        setNotifications(newSettings);
+
+        try {
+            const { error } = await authService.updateUserMetadata(user.id, {
+                [key]: value
+            });
+
+            if (error) {
+                toast.error('Ayarlar kaydedilemedi.');
+                // Revert on error
+                setNotifications({ ...notifications });
+            } else {
+                toast.success('Ayarlar güncellendi.');
+            }
+        } catch (e) {
+            console.error(e);
+            toast.error('Bağlantı hatası.');
+        }
+    };
+
+    const handlePasswordReset = async () => {
+        if (!email) return;
+        try {
+            const { error } = await authService.resetPassword(email);
+            if (error) throw error;
+            toast.success('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.');
+        } catch (error: any) {
+            toast.error(error.message || 'Şifre sıfırlama başarısız.');
         }
     };
 
@@ -144,10 +197,17 @@ export default function SettingsPage() {
                             <Label className="text-base font-bold text-slate-700">İki Aşamalı Doğrulama</Label>
                             <p className="text-sm text-slate-400">Giriş yaparken ekstra güvenlik katmanı.</p>
                         </div>
-                        <Switch />
+                        <Switch
+                            checked={notifications.two_factor}
+                            onCheckedChange={(checked) => handleMetadataUpdate('two_factor', checked)}
+                        />
                     </div>
                     <div className="pt-2 border-t border-slate-50">
-                        <Button variant="outline" className="w-full justify-start text-slate-600 font-bold hover:text-slate-900">
+                        <Button
+                            variant="outline"
+                            className="w-full justify-start text-slate-600 font-bold hover:text-slate-900"
+                            onClick={handlePasswordReset}
+                        >
                             <Lock className="w-4 h-4 mr-2" /> Şifre Değiştir
                         </Button>
                     </div>
@@ -168,14 +228,20 @@ export default function SettingsPage() {
                             <Label className="text-base font-bold text-slate-700">Ders Hatırlatmaları</Label>
                             <p className="text-sm text-slate-400">Antrenman ve derslerden önce bildirim al.</p>
                         </div>
-                        <Switch defaultChecked />
+                        <Switch
+                            checked={notifications.workout_reminders}
+                            onCheckedChange={(checked) => handleMetadataUpdate('workout_reminders', checked)}
+                        />
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
                         <div className="space-y-0.5">
                             <Label className="text-base font-bold text-slate-700">Mesaj Bildirimleri</Label>
                             <p className="text-sm text-slate-400">Koçundan yeni mesaj geldiğinde haber ver.</p>
                         </div>
-                        <Switch defaultChecked />
+                        <Switch
+                            checked={notifications.message_alerts}
+                            onCheckedChange={(checked) => handleMetadataUpdate('message_alerts', checked)}
+                        />
                     </div>
                 </CardContent>
             </Card>
