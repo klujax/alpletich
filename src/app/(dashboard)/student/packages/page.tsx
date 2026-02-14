@@ -1,52 +1,62 @@
 'use client';
 
-import { useState } from 'react';
-import { Package, Calendar, Clock, CheckCircle2, AlertCircle, ShoppingBag } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Package, Calendar, Clock, CheckCircle2, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { Purchase } from '@/lib/mock-service';
 
-// Mock Data for Purchased Packages
-const MOCK_PACKAGES = [
-    {
-        id: '1',
-        name: '3 Aylık Vücut Geliştirme',
-        coachName: 'Ahmet Yılmaz',
-        type: 'coaching', // coaching (recurring/time-limited) or program (lifetime)
-        startDate: '2023-10-15',
-        endDate: '2024-01-15',
-        status: 'active', // active, expired, pending
-        progress: 65,
-        features: ['Özel Antrenman Programı', 'Beslenme Danışmanlığı', 'Haftalık Check-in'],
-        price: 1500,
-    },
-    {
-        id: '2',
-        name: 'Yoga Başlangıç Paketi',
-        coachName: 'Ayşe Demir',
-        type: 'coaching',
-        startDate: '2023-09-01',
-        endDate: '2023-10-01',
-        status: 'expired',
-        progress: 100,
-        features: ['8 Canlı Ders', 'Esneklik Rehberi'],
-        price: 800,
-    },
-    {
-        id: '3',
-        name: '3 Haftalık Karın Kası Programı',
-        coachName: 'Mehmet Öz',
-        type: 'program',
-        startDate: '2023-11-01',
-        endDate: '2023-11-22',
-        status: 'expired', // Technically time passed, but it's a program so it's owned
-        progress: 100,
-        features: ['21 Günlük Plan', 'Video Anlatımlı'],
-        price: 450,
-    }
-];
+export const dynamic = 'force-dynamic';
 
 export default function StudentPackagesPage() {
-    const [packages] = useState(MOCK_PACKAGES);
+    const [packages, setPackages] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        async function load() {
+            const user = await authService.getUser();
+            if (!user) return;
+
+            // Get Purchases
+            const allPurchases = await dataService.getPurchases();
+            const myPurchases = allPurchases.filter((p: Purchase) => p.studentId === user.id);
+
+            // Map to UI model
+            const mappedPackages = await Promise.all(myPurchases.map(async (p: Purchase) => {
+                let coachName = 'Bilinmiyor';
+                if (p.coachId) {
+                    const coach = await dataService.getProfile(p.coachId);
+                    if (coach) coachName = coach.full_name || 'Bilinmiyor';
+                }
+
+                const isProgram = p.packageSnapshot?.packageType === 'program';
+
+                return {
+                    id: p.id,
+                    name: p.packageName,
+                    coachName: coachName,
+                    type: isProgram ? 'program' : 'coaching',
+                    startDate: new Date(p.purchasedAt).toLocaleDateString('tr-TR'),
+                    endDate: p.expiresAt ? new Date(p.expiresAt).toLocaleDateString('tr-TR') : 'Süresiz',
+                    status: p.status,
+                    progress: Math.floor(Math.random() * 100), // Placeholder progress
+                    features: p.packageSnapshot?.features || [],
+                    price: p.price
+                };
+            }));
+
+            setPackages(mappedPackages);
+            setIsLoading(false);
+        }
+        load();
+    }, []);
+
+    if (isLoading) return (
+        <div className="flex items-center justify-center h-[60vh]">
+            <div className="w-10 h-10 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
+        </div>
+    );
 
     return (
         <div className="space-y-8 animate-fade-in pb-24 lg:pb-10">
@@ -141,7 +151,7 @@ export default function StudentPackagesPage() {
 
                                 {/* Features List */}
                                 <div className="space-y-2 mb-6">
-                                    {pkg.features.map((feature, idx) => (
+                                    {pkg.features.map((feature: string, idx: number) => (
                                         <div key={idx} className="flex items-start text-xs text-slate-600">
                                             <CheckCircle2 className="w-3.5 h-3.5 mr-2 text-green-500 shrink-0 mt-0.5" />
                                             {feature}

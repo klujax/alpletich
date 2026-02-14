@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { SportCategory } from '@/lib/mock-service'; // Keep types from mock service
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
 import { Plus, Trash2, Smile } from 'lucide-react';
-import { dataService, SportCategory, authService } from '@/lib/mock-service';
 import { toast } from 'sonner';
+import { useEffect, useState } from 'react';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,40 +44,57 @@ export default function CoachSportsPage() {
 
     const loadSports = async () => {
         setIsLoading(true);
+        // dataService.getSports is currently static in supabase-service.ts
+        // In a full implementation, this would fetch from a table
         const allSports = await dataService.getSports();
-        // Sadece sistem ve bu koça ait olanları gösterelim mi? 
-        // Şimdilik hepsini gösterelim ama sistem defaultları silinemez olsun.
         setSports(allSports);
         setIsLoading(false);
     };
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
-        const user = authService.getUser();
+        const user = await authService.getUser();
         if (!user) return;
 
         try {
-            await dataService.createSport({
-                coachId: user.id,
-                name,
-                description,
-                icon,
-                color
-            });
-            toast.success('Yeni branş oluşturuldu');
-            setIsModalOpen(false);
-            resetForm();
-            loadSports();
+            // NOTE: createSport is not yet implemented in supabaseDataService for real DB
+            // We should implement it or acknowledge this is a gap.
+            // For now, we'll try to call it, but if it fails (not a function), catch it.
+            if ((dataService as any).createSport) {
+                await (dataService as any).createSport({
+                    coachId: user.id,
+                    name,
+                    description,
+                    icon,
+                    color
+                });
+                toast.success('Yeni branş oluşturuldu');
+                setIsModalOpen(false);
+                resetForm();
+                loadSports();
+            } else {
+                toast.error('Spor dalı oluşturma henüz backend tarafında aktif değil.');
+            }
+
         } catch (error) {
+            console.error(error);
             toast.error('Branş oluşturulurken hata oluştu');
         }
     };
 
     const handleDelete = async (id: string) => {
         if (confirm('Bu branşı silmek istediğinize emin misiniz?')) {
-            await dataService.deleteSport(id);
-            toast.success('Branş silindi');
-            loadSports();
+            try {
+                if ((dataService as any).deleteSport) {
+                    await (dataService as any).deleteSport(id);
+                    toast.success('Branş silindi');
+                    loadSports();
+                } else {
+                    toast.error('Silme işlemi henüz aktif değil');
+                }
+            } catch (error) {
+                toast.error('Silinirken hata oluştu');
+            }
         }
     };
 

@@ -1,15 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import {
-    Users, Mail, MessageCircle, Star, ChevronRight, Search
-} from 'lucide-react';
-import { dataService, authService, Purchase } from '@/lib/mock-service';
-import { Profile } from '@/types/database';
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { Purchase } from '@/lib/mock-service'; // Keep types from mock service
+import { Profile } from '@/lib/types'; // Use proper Profile type
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Users, Search, MessageCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,14 +22,26 @@ export default function CoachStudentsPage() {
 
     const loadData = async () => {
         setIsLoading(true);
-        const user = authService.getUser();
+        const user = await authService.getUser();
         if (!user) return;
-        const [studentData, purchaseData] = await Promise.all([
-            dataService.getStudentsByCoach(user.id),
-            dataService.getPurchases(),
-        ]);
-        setStudents(studentData);
-        setPurchases(purchaseData.filter((p: Purchase) => p.coachId === user.id));
+
+        // In a real app we would have a specific query for this
+        // For now, get all purchases and filter for this coach, then get unique students
+        const allPurchases = await dataService.getPurchases();
+        const myPurchases = allPurchases.filter((p: Purchase) => p.coachId === user.id);
+        const studentIds = Array.from(new Set(myPurchases.map(p => p.studentId)));
+
+        // Fetch student profiles
+        // We need a bulk fetch method or loop. Loop for now as num students is small
+        // Ideally: dataService.getProfiles(studentIds)
+        const studentProfiles: Profile[] = [];
+        for (const id of studentIds) {
+            const profile = await dataService.getProfile(id);
+            if (profile) studentProfiles.push(profile);
+        }
+
+        setStudents(studentProfiles);
+        setPurchases(myPurchases);
         setIsLoading(false);
     };
 

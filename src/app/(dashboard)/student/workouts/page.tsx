@@ -1,5 +1,7 @@
 'use client';
 
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { SalesPackage, Purchase } from '@/lib/mock-service'; // Keep types from mock service for now
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -8,7 +10,6 @@ import {
     ArrowLeft, Construction, Dumbbell, Calendar, Clock, PlayCircle,
     ChevronRight, Utensils, Flame, AlertCircle
 } from 'lucide-react';
-import { authService, dataService, SalesPackage } from '@/lib/mock-service';
 import { cn } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
@@ -22,18 +23,30 @@ export default function StudentWorkoutsPage() {
     useEffect(() => {
         async function load() {
             try {
-                const user = authService.getUser();
+                const user = await authService.getUser();
                 if (!user) {
                     setIsLoading(false);
                     return;
                 }
 
+                // Supabase getPackages returns all packages
                 const packages = await dataService.getPackages();
-                let targetId = user.active_program_id;
+
+                // Check if user has active_program_id in profile (assuming we added it to profile type or we check locally)
+                // Since Supabase Profile type might not have it updated yet in frontend types, we check purchases logic
+                let targetId = (user as any).active_program_id;
 
                 // If no active program explicitly set, try to find from purchases
                 if (!targetId) {
-                    const purchases = await dataService.getPurchases(user.id);
+                    // Start by checking if there is a locally stored active program
+                    if (typeof window !== 'undefined') {
+                        targetId = localStorage.getItem('activeProgramId');
+                    }
+                }
+
+                if (!targetId) {
+                    const allPurchases = await dataService.getPurchases();
+                    const purchases = allPurchases.filter((p: Purchase) => p.studentId === user.id);
                     // Filter: active status, not expired, type is program
                     const validPurchases = purchases.filter(p =>
                         p.status === 'active' &&

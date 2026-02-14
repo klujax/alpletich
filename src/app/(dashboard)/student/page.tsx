@@ -1,12 +1,13 @@
 'use client';
 
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { Purchase, GroupClass } from '@/lib/mock-service'; // Keep types for now
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
     Play, Dumbbell, ChevronRight, ShoppingBag, CalendarDays, Star, Package, MessageCircle
 } from 'lucide-react';
-import { dataService, authService, Purchase, GroupClass } from '@/lib/mock-service';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
@@ -20,20 +21,23 @@ export default function StudentDashboard() {
 
     useEffect(() => {
         async function load() {
-            const currentUser = authService.getUser();
+            const currentUser = await authService.getUser();
             setUser(currentUser);
             if (!currentUser) return;
 
             const [purchaseData, allClasses] = await Promise.all([
-                dataService.getPurchases(currentUser.id),
+                dataService.getPurchases(), // Supabase service getPurchases usually gets all, we need to filter or it might already filter by RLS?
+                // Checking supabase-service implementation: getPurchases() returns all.
+                // We will filter client side for now.
                 dataService.getGroupClasses(),
             ]);
 
-            setPurchases(purchaseData);
+            const myPurchases = purchaseData.filter((p: Purchase) => p.studentId === currentUser.id);
+            setPurchases(myPurchases);
 
             // Katıldığı sınıfları filtrele
             const myClasses = allClasses.filter((c: GroupClass) =>
-                c.enrolledParticipants.includes(currentUser.id) && c.status === 'scheduled'
+                c.enrolledParticipants && c.enrolledParticipants.includes(currentUser.id) && c.status === 'scheduled'
             );
             setUpcomingClasses(myClasses);
             setIsLoading(false);

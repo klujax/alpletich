@@ -1,5 +1,8 @@
 'use client';
 
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { Purchase, GymStore, Review } from '@/lib/mock-service'; // Keep types but remove MOCK_USERS
+import { Profile } from '@/lib/types';
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,8 +10,6 @@ import { Modal } from '@/components/ui/modal';
 import {
     Star, MessageCircle, Store, Award
 } from 'lucide-react';
-import { dataService, authService, Purchase, GymStore, Review, MOCK_USERS } from '@/lib/mock-service';
-import { Profile } from '@/types/database';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
@@ -27,47 +28,58 @@ export default function StudentCoachesPage() {
 
     const loadData = async () => {
         setIsLoading(true);
-        const user = authService.getUser();
+        const user = await authService.getUser();
         if (!user) return;
 
-        const [purchaseData, storeData, reviewData] = await Promise.all([
-            dataService.getPurchases(user.id),
+        const [allPurchases, storeData, reviewData] = await Promise.all([
+            dataService.getPurchases(),
             dataService.getStores(),
             dataService.getReviews(),
         ]);
 
-        const coachIds = [...new Set(purchaseData.map((p: Purchase) => p.coachId))];
-        const coachDetails = coachIds.map(coachId => {
-            const coach = MOCK_USERS.find(u => u.id === coachId);
-            const store = storeData.find((s: GymStore) => s.coachId === coachId) || null;
-            const myPurchases = purchaseData.filter((p: Purchase) => p.coachId === coachId);
-            const myReviews = reviewData.filter((r: Review) => r.coachId === coachId && r.studentId === user.id);
-            return { coach: coach!, store, purchases: myPurchases, reviews: myReviews };
-        }).filter(c => c.coach);
+        const myPurchases = allPurchases.filter((p: Purchase) => p.studentId === user.id);
+        const coachIds = Array.from(new Set(myPurchases.map((p: Purchase) => p.coachId)));
+
+        const coachDetails: { coach: Profile; store: GymStore | null; purchases: Purchase[]; reviews: Review[] }[] = [];
+
+        for (const coachId of coachIds) {
+            const coach = await dataService.getProfile(coachId);
+            if (coach) {
+                const store = storeData.find((s: GymStore) => s.coachId === coachId) || null;
+                const coachPurchases = myPurchases.filter((p: Purchase) => p.coachId === coachId);
+                const myReviews = reviewData.filter((r: Review) => r.coachId === coachId && r.studentId === user.id);
+                coachDetails.push({ coach, store, purchases: coachPurchases, reviews: myReviews });
+            }
+        }
 
         setCoaches(coachDetails);
         setIsLoading(false);
     };
 
     const handleSubmitReview = async () => {
-        const user = authService.getUser();
+        const user = await authService.getUser();
         if (!user || !selectedCoachId) return;
         if (!reviewComment.trim()) { toast.error('Yorum yazmalısınız'); return; }
 
-        await dataService.createReview({
-            studentId: user.id,
-            studentName: user.full_name,
-            coachId: selectedCoachId,
-            shopId: selectedShopId || '',
-            rating: reviewRating,
-            comment: reviewComment,
-        });
+        try {
+            await dataService.createReview({
+                studentId: user.id,
+                studentName: user.full_name || '',
+                coachId: selectedCoachId,
+                shopId: selectedShopId || '',
+                rating: reviewRating,
+                comment: reviewComment,
+            });
 
-        setIsReviewModalOpen(false);
-        setReviewComment('');
-        setReviewRating(5);
-        toast.success('Değerlendirmeniz gönderildi! ⭐');
-        loadData();
+            setIsReviewModalOpen(false);
+            setReviewComment('');
+            setReviewRating(5);
+            toast.success('Değerlendirmeniz gönderildi! ⭐');
+            loadData();
+        } catch (error) {
+            console.error(error);
+            toast.error('Değerlendirme gönderilemedi.');
+        }
     };
 
     if (isLoading) return (

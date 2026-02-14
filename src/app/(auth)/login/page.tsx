@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { authService } from '@/lib/mock-service';
+import { supabaseAuthService as authService } from '@/lib/supabase-service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Mail, Lock, ArrowRight, Loader2, Sparkles, MoveRight, ArrowLeft } from 'lucide-react';
@@ -22,12 +22,24 @@ export default function LoginPage() {
         await new Promise(resolve => setTimeout(resolve, 600));
 
         try {
-            const { user, error } = await authService.signIn(email, password);
-            if (error) throw new Error(error);
-            if (user) {
-                if (user.role === 'admin') router.push('/admin');
-                else if (user.role === 'coach') router.push('/coach');
-                else router.push('/student');
+            const { data, error } = await authService.signIn(email, password);
+            if (error) throw error;
+
+            if (data.user) {
+                const profile = await authService.getUser();
+                if (profile) {
+                    if (profile.role === 'admin') router.push('/admin');
+                    else if (profile.role === 'coach') router.push('/coach');
+                    else router.push('/student');
+                } else {
+                    // Fallback if profile not found immediately (e.g. slight delay in trigger)
+                    // But since triggers are usually fast or if we use metadata...
+                    // Let's try metadata first if profile fails?
+                    const role = data.user.user_metadata?.role;
+                    if (role === 'admin') router.push('/admin');
+                    else if (role === 'coach') router.push('/coach');
+                    else router.push('/student');
+                }
             }
         } catch (err: any) {
             setError(err.message || 'Giriş yapılamadı');

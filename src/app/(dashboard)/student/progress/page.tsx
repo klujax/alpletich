@@ -1,11 +1,12 @@
 'use client';
 
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { ProgressEntry } from '@/lib/types'; // Use types from lib/types
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Plus, TrendingUp } from 'lucide-react';
-import { authService, dataService, ProgressEntry } from '@/lib/mock-service';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { toast } from 'sonner';
 
@@ -23,18 +24,17 @@ export default function StudentProgressPage() {
     }, []);
 
     const loadData = async () => {
-        const user = authService.getUser();
+        const user = await authService.getUser();
         if (user) {
-            // @ts-ignore - mock service updated dynamically
-            const data = await (dataService as any).getProgress(user.id);
-            setEntries(data);
+            const data = await dataService.getProgress(user.id);
+            setEntries(data || []);
         }
         setIsLoading(false);
     };
 
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
-        const user = authService.getUser();
+        const user = await authService.getUser();
         if (!user) return;
 
         if (!weight) {
@@ -43,8 +43,7 @@ export default function StudentProgressPage() {
         }
 
         try {
-            // @ts-ignore
-            await (dataService as any).createProgress({
+            await dataService.createProgress({
                 studentId: user.id,
                 date,
                 weight: Number(weight),
@@ -55,6 +54,7 @@ export default function StudentProgressPage() {
             setBodyFat('');
             loadData();
         } catch (error) {
+            console.error(error);
             toast.error('Bir hata oluştu');
         }
     };

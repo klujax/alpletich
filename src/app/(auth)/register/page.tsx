@@ -3,7 +3,8 @@
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { authService, dataService, SportCategory } from '@/lib/mock-service';
+import { supabaseAuthService as authService } from '@/lib/supabase-service';
+import { dataService, SportCategory } from '@/lib/mock-service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { User, Mail, Lock, ArrowRight, ArrowLeft, Store, Target, Phone, Check, Loader2, Sparkles, Dumbbell, UserCheck } from 'lucide-react';
@@ -77,19 +78,21 @@ function RegisterContent() {
         await new Promise(resolve => setTimeout(resolve, 800));
 
         try {
-            const { user, error } = await authService.signUp(
+            const { data, error } = await authService.signUp(
                 formData.email,
-                role || 'student',
-                formData.fullName,
                 formData.password,
-                formData.phone,
-                role === 'student' ? interestedSports : undefined,
-                formData.storeName
+                {
+                    role: role || 'student',
+                    full_name: formData.fullName,
+                    phone: formData.phone,
+                    interested_sports: role === 'student' ? interestedSports : undefined,
+                    store_name: formData.storeName
+                }
             );
 
-            if (error) throw new Error(error);
+            if (error) throw error;
 
-            if (user) {
+            if (data.user) {
                 toast.success('Kayıt başarılı!');
                 router.push(role === 'coach' ? '/coach' : '/student');
             }

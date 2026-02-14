@@ -8,7 +8,8 @@ import { Modal } from '@/components/ui/modal';
 import {
     Plus, Users, Star, Trash2, Edit, Package, Dumbbell, X, ChevronDown, ChevronUp, Video, Upload, Play, FileVideo
 } from 'lucide-react';
-import { dataService, authService, SalesPackage, GymStore, SportCategory, WorkoutDay, Exercise } from '@/lib/mock-service';
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { SalesPackage, GymStore, SportCategory, WorkoutDay, Exercise } from '@/lib/mock-service'; // Keep types
 import { toast } from 'sonner';
 
 export const dynamic = 'force-dynamic';
@@ -40,18 +41,6 @@ const EMPTY_FORM = {
     sport: '', features: '', totalWeeks: '4', maxStudents: '10', hasChatSupport: false, hasGroupClass: false,
 };
 
-// === VIDEO STORAGE (in-memory for session) ===
-const videoStore = new Map<string, string>();
-
-function storeVideo(file: File): Promise<string> {
-    return new Promise((resolve) => {
-        const url = URL.createObjectURL(file);
-        const key = 'vid_' + Math.random().toString(36).substr(2, 8);
-        videoStore.set(key, url);
-        resolve(url);
-    });
-}
-
 export default function CoachPackagesPage() {
     const [packages, setPackages] = useState<SalesPackage[]>([]);
     const [store, setStore] = useState<GymStore | null>(null);
@@ -72,15 +61,21 @@ export default function CoachPackagesPage() {
 
     const loadData = async () => {
         setIsLoading(true);
-        const user = authService.getUser();
+        const user = await authService.getUser();
         if (!user) return;
-        const [pkgs, shopData, sportsData] = await Promise.all([
+
+        // Fetch all stores and find the one for this coach
+        // In a real optimized app, we would have getStoreByCoachId endpoint/function
+        const allStores = await dataService.getStores();
+        const myStore = allStores.find((s: GymStore) => s.coachId === user.id) || null;
+
+        const [pkgs, sportsData] = await Promise.all([
             dataService.getPackages(user.id),
-            dataService.getStoreByCoachId(user.id),
             dataService.getSports(),
         ]);
+
         setPackages(pkgs);
-        setStore(shopData);
+        setStore(myStore);
         setSports(sportsData);
         setIsLoading(false);
     };
@@ -143,13 +138,16 @@ export default function CoachPackagesPage() {
         toast.loading('Video yükleniyor...', { id: 'video-upload' });
 
         try {
-            const url = await storeVideo(file);
+            const path = `exercises/${Date.now()}_${file.name}`;
+            const url = await dataService.uploadFile('exercise-videos', path, file);
+
             const updated = [...workoutDays];
             updated[dayIdx].exercises[exIdx].videoUrl = url;
             updated[dayIdx].exercises[exIdx].videoFileName = file.name;
             setWorkoutDays(updated);
             toast.success('Video yüklendi! ✅', { id: 'video-upload' });
-        } catch {
+        } catch (error) {
+            console.error(error);
             toast.error('Video yüklenirken hata oluştu', { id: 'video-upload' });
         }
     };
@@ -234,7 +232,7 @@ export default function CoachPackagesPage() {
 
     // === CREATE ===
     const handleCreate = async () => {
-        const user = authService.getUser();
+        const user = await authService.getUser();
         if (!user || !store) { toast.error('Önce dükkanınızı açmalısınız!'); return; }
         if (!form.name || !form.price) { toast.error('Paket adı ve fiyat gerekli'); return; }
 
@@ -246,7 +244,7 @@ export default function CoachPackagesPage() {
             name: form.name,
             description: form.description,
             price: Number(form.price),
-            accessDuration: form.accessDuration,
+            accessDuration: form.accessDuration as any,
             packageType: form.packageType,
             totalWeeks: Number(form.totalWeeks),
             sport: form.sport,
@@ -257,6 +255,10 @@ export default function CoachPackagesPage() {
             maxStudents: Number(form.maxStudents),
             programContent: [],
             workoutPlan: workoutPlan.length > 0 ? workoutPlan : undefined,
+            // Default stats for new package
+            enrolledStudents: 0,
+            rating: 0,
+            reviewCount: 0
         });
         setIsModalOpen(false);
         setForm(EMPTY_FORM);
@@ -279,7 +281,7 @@ export default function CoachPackagesPage() {
             name: form.name,
             description: form.description,
             price: Number(form.price),
-            accessDuration: form.accessDuration,
+            accessDuration: form.accessDuration as any, // Cast to match type
             packageType: form.packageType,
             totalWeeks: Number(form.totalWeeks),
             sport: form.sport,

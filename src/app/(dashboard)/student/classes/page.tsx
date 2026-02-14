@@ -1,26 +1,34 @@
 'use client';
 
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { GroupClass } from '@/lib/mock-service'; // Keep types 
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CalendarDays, Clock, Users, Video, ChevronRight } from 'lucide-react';
-import { dataService, authService, GroupClass, MOCK_USERS } from '@/lib/mock-service';
+import { Profile } from '@/lib/types';
+import { Purchase } from '@/lib/mock-service';
 
 export const dynamic = 'force-dynamic';
 
 export default function StudentClassesPage() {
     const [classes, setClasses] = useState<GroupClass[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [coaches, setCoaches] = useState<Record<string, Profile>>({});
 
     useEffect(() => {
         async function load() {
-            const user = authService.getUser();
+            const user = await authService.getUser();
             if (!user) return;
 
             // 1. Get my coaches from active purchases
-            const purchases = await dataService.getPurchases(user.id);
-            const activePurchases = purchases.filter(p => p.status === 'active' && (!p.expiresAt || new Date(p.expiresAt) > new Date()));
-            const myCoachIds = [...new Set(activePurchases.map(p => p.coachId))];
+            // Note: dataService.getPurchases() in Supabase implementation gets ALL purchases for now
+            // We need to filter by studentId if RLS doesn't do it automatically (RLS usually does, but checking implementation is safer)
+            const allPurchases = await dataService.getPurchases();
+            const myPurchases = allPurchases.filter((p: Purchase) => p.studentId === user.id);
+
+            const activePurchases = myPurchases.filter(p => p.status === 'active' && (!p.expiresAt || new Date(p.expiresAt) > new Date()));
+            const myCoachIds = Array.from(new Set(activePurchases.map(p => p.coachId)));
 
             // 2. Get all classes
             const allClasses = await dataService.getGroupClasses();
@@ -30,7 +38,7 @@ export default function StudentClassesPage() {
             // - It is from one of my coaches (and scheduled/live) OR
             // - It is a system class
             const relevantClasses = allClasses.filter((c: GroupClass) =>
-                c.enrolledParticipants.includes(user.id) ||
+                (c.enrolledParticipants && c.enrolledParticipants.includes(user.id)) ||
                 (myCoachIds.includes(c.coachId) && (c.status === 'scheduled' || c.status === 'live')) ||
                 c.coachId === 'system'
             );
@@ -38,6 +46,15 @@ export default function StudentClassesPage() {
             // Sort by date descending (nearest first)
             relevantClasses.sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
 
+            // 4. Fetch coach profiles for these classes
+            const coachIdsToFetch = Array.from(new Set(relevantClasses.map(c => c.coachId).filter(id => id !== 'system')));
+            const coachMap: Record<string, Profile> = {};
+            for (const id of coachIdsToFetch) {
+                const profile = await dataService.getProfile(id);
+                if (profile) coachMap[id] = profile;
+            }
+
+            setCoaches(coachMap);
             setClasses(relevantClasses);
             setIsLoading(false);
         }
@@ -67,7 +84,7 @@ export default function StudentClassesPage() {
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {upcoming.map(cls => {
-                            const coach = MOCK_USERS.find(u => u.id === cls.coachId);
+                            const coach = coaches[cls.coachId];
                             return (
                                 <Card key={cls.id} className="border-blue-100 hover:shadow-lg transition-all overflow-hidden">
                                     <div className="h-1.5 bg-blue-500" />

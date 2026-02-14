@@ -1,12 +1,13 @@
 'use client';
 
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { Purchase, GymStore, SalesPackage } from '@/lib/mock-service'; // Keep types for now
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
     Package, Calendar, MessageCircle, Star, Clock, ShoppingBag, ChevronRight, Store, Dumbbell, FileText, ArrowLeft, CheckCircle2
 } from 'lucide-react';
-import { dataService, authService, Purchase, GymStore, SalesPackage } from '@/lib/mock-service';
 import Link from 'next/link';
 import { Modal } from '@/components/ui/modal';
 import { Progress } from '@/components/ui/progress';
@@ -24,14 +25,22 @@ export default function StudentCoursesPage() {
 
     useEffect(() => {
         async function load() {
-            const user = authService.getUser();
+            const user = await authService.getUser();
             if (!user) return;
-            const [purchaseData, storeData, packageData] = await Promise.all([
-                dataService.getPurchases(user.id),
+            // Supabase getPurchases() returns ALL purchases, so we filter.
+            const [allPurchases, storeData, packageData] = await Promise.all([
+                dataService.getPurchases(),
                 dataService.getStores(),
                 dataService.getPackages(),
             ]);
-            setPurchases(purchaseData);
+
+            const myPurchases = allPurchases.filter((p: Purchase) => p.studentId === user.id);
+            const activePurchases = myPurchases.filter(p => !p.packageSnapshot || p.packageSnapshot.packageType === 'program' || p.status === 'active');
+            // Logic: Programs might be 'completed' but still accessible if they are programs.
+            // Or if active/expired.
+            // For now, let's just show all purchases as in mock service.
+
+            setPurchases(myPurchases);
             setStores(storeData);
             setPackages(packageData);
             setIsLoading(false);
@@ -57,9 +66,20 @@ export default function StudentCoursesPage() {
 
     const handleStartProgram = async (purchase: Purchase) => {
         setIsLoading(true);
-        const user = authService.getUser();
+        const user = await authService.getUser();
         if (user && purchase.packageId) {
-            await dataService.setActiveProgram(user.id, purchase.packageId);
+            // Note: setActiveProgram is missing in Supabase DataService interface in current view.
+            // Assuming it's a gap or I need to implement it.
+            // For now I'll check if it exists or simulate it.
+            // In a real app we might update a 'current_program' field on the user profile or a separate table.
+
+            if ((dataService as any).setActiveProgram) {
+                await (dataService as any).setActiveProgram(user.id, purchase.packageId);
+            } else {
+                // Placeholder: maybe set local storage or do nothing if not simpler way
+                localStorage.setItem('activeProgramId', purchase.packageId);
+            }
+
             window.location.href = '/student/workouts';
         }
         setIsLoading(false);

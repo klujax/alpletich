@@ -11,6 +11,7 @@ import {
     Store,
 } from 'lucide-react';
 import { authService } from '@/lib/mock-service';
+import { supabaseAuthService } from '@/lib/supabase-service'; // Use supabaseAuthService instead
 import { cn } from '@/lib/utils';
 
 export function DashboardTopbar() {
@@ -22,14 +23,17 @@ export function DashboardTopbar() {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const currentUser = authService.getUser();
-        setUser(currentUser);
+        const fetchUser = async () => {
+            const currentUser = await supabaseAuthService.getUser();
+            setUser(currentUser);
+        };
+        fetchUser();
         setIsMarketplace(pathname === '/marketplace');
     }, [pathname]);
 
     const handleLogout = async () => {
-        await authService.signOut();
-        router.push('/');
+        await supabaseAuthService.signOut();
+        router.push('/login');
     };
 
     if (!user) return null;

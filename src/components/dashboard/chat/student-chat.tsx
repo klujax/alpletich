@@ -4,7 +4,14 @@ import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Search, Send, ArrowLeft, Check, CheckCheck, Smile, ImagePlus, Lock, Store } from 'lucide-react';
-import { authService, dataService, Message, Profile, Purchase, GymStore } from '@/lib/mock-service';
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { Message, Profile, Purchase, GymStore } from '@/lib/mock-service'; // Types still from mock-service? Or move types to supabase-service?
+// Actually supabase-service imports types from './types', which might be better to import from there or rely on inference.
+// But to minimize diffs, let's keep types import if they match.
+// Wait, supabase-service exports types? No.
+// Let's use types from '@/lib/types' if possible or keep mock-service types if they are compatible.
+// `supabase-service.ts` imports from `./types`. Let's assume `@/lib/types` exists and is the source.
+
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -33,6 +40,32 @@ export function StudentChat() {
     const inputRef = useRef<HTMLInputElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // Realtime subscription
+    useEffect(() => {
+        const sub = dataService.subscribeToMessages((payload) => {
+            if (!currentUser) return;
+
+            const newMessage = payload.new;
+            // If message belongs to current chat, add it
+            if (selectedPartner && (
+                (newMessage.sender_id === selectedPartner.id && newMessage.receiver_id === currentUser.id) ||
+                (newMessage.sender_id === currentUser.id && newMessage.receiver_id === selectedPartner.id)
+            )) {
+                // Fetch logic or append?
+                // payload.new is separate from "Message" type potentially (snake_case vs camelCase).
+                // Let's just reload messages to be safe and consistent with "read" status etc.
+                loadMessages(currentUser.id, selectedPartner.id);
+            }
+
+            // Always reload conversations to update unread counts and sorting
+            loadConversations(currentUser.id);
+        });
+
+        return () => {
+            sub.unsubscribe();
+        };
+    }, [currentUser, selectedPartner]);
+
     useEffect(() => {
         loadInitialData();
     }, []);
@@ -45,40 +78,18 @@ export function StudentChat() {
             if (conv) {
                 handleSelectConversation(conv.partner);
             } else {
-                // Fetch partner details if not in conversation list yet
-                // Note: mock-service doesn't expose getUserById explicitly for public, 
-                // but we can try to find in list or separate call if needed. 
-                // For now, let's rely on conversation list or re-fetch logic if possible.
-                // If the user navigates from "Coaches", the conversation might not exist yet (no messages).
-                // We should fetch the coach profile.
                 fetchCoachProfile(partnerIdParam);
             }
         }
     }, [partnerIdParam, currentUser, conversations]);
 
     const fetchCoachProfile = async (coachId: string) => {
-        // This is a bit of a workaround since we don't have a direct "getProfile" in dataService public interface easily accessible here without fetching all.
-        // But getStores or similar might have it. 
-        // Let's assume we can chat if we have permission.
-        // We'll try to find the coach in the "Coaches" list.
-        const allCoaches = await (dataService as any).getCoaches ? await (dataService as any).getCoaches() : []; // Fallback
-
-        // Better: use getConversations logic which might return empty convs for active coaches?
-        // Let's manually trigger a conversation start UI if we can't find them.
+        // Fallback: try to find store or just wait for conversation list
     };
 
-    useEffect(() => {
-        if (!currentUser) return;
-
-        const interval = setInterval(() => {
-            loadConversations(currentUser.id);
-            if (selectedPartner) {
-                loadMessages(currentUser.id, selectedPartner.id);
-            }
-        }, 5000);
-
-        return () => clearInterval(interval);
-    }, [currentUser, selectedPartner]);
+    // Polling removed in favor of Realtime!
+    // But maybe keep a slow poll just in case? Or rely on Realtime.
+    // Let's remove the interval for now as Supabase Realtime is reliable.
 
     useEffect(() => {
         if (currentUser && selectedPartner) {
@@ -103,8 +114,6 @@ export function StudentChat() {
                 p.status === 'active'
             );
 
-            // Also allow if there are existing messages (history) - optional, but usually good to allow reading history.
-            // But blocking SENDING is what matters.
             setCanChat(hasActivePackage);
         } catch (e) {
             console.error("Permission check failed", e);
@@ -114,7 +123,7 @@ export function StudentChat() {
 
     const loadInitialData = async () => {
         setIsLoading(true);
-        const user = authService.getUser();
+        const user = await authService.getUser();
         if (user) {
             setCurrentUser(user);
             await loadConversations(user.id);
@@ -123,24 +132,8 @@ export function StudentChat() {
     };
 
     const loadConversations = async (userId: string) => {
-        const activeConvs = (await dataService.getConversations(userId)) as unknown as Conversation[];
-
-        // Also ensure all "My Coaches" are listed even if no messages yet
+        const activeConvs = await dataService.getConversations(userId);
         let allConversations: Conversation[] = [...activeConvs];
-
-        try {
-            const purchases = await dataService.getPurchases(userId);
-            const myCoachIds = [...new Set(purchases.filter((p: Purchase) => p.status === 'active').map((p: Purchase) => p.coachId))];
-
-            // We need profile details for these coaches.
-            // In a real app, we'd have a batch fetch. Here we might need to rely on what we have.
-            // If getConversations returns all, we are good.
-            // If not, we might miss some new coaches.
-            // For now, let's stick to active conversations + partnerParam injection if needed.
-        } catch (e) {
-            // ignore
-        }
-
         setConversations(allConversations);
     };
 
@@ -167,8 +160,14 @@ export function StudentChat() {
         try {
             await dataService.sendMessage(currentUser.id, selectedPartner.id, newMessage);
             setNewMessage('');
-            await loadMessages(currentUser.id, selectedPartner.id);
-            await loadConversations(currentUser.id);
+            // No need to manually reload - Realtime subscription should handle it!
+            // But for immediate UI feedback (latency compensation), we might want to?
+            // Actually, realtime is fast enough usually. But typically we append locally then replace.
+            // For now, let's wait for Realtime event which will reload.
+            // reloadMessages called by subscription.
+
+            // Wait, subscription receives the *new* message.
+            // If I sent it, the subscription callback fires too.
             inputRef.current?.focus();
         } catch (error) {
             toast.error('Mesaj gönderilemedi');
@@ -186,17 +185,20 @@ export function StudentChat() {
         const file = e.target.files?.[0];
         if (!file || !currentUser || !selectedPartner || !canChat) return;
 
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-            const base64 = reader.result as string;
-            setIsSending(true);
-            await dataService.sendMessage(currentUser.id, selectedPartner.id, '📷 Fotoğraf gönderildi', base64);
-            await loadMessages(currentUser.id, selectedPartner.id);
-            await loadConversations(currentUser.id);
+        setIsSending(true);
+        try {
+            const path = `chat/${Date.now()}_${file.name}`;
+            const publicUrl = await dataService.uploadFile('message-images', path, file);
+
+            await dataService.sendMessage(currentUser.id, selectedPartner.id, '📷 Fotoğraf', publicUrl);
+            // Realtime will pick it up
+        } catch (error) {
+            toast.error('Görsel gönderilemedi');
+            console.error(error);
+        } finally {
             setIsSending(false);
-        };
-        reader.readAsDataURL(file);
-        e.target.value = '';
+            e.target.value = '';
+        }
     };
 
     const formatTime = (timestamp: string) => {

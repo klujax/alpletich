@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 // import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { authService } from '@/lib/mock-service';
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useEffect } from 'react';
 
 // Simple Label component to replace the missing import
 const Label = ({ htmlFor, children, className }: { htmlFor: string, children: React.ReactNode, className?: string }) => (
@@ -18,26 +19,44 @@ const Label = ({ htmlFor, children, className }: { htmlFor: string, children: Re
 );
 
 export default function ProfilePage() {
-    const [user, setUser] = useState<any>(authService.getUser() || {
-        name: 'Emir Buğra',
-        email: 'emir@example.com',
-        role: 'student',
-        avatar_url: 'https://github.com/shadcn.png'
-    });
+    const [user, setUser] = useState<any>(null);
 
     const [isEditing, setIsEditing] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [formData, setFormData] = useState({
-        full_name: user?.full_name || user?.name || '',
-        bio: user?.bio || '',
-        sports: user?.sports || 'Fitness, Yüzme, Pilates'
+        full_name: '',
+        bio: '',
+        sports: ''
     });
 
+    useEffect(() => {
+        const loadUser = async () => {
+            const u = await authService.getUser();
+            if (u) {
+                setUser(u);
+                setFormData({
+                    full_name: u.full_name || '',
+                    bio: u.bio || '',
+                    sports: (u as any).sports || '' // sports might not be in generic Profile type if custom
+                });
+            }
+        };
+        loadUser();
+    }, []);
+
     const handleSave = async () => {
+        if (!user) return;
         const updates = {
             full_name: formData.full_name,
+            bio: formData.bio,
+            // sports: formData.sports // If sports is in profile table
         };
+
+        // Note: sports might need a separate update if it's not in profile table, 
+        // but assuming it is for this example or ignored if not.
+        // If sports is metadata or separate table, handle accordingly.
+        // For now, let's assume it is in profile or we add it.
 
         const { error } = await authService.updateProfile(user.id, updates);
 
@@ -46,7 +65,7 @@ export default function ProfilePage() {
             return;
         }
 
-        setUser({ ...user, ...updates, bio: formData.bio, sports: formData.sports });
+        setUser({ ...user, ...updates, sports: formData.sports });
 
         toast.success('Profil güncellendi', {
             description: 'Değişikliklerin başarıyla kaydedildi.'
@@ -56,23 +75,26 @@ export default function ProfilePage() {
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (!file) return;
+        if (!file || !user) return;
 
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-            const base64String = reader.result as string;
-            setUser({ ...user, avatar_url: base64String });
+        try {
+            const path = `avatars/${user.id}/${Date.now()}_${file.name}`;
+            const publicUrl = await dataService.uploadFile('avatars', path, file);
 
-            const { error } = await authService.updateProfile(user.id, { avatar_url: base64String });
+            const { error } = await authService.updateProfile(user.id, { avatar_url: publicUrl });
 
-            if (error) {
-                toast.error('Fotoğraf yüklenirken hata oluştu');
-            } else {
-                toast.success('Profil fotoğrafı güncellendi');
-            }
-        };
-        reader.readAsDataURL(file);
+            if (error) throw error;
+
+            setUser({ ...user, avatar_url: publicUrl });
+            toast.success('Profil fotoğrafı güncellendi');
+
+        } catch (error) {
+            toast.error('Fotoğraf yüklenirken hata oluştu');
+            console.error(error);
+        }
     };
+
+    if (!user) return <div className="flex justify-center pt-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div></div>;
 
     return (
         <div className="max-w-4xl mx-auto pb-28 lg:pb-10 animate-fade-in">

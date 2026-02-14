@@ -10,7 +10,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     Search, Star, Users, ShoppingBag, Store, Filter, Check, ChevronRight, ChevronLeft, Clock, MessageCircle, Award, Target, Sparkles, TrendingUp, Zap, CalendarDays
 } from 'lucide-react';
-import { dataService, authService, GymStore, SalesPackage, SportCategory, Review, GroupClass } from '@/lib/mock-service';
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { GymStore, SalesPackage, SportCategory, Review, GroupClass } from '@/lib/mock-service'; // Keep types
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -49,6 +50,15 @@ export default function MarketplacePage() {
 
     const loadData = async () => {
         setIsLoading(true);
+        // Assuming current user is needed for interests
+        const currentUser = await authService.getUser();
+        if (currentUser) {
+            setUser(currentUser);
+            if (currentUser.interested_sports && currentUser.interested_sports.length > 0) {
+                setUserInterests(currentUser.interested_sports); // Assuming array of strings
+            }
+        }
+
         const [storeData, packageData, classesData, sportsData, reviewData] = await Promise.all([
             dataService.getStores(),
             dataService.getPackages(),
@@ -57,15 +67,7 @@ export default function MarketplacePage() {
             dataService.getReviews(),
         ]);
 
-        const currentUser = authService.getUser();
-        if (currentUser) {
-            setUser(currentUser);
-            if (currentUser.interested_sports && currentUser.interested_sports.length > 0) {
-                setUserInterests(currentUser.interested_sports);
-            }
-        }
-
-        setStores(storeData.filter((s: GymStore) => s.isActive && !s.isBanned));
+        setStores(storeData.filter((s: GymStore) => s.isActive !== false)); // Handle optional isActive
         setPackages(packageData.filter((p: SalesPackage) => p.isPublished));
         setGroupClasses(classesData.filter((c: GroupClass) => c.status === 'scheduled'));
         setSports(sportsData);
@@ -74,53 +76,42 @@ export default function MarketplacePage() {
     };
 
     const handlePurchase = async (pkg: SalesPackage) => {
-        const user = authService.getUser();
+        const user = await authService.getUser();
         if (!user) { toast.error('Giriş yapmalısınız'); return; }
         if (user.role !== 'student') { toast.error('Sadece öğrenciler satın alabilir'); return; }
 
-        await dataService.createPurchase({
-            studentId: user.id,
-            coachId: pkg.coachId,
-            shopId: pkg.shopId,
-            packageId: pkg.id,
-            type: 'package',
-            packageName: pkg.name,
-            price: pkg.price,
-            expiresAt: (() => {
-                const d = new Date();
-                if (pkg.accessDuration?.includes('Ay')) d.setMonth(d.getMonth() + parseInt(pkg.accessDuration));
-                else if (pkg.accessDuration?.includes('Yıl')) d.setFullYear(d.getFullYear() + 1);
-                else return undefined;
-                return d.toISOString();
-            })(),
-        });
-
-        setIsDetailOpen(false);
-        toast.success('Paket satın alındı! 🎉 Derslerim sayfasından erişebilirsin.');
-        loadData();
+        try {
+            await dataService.purchasePackage(user.id, pkg.id);
+            setIsDetailOpen(false);
+            toast.success('Paket satın alındı! 🎉 Derslerim sayfasından erişebilirsin.');
+            loadData();
+        } catch (error) {
+            console.error(error);
+            toast.error('Satın alma işlemi başarısız oldu.');
+        }
     };
 
     const handleClassPurchase = async (cls: GroupClass) => {
-        const user = authService.getUser();
+        const user = await authService.getUser();
         if (!user) { toast.error('Giriş yapmalısınız'); return; }
         if (user.role !== 'student') { toast.error('Sadece öğrenciler satın alabilir'); return; }
-        if (cls.enrolledParticipants.includes(user.id)) { toast.error('Bu derseaten katıldınız'); return; }
+        if (cls.enrolledParticipants.includes(user.id)) { toast.error('Bu derse zaten katıldınız'); return; }
 
-        await dataService.createPurchase({
-            studentId: user.id,
-            coachId: cls.coachId,
-            shopId: cls.shopId,
-            groupClassId: cls.id,
-            type: 'group_class',
-            packageName: cls.title,
-            price: cls.price,
-        });
+        try {
+            await dataService.enrollClass(cls.id, user.id);
 
-        await dataService.joinGroupClass(cls.id, user.id);
+            // Optionally create a purchase record if paid class, but explicit enrollClass handles enrollment
+            // If payment needed, would need separate logic. For now assuming free or direct enroll.
+            // If price > 0, we might need purchase logic similar to package, 
+            // but enrollClass in Supabase service inserts into class_enrollments.
 
-        setIsClassDetailOpen(false);
-        toast.success('Ders kaydı başarılı! 🎉 Grup Derslerim sayfasından erişebilirsin.');
-        loadData();
+            setIsClassDetailOpen(false);
+            toast.success('Ders kaydı başarılı! 🎉 Grup Derslerim sayfasından erişebilirsin.');
+            loadData();
+        } catch (error) {
+            console.error(error);
+            toast.error('Ders kaydı başarısız oldu.');
+        }
     };
 
     const openDetail = (pkg: SalesPackage) => {

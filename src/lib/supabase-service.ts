@@ -61,6 +61,24 @@ export const supabaseDataService = {
         return await sb.from('profiles').update(dbUpdates).eq('id', userId);
     },
 
+    // --- SPORTS ---
+    async getSports(): Promise<any[]> {
+        // Return static list for now as per mock-service, or fetch from DB if table exists.
+        // Assuming static for simplicity and consistency with current frontend expectations.
+        return [
+            { id: 'fitness', name: 'Fitness', icon: '🏋️' },
+            { id: 'yoga', name: 'Yoga', icon: '🧘' },
+            { id: 'pilates', name: 'Pilates', icon: '🤸' },
+            { id: 'swimming', name: 'Yüzme', icon: '🏊' },
+            { id: 'basketball', name: 'Basketbol', icon: '🏀' },
+            { id: 'football', name: 'Futbol', icon: '⚽' },
+            { id: 'tennis', name: 'Tenis', icon: '🎾' },
+            { id: 'boxing', name: 'Boks', icon: '🥊' },
+            { id: 'kickboxing', name: 'Kick Boks', icon: '🥋' },
+            { id: 'crossfit', name: 'Crossfit', icon: '🏋️‍♂️' },
+        ];
+    },
+
     // --- STORES ---
     async getStores(): Promise<GymStore[]> {
         const sb = getSupabase() as any;
@@ -260,6 +278,21 @@ export const supabaseDataService = {
         return toCamels(data);
     },
 
+    // --- PROGRESS ---
+    async getProgress(studentId: string): Promise<any[]> {
+        const sb = getSupabase() as any;
+        const { data } = await sb.from('progress_entries').select('*').eq('student_id', studentId).order('date', { ascending: true });
+        return toCamels(data || []);
+    },
+
+    async createProgress(entry: any) {
+        const sb = getSupabase() as any;
+        const dbEntry = toSnakes(entry);
+        const { data, error } = await sb.from('progress_entries').insert(dbEntry).select().single();
+        if (error) throw error;
+        return toCamels(data);
+    },
+
     // --- MESSAGES ---
     async getMessages(userId: string, partnerId: string): Promise<Message[]> {
         const sb = getSupabase() as any;
@@ -390,22 +423,59 @@ export const supabaseDataService = {
             return !profileError;
         }
         return true;
+    },
+
+    // --- STORAGE ---
+    async uploadFile(bucket: string, path: string, file: File) {
+        const sb = getSupabase();
+        const { data, error } = await sb.storage.from(bucket).upload(path, file, {
+            cacheControl: '3600',
+            upsert: true
+        });
+        if (error) throw error;
+
+        // Get public URL
+        const { data: { publicUrl } } = sb.storage.from(bucket).getPublicUrl(path);
+        return publicUrl;
+    },
+
+    // --- REALTIME ---
+    subscribeToMessages(callback: (payload: any) => void) {
+        const sb = getSupabase();
+        return sb
+            .channel('public:messages')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'messages',
+                },
+                (payload) => callback(payload)
+            )
+            .subscribe();
     }
 };
 
 export const supabaseAuthService = {
     // Basic Auth wrappers
-    async signIn(email: string) {
-        // Supabase usually requires password or magic link.
-        // We cannot simulate the "Mock: Just Email" flow easily with real Supabase Auth 
-        // unless we force Magic Link.
-        // Assuming Password flow for 'production'.
+    async signIn(email: string, password?: string) {
         const sb = getSupabase();
-        // Since we don't have password from mock frontend components (some just ask email),
-        // we might fail here unless frontend is updated.
-        // Mock components use: signIn(email).
-        // Real Supabase needs signInWithOtp({ email }).
+        if (password) {
+            return await sb.auth.signInWithPassword({ email, password });
+        }
         return await sb.auth.signInWithOtp({ email });
+    },
+
+    async signUp(email: string, password?: string, metadata?: any) {
+        const sb = getSupabase();
+        return await sb.auth.signUp({
+            email,
+            password: password || '123456', // Default fallback or error if needed, but signup usually implies password
+            options: {
+                data: metadata
+            }
+        });
     },
 
     async signOut() {
@@ -417,6 +487,10 @@ export const supabaseAuthService = {
         if (!data.user) return null;
         // Fetch profile
         const { data: profile } = await getSupabase().from('profiles').select('*').eq('id', data.user.id).single();
-        return profile as unknown as Profile;
+        return profile ? (toCamels(profile) as Profile) : null;
+    },
+
+    async updateProfile(userId: string, updates: Partial<Profile>) {
+        return supabaseDataService.updateProfile(userId, updates);
     }
 };
