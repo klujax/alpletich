@@ -11,7 +11,6 @@ import {
     Store,
 } from 'lucide-react';
 import { authService } from '@/lib/mock-service';
-import { supabaseAuthService } from '@/lib/supabase-service'; // Use supabaseAuthService instead
 import { cn } from '@/lib/utils';
 
 export function DashboardTopbar() {
@@ -24,7 +23,7 @@ export function DashboardTopbar() {
 
     useEffect(() => {
         const fetchUser = async () => {
-            const currentUser = await supabaseAuthService.getUser();
+            const currentUser = await authService.getUser();
             setUser(currentUser);
         };
         fetchUser();
@@ -32,7 +31,7 @@ export function DashboardTopbar() {
     }, [pathname]);
 
     const handleLogout = async () => {
-        await supabaseAuthService.signOut();
+        await authService.signOut();
         router.push('/login');
     };
 
