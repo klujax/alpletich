@@ -1,6 +1,6 @@
 'use client';
 
-import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { authService, dataService } from '@/lib/mock-service';
 import { GroupClass } from '@/lib/mock-service'; // Keep types 
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';

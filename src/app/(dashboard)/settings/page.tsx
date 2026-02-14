@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Bell, Lock, User, Shield, LogOut, Loader2, Save, Smartphone, Mail } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabaseAuthService as authService } from '@/lib/supabase-service'; // Use real service
+import { authService } from '@/lib/mock-service'; // Use real service
 import { Profile } from '@/types/database';
 
 export default function SettingsPage() {

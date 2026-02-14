@@ -569,6 +569,24 @@ export const dataService = {
         return true;
     },
 
+    // -- USERS --
+    getProfile: async (userId: string) => {
+        if (isSupabaseConfigured) return supabaseDataService.getProfile(userId);
+
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        // Mock fallback
+        let allUsers = [...MOCK_USERS];
+        if (typeof window !== 'undefined') {
+            const storedUsers = JSON.parse(localStorage.getItem(STORAGE_KEY_USER) || 'null');
+            // This logic is a bit weak for 'all users', but mock service usually relies on current user or hardcoded list.
+            // Let's look at MOCK_USERS and local storage students.
+            const storedStudents = JSON.parse(localStorage.getItem('mock_students') || '[]');
+            allUsers = [...MOCK_USERS, ...storedStudents];
+        }
+        return allUsers.find(u => u.id === userId) || null;
+    },
+
     // -- STORES / DÜKKANLAR --
     getStores: async () => {
         if (isSupabaseConfigured) return supabaseDataService.getStores();
