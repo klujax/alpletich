@@ -45,6 +45,8 @@ export default function LoginPage() {
             console.error('Login error:', err);
             if (err.status === 400 || (err.message && err.message.includes('400'))) {
                 setError('E-posta veya şifre hatalı. Lütfen bilgilerinizi kontrol edin.');
+            } else if (err.message && (err.message.includes('Email not confirmed') || err.message.includes('not confirmed'))) {
+                setError('Lütfen önce e-posta adresinize gelen doğrulama linkine tıklayarak hesabınızı onaylayın. (Spam klasörünü kontrol etmeyi unutmayın)');
             } else if (err.status === 429 || (err.message && err.message.includes('429'))) {
                 setError('Çok fazla başarısız giriş denemesi. Lütfen bir süre bekleyip tekrar deneyin.');
             } else {
