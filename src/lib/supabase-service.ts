@@ -98,19 +98,29 @@ export const supabaseDataService = {
     // --- STORES ---
     async getStores(): Promise<GymStore[]> {
         const sb = getSupabase() as any;
-        const { data } = await sb.from('gym_stores').select('*');
+        const { data, error } = await sb.from('gym_stores').select('*');
+        if (error) {
+            console.warn('Supabase getStores error (Table missing?):', error.message);
+            return [];
+        }
         return toCamels(data || []);
     },
 
     async getCoachStore(coachId: string): Promise<GymStore | undefined> {
         const sb = getSupabase() as any;
-        const { data } = await sb.from('gym_stores').select('*').eq('coach_id', coachId).single();
+        const { data, error } = await sb.from('gym_stores').select('*').eq('coach_id', coachId).single();
+        if (error && error.code !== 'PGRST116') { // PGRST116 is 'Row not found' which is fine
+            console.warn('Supabase getCoachStore error:', error.message);
+        }
         return data ? toCamels(data) : undefined;
     },
 
     async getStoreById(storeId: string): Promise<GymStore | null> {
         const sb = getSupabase() as any;
-        const { data } = await sb.from('gym_stores').select('*').eq('id', storeId).single();
+        const { data, error } = await sb.from('gym_stores').select('*').eq('id', storeId).single();
+        if (error && error.code !== 'PGRST116') {
+            console.warn('Supabase getStoreById error:', error.message);
+        }
         return data ? toCamels(data) : null;
     },
 
@@ -138,7 +148,11 @@ export const supabaseDataService = {
         let query = sb.from('sales_packages').select('*');
         if (coachId) query = query.eq('coach_id', coachId);
 
-        const { data } = await query;
+        const { data, error } = await query;
+        if (error) {
+            console.warn('Supabase getPackages error (Table missing?):', error.message);
+            return [];
+        }
         return toCamels(data || []);
     },
 
@@ -174,7 +188,11 @@ export const supabaseDataService = {
         if (coachId) query = query.eq('coach_id', coachId);
         if (shopId) query = query.eq('shop_id', shopId);
 
-        const { data } = await query;
+        const { data, error } = await query;
+        if (error) {
+            console.warn('Supabase getGroupClasses error (Table missing?):', error.message);
+            return [];
+        }
 
         // Auto-renewal logic is mocked in frontend, but specialized backend job needed for real.
         // For now, we return what's in DB.
@@ -217,7 +235,10 @@ export const supabaseDataService = {
 
         const { data, error } = await query;
 
-        if (error) return [];
+        if (error) {
+            console.warn('Supabase getPurchases error (Table missing?):', error.message);
+            return [];
+        }
 
         return data.map((p: any) => ({
             id: p.id,
