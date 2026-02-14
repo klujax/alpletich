@@ -284,10 +284,10 @@ export const authService = {
                 const { data, error } = await supabase!.auth.signInWithPassword({
                     email, password: password || '123456',
                 });
-                if (error) return { user: null, error: error.message };
+                if (error) return { user: null, error: error!.message };
                 if (data.user) {
                     const { data: profile, error: profileError } = await supabase!
-                        .from('profiles').select('*').eq('id', data.user.id).single();
+                        .from('profiles').select('*').eq('id', data.user!.id).single();
                     if (profileError) return { user: null, error: 'Profil bilgileri alınamadı.' };
                     if (profile) {
                         const userProfile = profile as unknown as Profile;
