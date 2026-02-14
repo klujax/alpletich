@@ -276,7 +276,7 @@ const STORAGE_KEY_MESSAGES = 'sportaly_messages';
 // =============================================
 export const authService = {
     signIn: async (email: string, password?: string) => {
-        if (false && isSupabaseConfigured && supabase) {
+        if (isSupabaseConfigured && supabase) {
             try {
                 // We know supabase is not null here due to the check on line 279,
                 // but TypeScript's control flow analysis might not pick it up if 'supabase' is imported/global.
@@ -286,9 +286,31 @@ export const authService = {
                 });
                 if (error) return { user: null, error: error!.message };
                 if (data.user) {
-                    const { data: profile, error: profileError } = await supabase!
+                    let { data: profile, error: profileError } = await supabase!
                         .from('profiles').select('*').eq('id', data.user!.id).single();
+
+                    // Fallback: Create profile if missing
+                    if (!profile) {
+                        const metadata = data.user.user_metadata || {};
+                        const { error: insertError } = await supabase!
+                            .from('profiles')
+                            .insert({
+                                id: data.user.id,
+                                email: email,
+                                role: metadata.role || 'student',
+                                full_name: metadata.full_name,
+                                phone: metadata.phone
+                            } as any);
+
+                        if (!insertError) {
+                            const { data: newProfile } = await supabase!.from('profiles').select('*').eq('id', data.user.id).single();
+                            profile = newProfile;
+                            profileError = null;
+                        }
+                    }
+
                     if (profileError) return { user: null, error: 'Profil bilgileri alınamadı.' };
+
                     if (profile) {
                         const userProfile = profile as unknown as Profile;
                         if (typeof window !== 'undefined') {
@@ -341,6 +363,24 @@ export const authService = {
                         interested_sports: interestedSports,
                         created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
                     };
+
+                    // Insert profile explicitly (since we don't have a trigger)
+                    const { error: profileError } = await supabase
+                        .from('profiles')
+                        .insert({
+                            id: newUser.id,
+                            email: newUser.email,
+                            role: newUser.role,
+                            full_name: newUser.full_name,
+                            phone: newUser.phone,
+                            // avatar_url: null,
+                            // bio: null
+                        } as any);
+
+                    if (profileError) {
+                        console.error("Profile insertion failed:", profileError);
+                        // We continue, but store creation might fail if FK constraint exists
+                    }
 
                     // If coach, create store
                     if (role === 'coach' && storeName) {
