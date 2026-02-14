@@ -13,12 +13,15 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [resendLoading, setResendLoading] = useState(false);
+    const [successMsg, setSuccessMsg] = useState<string | null>(null);
     const router = useRouter();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
+        setSuccessMsg(null);
         await new Promise(resolve => setTimeout(resolve, 600));
 
         try {
@@ -43,17 +46,38 @@ export default function LoginPage() {
             }
         } catch (err: any) {
             console.error('Login error:', err);
-            if (err.status === 400 || (err.message && err.message.includes('400'))) {
-                setError('E-posta veya şifre hatalı. Lütfen bilgilerinizi kontrol edin.');
-            } else if (err.message && (err.message.includes('Email not confirmed') || err.message.includes('not confirmed'))) {
-                setError('Lütfen önce e-posta adresinize gelen doğrulama linkine tıklayarak hesabınızı onaylayın. (Spam klasörünü kontrol etmeyi unutmayın)');
-            } else if (err.status === 429 || (err.message && err.message.includes('429'))) {
+            const msg = (err.message || '').toLowerCase();
+
+            if (msg.includes('email not confirmed') || msg.includes('not confirmed')) {
+                setError('E-posta adresi doğrulanmamış.');
+            } else if (err.status === 400 || msg.includes('400')) {
+                setError('E-posta veya şifre hatalı ve ya e-posta doğrulanmamış. Lütfen bilgilerinizi kontrol edin.');
+            } else if (err.status === 429 || msg.includes('429')) {
                 setError('Çok fazla başarısız giriş denemesi. Lütfen bir süre bekleyip tekrar deneyin.');
             } else {
                 setError(err.message || 'Giriş yapılamadı. Tekrar deneyin.');
             }
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleResend = async () => {
+        if (!email) {
+            setError('Lütfen önce e-posta adresinizi girin.');
+            return;
+        }
+        setResendLoading(true);
+        setError(null);
+        setSuccessMsg(null);
+        try {
+            const { error } = await authService.resendConfirmation(email);
+            if (error) throw error;
+            setSuccessMsg('Doğrulama e-postası tekrar gönderildi. Lütfen gelen kutunuzu ve spam klasörünü kontrol edin.');
+        } catch (err: any) {
+            setError('E-posta gönderilemedi: ' + (err.message || 'Bilinmeyen hata'));
+        } finally {
+            setResendLoading(false);
         }
     };
 
@@ -94,7 +118,22 @@ export default function LoginPage() {
                     </div>
                 </div>
 
-                {error && <p className="text-xs font-bold text-red-500 text-center">{error}</p>}
+                {error && (
+                    <div className="text-center space-y-2">
+                        <p className="text-xs font-bold text-red-500">{error}</p>
+                        {error === 'E-posta adresi doğrulanmamış.' && (
+                            <button
+                                type="button"
+                                onClick={handleResend}
+                                disabled={resendLoading}
+                                className="text-xs font-bold text-green-600 hover:text-green-700 underline"
+                            >
+                                {resendLoading ? 'Gönderiliyor...' : 'Doğrulama E-postasını Tekrar Gönder'}
+                            </button>
+                        )}
+                    </div>
+                )}
+                {successMsg && <p className="text-xs font-bold text-green-600 text-center">{successMsg}</p>}
 
                 <Button
                     type="submit"

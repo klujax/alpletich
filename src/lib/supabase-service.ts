@@ -617,5 +617,9 @@ export const supabaseAuthService = {
 
     async updateProfile(userId: string, updates: Partial<Profile>) {
         return supabaseDataService.updateProfile(userId, updates);
+    },
+    async resendConfirmation(email: string) {
+        const sb = getSupabase();
+        return await sb.auth.resend({ type: 'signup', email });
     }
 };
