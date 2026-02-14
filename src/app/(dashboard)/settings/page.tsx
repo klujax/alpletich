@@ -107,10 +107,23 @@ export default function SettingsPage() {
         if (!email) return;
         try {
             const { error } = await authService.resetPassword(email);
-            if (error) throw error;
-            toast.success('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.');
+            if (error) {
+                console.error('Password reset error:', error);
+                if (error.status === 429 || (error.message && error.message.includes('Too many requests'))) {
+                    toast.error('Çok fazla istek gönderdiniz. Lütfen bir süre bekleyip tekrar deneyin.');
+                } else {
+                    toast.error('Şifre sıfırlama hatası: ' + error.message);
+                }
+            } else {
+                toast.success('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.');
+            }
         } catch (error: any) {
-            toast.error(error.message || 'Şifre sıfırlama başarısız.');
+            console.error('Password reset exception:', error);
+            if (error?.status === 429 || error?.message?.includes('Too many requests')) {
+                toast.error('Çok fazla istek gönderdiniz. Lütfen bir süre bekleyip tekrar deneyin.');
+            } else {
+                toast.error(error.message || 'Şifre sıfırlama başarısız.');
+            }
         }
     };
 
