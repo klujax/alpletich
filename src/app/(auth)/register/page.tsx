@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { authService, dataService } from '@/lib/mock-service';
 import { SportCategory } from '@/lib/mock-service'; // Keep types/constants if needed
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -79,49 +79,25 @@ function RegisterContent() {
 
         try {
             // 1. Sign Up User
-            const { data, error } = await authService.signUp(
+            // Mock signUp signature: (email, role, fullName, password, phone, interestedSports, storeName)
+            const { user, error } = await authService.signUp(
                 formData.email,
+                role || 'student',
+                formData.fullName,
                 formData.password,
-                {
-                    role: role || 'student',
-                    full_name: formData.fullName,
-                    phone: formData.phone,
-                    // Store name is handled separately for creation
-                }
+                formData.phone,
+                interestedSports,
+                formData.storeName // Pass store name directly to signUp for automatic store creation in mock
             );
 
-            if (error) throw error;
+            if (error) throw new Error(error);
 
-            if (data.user) {
-                // 2. If Coach, Create Store
-                if (role === 'coach' && formData.storeName) {
-                    try {
-                        const slug = formData.storeName
-                            .toLowerCase()
-                            .replace(/[^a-z0-9]+/g, '-')
-                            .replace(/(^-|-$)/g, '');
-
-                        await dataService.createStore({
-                            coach_id: data.user.id,
-                            name: formData.storeName,
-                            slug: slug,
-                            description: 'Yeni spor mağazası', // Default description
-                            contact_email: formData.email,
-                            contact_phone: formData.phone
-                        } as any);
-                    } catch (storeError) {
-                        console.error('Store creation failed:', storeError);
-                        // We don't block registration success, user can create store later
-                        toast.error('Kullanıcı oluşturuldu fakat dükkan oluşturulamadı. Lütfen paneldn tekrar deneyin.');
-                    }
-                }
-
-                // 3. If Student, Save Interested Sports (Optional - usually saved in profile via metadata or separate call)
-                if (role === 'student' && interestedSports.length > 0) {
-                    // Metadata handles this in trigger usually, or we can add a specific call if needed.
-                    // The original code passed it in metadata, which is fine if the trigger handles it.
-                    // We kept it in metadata above (oops, removed it in step 1, let's put it back in signUp call if useful).
-                }
+            if (user) {
+                // Store creation is handled inside mock authService.signUp for coaches if storeName is provided.
+                // So we don't need to call createStore manually here for the Mock service.
+                // However, if we were using the real service, we would.
+                // For now, since we switched to mock service completely, we can skip explicit createStore call 
+                // because the mock signUp handles it (lines 335-345 in mock-service.ts).
 
                 toast.success('Kayıt başarılı! Yönlendiriliyorsunuz...');
                 // Allow a small delay for toast and session propagation

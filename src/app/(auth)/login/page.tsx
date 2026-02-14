@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { supabaseAuthService as authService } from '@/lib/supabase-service';
+import { authService } from '@/lib/mock-service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Mail, Lock, ArrowRight, Loader2, Sparkles, MoveRight, ArrowLeft } from 'lucide-react';
@@ -25,25 +25,20 @@ export default function LoginPage() {
         await new Promise(resolve => setTimeout(resolve, 600));
 
         try {
-            const { data, error } = await authService.signIn(email, password);
-            if (error) throw error;
+            const { user, error } = await authService.signIn(email, password);
+            if (error) throw new Error(error);
 
-            if (data.user) {
-                const profile = await authService.getUser();
-                if (profile) {
-                    if (profile.role === 'admin') router.push('/admin');
-                    else if (profile.role === 'coach') router.push('/coach');
-                    else router.push('/student');
-                } else {
-                    // Fallback if profile not found immediately (e.g. slight delay in trigger)
-                    // But since triggers are usually fast or if we use metadata...
-                    // Let's try metadata first if profile fails?
-                    const role = data.user.user_metadata?.role;
-                    if (role === 'admin') router.push('/admin');
-                    else if (role === 'coach') router.push('/coach');
-                    else router.push('/student');
-                }
+            if (user) {
+                // Mock service returns the profile directly as 'user'
+                const profile = user;
+                // OR we can fetch it again if needed, but signIn returns it.
+                // const profile = authService.getUser(); 
+
+                if (profile.role === 'admin') router.push('/admin');
+                else if (profile.role === 'coach') router.push('/coach');
+                else router.push('/student');
             }
+
         } catch (err: any) {
             console.error('Login error:', err);
             const msg = (err.message || '').toLowerCase();
@@ -71,9 +66,10 @@ export default function LoginPage() {
         setError(null);
         setSuccessMsg(null);
         try {
-            const { error } = await authService.resendConfirmation(email);
-            if (error) throw error;
-            setSuccessMsg('Doğrulama e-postası tekrar gönderildi. Lütfen gelen kutunuzu ve spam klasörünü kontrol edin.');
+            // const { error } = await authService.resendConfirmation(email);
+            // if (error) throw error;
+            // setSuccessMsg('Doğrulama e-postası tekrar gönderildi. Lütfen gelen kutunuzu ve spam klasörünü kontrol edin.');
+            setError('Dev modunda bu özellik kullanılamaz.');
         } catch (err: any) {
             setError('E-posta gönderilemedi: ' + (err.message || 'Bilinmeyen hata'));
         } finally {
