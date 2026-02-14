@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Sidebar } from '@/components/ui/sidebar';
-import { supabaseAuthService as authService } from '@/lib/supabase-service';
+import { authService } from '@/lib/mock-service';
 import { Loader2 } from 'lucide-react';
 
 import { MotivationQuote } from '@/components/dashboard/motivation-quote';
