@@ -133,8 +133,8 @@ function RegisterContent() {
             console.error('Registration error:', err);
             if (err.message && err.message.includes('Type error')) {
                 setError('Bir sistem hatası oluştu. Lütfen sayfayı yenileyip tekrar deneyin.');
-            } else if (err.status === 429 || (err.message && err.message.includes('429'))) {
-                setError('Çok fazla deneme yaptınız. Lütfen 1-2 dakika bekleyip tekrar deneyin.');
+            } else if (err.status === 429 || (err.message && (err.message.includes('429') || err.message.includes('rate limit')))) {
+                setError('E-posta gönderim limiti aşıldı. Lütfen farklı bir e-posta adresi kullanın veya 1 saat bekleyin.');
             } else if (err.message && err.message.includes('defaults')) {
                 // Ignore defaults-related benign errors if registration succeeded
                 if (!error) return;
