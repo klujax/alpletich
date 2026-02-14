@@ -303,10 +303,18 @@ export const authService = {
         }
 
         await new Promise(resolve => setTimeout(resolve, 800));
-        let user = MOCK_USERS.find(u => u.email === email);
+        const normalizedEmail = email.toLowerCase();
+        let user = MOCK_USERS.find(u => u.email.toLowerCase() === normalizedEmail);
+
         if (!user && typeof window !== 'undefined') {
             const storedStudents = JSON.parse(localStorage.getItem('mock_students') || '[]');
-            user = storedStudents.find((u: Profile) => u.email === email);
+            user = storedStudents.find((u: Profile) => u.email.toLowerCase() === normalizedEmail);
+
+            // Also check mock_users if mock_students fails (fallback)
+            if (!user) {
+                const storedUsers = JSON.parse(localStorage.getItem('mock_users') || '[]'); // generic storage
+                user = storedUsers.find((u: Profile) => u.email.toLowerCase() === normalizedEmail);
+            }
         }
         if (user) {
             if (typeof window !== 'undefined') {
@@ -393,6 +401,12 @@ export const authService = {
         if (typeof window !== 'undefined') {
             localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(newUser));
             document.cookie = `mock_role=${newUser.role}; path=/`;
+
+            // Store in generic users list
+            const currentUsers: any[] = JSON.parse(localStorage.getItem('mock_users') || '[]');
+            currentUsers.push(newUser);
+            localStorage.setItem('mock_users', JSON.stringify(currentUsers));
+
             if (role === 'student') {
                 const currentStudents: any[] = JSON.parse(localStorage.getItem('mock_students') || '[]');
                 currentStudents.push(newUser);
@@ -556,6 +570,20 @@ export const dataService = {
             localStorage.setItem('mock_stores', JSON.stringify(stores));
         }
         return newStore;
+    },
+
+    // -- REALTIME --
+    subscribeToMessages: (callback: (payload: any) => void) => {
+        // Mock subscription
+        return {
+            unsubscribe: () => { }
+        };
+    },
+
+    // -- STORAGE --
+    uploadFile: async (bucket: string, path: string, file: File) => {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return URL.createObjectURL(file); // Return a local blob URL for preview
     },
 
     updateStore: async (storeData: GymStore) => {

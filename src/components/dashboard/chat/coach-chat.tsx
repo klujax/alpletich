@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Search, Send, User, ArrowLeft, Check, CheckCheck, Smile, ImagePlus } from 'lucide-react';
-import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { authService, dataService } from '@/lib/mock-service';
 import { Purchase, GymStore, Message, Conversation } from '@/lib/types';
 import { Profile } from '@/types/database';
 import { cn } from '@/lib/utils';
@@ -24,7 +24,7 @@ export function CoachChat() {
 
     // Realtime subscription
     useEffect(() => {
-        const sub = dataService.subscribeToMessages((payload) => {
+        const sub = (dataService as any).subscribeToMessages((payload: any) => {
             if (!currentUser) return;
 
             const newMessage = payload.new;
@@ -123,7 +123,7 @@ export function CoachChat() {
 
         try {
             const path = `chat/${Date.now()}_${file.name}`;
-            const publicUrl = await dataService.uploadFile('message-images', path, file);
+            const publicUrl = await (dataService as any).uploadFile('message-images', path, file);
 
             await dataService.sendMessage(currentUser.id, selectedPartner.id, '📷 Fotoğraf', publicUrl);
         } catch (error) {
