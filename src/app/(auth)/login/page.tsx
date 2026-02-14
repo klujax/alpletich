@@ -42,7 +42,14 @@ export default function LoginPage() {
                 }
             }
         } catch (err: any) {
-            setError(err.message || 'Giriş yapılamadı');
+            console.error('Login error:', err);
+            if (err.status === 400 || (err.message && err.message.includes('400'))) {
+                setError('E-posta veya şifre hatalı. Lütfen bilgilerinizi kontrol edin.');
+            } else if (err.status === 429 || (err.message && err.message.includes('429'))) {
+                setError('Çok fazla başarısız giriş denemesi. Lütfen bir süre bekleyip tekrar deneyin.');
+            } else {
+                setError(err.message || 'Giriş yapılamadı. Tekrar deneyin.');
+            }
         } finally {
             setIsLoading(false);
         }

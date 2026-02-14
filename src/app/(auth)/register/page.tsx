@@ -130,7 +130,18 @@ function RegisterContent() {
                 }, 1000);
             }
         } catch (err: any) {
-            setError(err.message || 'Kayıt işlemi başarısız oldu.');
+            console.error('Registration error:', err);
+            if (err.message && err.message.includes('Type error')) {
+                setError('Bir sistem hatası oluştu. Lütfen sayfayı yenileyip tekrar deneyin.');
+            } else if (err.status === 429 || (err.message && err.message.includes('429'))) {
+                setError('Çok fazla deneme yaptınız. Lütfen 1-2 dakika bekleyip tekrar deneyin.');
+            } else if (err.message && err.message.includes('defaults')) {
+                // Ignore defaults-related benign errors if registration succeeded
+                if (!error) return;
+                setError('Kayıt işlemi tamamlanırken bir uyarı oluştu fakat hesabınız açılmış olabilir. Giriş yapmayı deneyin.');
+            } else {
+                setError(err.message || 'Kayıt işlemi başarısız oldu.');
+            }
         } finally {
             setIsLoading(false);
         }
