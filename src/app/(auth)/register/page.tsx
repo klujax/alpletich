@@ -102,7 +102,7 @@ function RegisterContent() {
                             .replace(/(^-|-$)/g, '');
 
                         await dataService.createStore({
-                            owner_id: data.user.id,
+                            coach_id: data.user.id,
                             name: formData.storeName,
                             slug: slug,
                             description: 'Yeni spor mağazası', // Default description

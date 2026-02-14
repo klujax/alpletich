@@ -64,8 +64,7 @@ export const supabaseDataService = {
 
     // --- SPORTS ---
     async getSports(): Promise<any[]> {
-        // Return static list for now as per mock-service, or fetch from DB if table exists.
-        // Assuming static for simplicity and consistency with current frontend expectations.
+        // Return static list for now as per mock-service
         return [
             { id: 'fitness', name: 'Fitness', icon: '🏋️', coachId: '', description: '', color: 'bg-blue-500', createdAt: new Date().toISOString() },
             { id: 'yoga', name: 'Yoga', icon: '🧘', coachId: '', description: '', color: 'bg-indigo-500', createdAt: new Date().toISOString() },
