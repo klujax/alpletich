@@ -11,7 +11,7 @@ import {
     Search, Star, Users, ShoppingBag, Store, Filter, Check, ChevronRight, ChevronLeft, Clock, MessageCircle, Award, Target, Sparkles, TrendingUp, Zap, CalendarDays
 } from 'lucide-react';
 import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
-import { GymStore, SalesPackage, SportCategory, Review, GroupClass } from '@/lib/mock-service'; // Keep types
+import { GymStore, SalesPackage, SportCategory, Review, GroupClass } from '@/lib/types';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 

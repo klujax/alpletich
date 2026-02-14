@@ -9,7 +9,8 @@ import {
     Profile,
     Message,
     Conversation,
-    Review
+    Review,
+    SystemStats,
 } from './types';
 
 // HELPER: Map snake_case to camelCase
@@ -66,16 +67,16 @@ export const supabaseDataService = {
         // Return static list for now as per mock-service, or fetch from DB if table exists.
         // Assuming static for simplicity and consistency with current frontend expectations.
         return [
-            { id: 'fitness', name: 'Fitness', icon: '🏋️' },
-            { id: 'yoga', name: 'Yoga', icon: '🧘' },
-            { id: 'pilates', name: 'Pilates', icon: '🤸' },
-            { id: 'swimming', name: 'Yüzme', icon: '🏊' },
-            { id: 'basketball', name: 'Basketbol', icon: '🏀' },
-            { id: 'football', name: 'Futbol', icon: '⚽' },
-            { id: 'tennis', name: 'Tenis', icon: '🎾' },
-            { id: 'boxing', name: 'Boks', icon: '🥊' },
-            { id: 'kickboxing', name: 'Kick Boks', icon: '🥋' },
-            { id: 'crossfit', name: 'Crossfit', icon: '🏋️‍♂️' },
+            { id: 'fitness', name: 'Fitness', icon: '🏋️', coachId: '', description: '', color: 'bg-blue-500', createdAt: new Date().toISOString() },
+            { id: 'yoga', name: 'Yoga', icon: '🧘', coachId: '', description: '', color: 'bg-indigo-500', createdAt: new Date().toISOString() },
+            { id: 'pilates', name: 'Pilates', icon: '🤸', coachId: '', description: '', color: 'bg-pink-500', createdAt: new Date().toISOString() },
+            { id: 'swimming', name: 'Yüzme', icon: '🏊', coachId: '', description: '', color: 'bg-cyan-500', createdAt: new Date().toISOString() },
+            { id: 'basketball', name: 'Basketbol', icon: '🏀', coachId: '', description: '', color: 'bg-orange-500', createdAt: new Date().toISOString() },
+            { id: 'football', name: 'Futbol', icon: '⚽', coachId: '', description: '', color: 'bg-green-500', createdAt: new Date().toISOString() },
+            { id: 'tennis', name: 'Tenis', icon: '🎾', coachId: '', description: '', color: 'bg-yellow-500', createdAt: new Date().toISOString() },
+            { id: 'boxing', name: 'Boks', icon: '🥊', coachId: '', description: '', color: 'bg-red-500', createdAt: new Date().toISOString() },
+            { id: 'kickboxing', name: 'Kick Boks', icon: '🥋', coachId: '', description: '', color: 'bg-red-600', createdAt: new Date().toISOString() },
+            { id: 'crossfit', name: 'Crossfit', icon: '🏋️‍♂️', coachId: '', description: '', color: 'bg-slate-800', createdAt: new Date().toISOString() },
         ];
     },
 
@@ -151,9 +152,14 @@ export const supabaseDataService = {
     },
 
     // --- GROUP CLASSES ---
-    async getGroupClasses(): Promise<GroupClass[]> {
+    async getGroupClasses(coachId?: string, shopId?: string): Promise<GroupClass[]> {
         const sb = getSupabase() as any;
-        const { data } = await sb.from('group_classes').select('*').order('scheduled_at', { ascending: true });
+        let query = sb.from('group_classes').select('*').order('scheduled_at', { ascending: true });
+
+        if (coachId) query = query.eq('coach_id', coachId);
+        if (shopId) query = query.eq('shop_id', shopId);
+
+        const { data } = await query;
 
         // Auto-renewal logic is mocked in frontend, but specialized backend job needed for real.
         // For now, we return what's in DB.
@@ -454,6 +460,126 @@ export const supabaseDataService = {
                 (payload) => callback(payload)
             )
             .subscribe();
+    },
+    async getStoreFinancials(storeId: string) {
+        const sb = getSupabase() as any;
+
+        // Get store purchases
+        const { data: purchases } = await sb.from('purchases').select('*').eq('shop_id', storeId);
+
+        const totalRevenue = purchases ? purchases.reduce((sum: number, p: any) => sum + (p.amount_paid || 0), 0) : 0;
+        const totalExpenses = totalRevenue * 0.2; // Mock
+        const netProfit = totalRevenue - totalExpenses;
+
+        // Mock monthly data
+        const monthlyData = [
+            { month: 'Oca', revenue: totalRevenue * 0.1, expenses: totalExpenses * 0.1 },
+            { month: 'Şub', revenue: totalRevenue * 0.15, expenses: totalExpenses * 0.15 },
+            { month: 'Mar', revenue: totalRevenue * 0.2, expenses: totalExpenses * 0.2 },
+            { month: 'Nis', revenue: totalRevenue * 0.25, expenses: totalExpenses * 0.25 },
+            { month: 'May', revenue: totalRevenue * 0.3, expenses: totalExpenses * 0.3 },
+        ];
+
+        return {
+            storeId,
+            totalRevenue,
+            totalExpenses,
+            netProfit,
+            monthlyData,
+            recentTransactions: [] // Mock empty for now
+        };
+    },
+    async getStoreByOwnerId(ownerId: string): Promise<GymStore | null> {
+        const sb = getSupabase() as any;
+        const { data } = await sb.from('gym_stores').select('*').eq('owner_id', ownerId).single();
+        return data ? toCamels(data) : null;
+    },
+
+    async getCoachStudents(coachId: string): Promise<Profile[]> {
+        const sb = getSupabase() as any;
+        // Coach-Student relationship is usually in a separate table like 'coach_students'
+        // But for verified purchases or specific logic, we might query differently.
+        // Assuming 'coach_students' table exists based on types.database.ts
+        const { data } = await sb
+            .from('coach_students')
+            .select(`
+                student:profiles(*)
+            `)
+            .eq('coach_id', coachId)
+            .eq('status', 'active');
+
+        return data ? data.map((d: any) => d.student) : [];
+    },
+
+    async getCoachPurchases(coachId: string): Promise<Purchase[]> {
+        const sb = getSupabase() as any;
+        // Query purchases joined with packages to filter by coach_id
+        const { data, error } = await sb
+            .from('purchases')
+            .select(`
+                *,
+                package:sales_packages!inner(coach_id, name)
+            `)
+            .eq('package.coach_id', coachId); // !inner join allows filtering on joined table
+
+        if (error || !data) return [];
+
+        return data.map((p: any) => ({
+            id: p.id,
+            studentId: p.user_id,
+            userId: p.user_id,
+            coachId: p.package?.coach_id || coachId,
+            shopId: p.shop_id,
+            packageId: p.package_id,
+            type: 'package',
+            packageName: p.package?.name || 'Unknown Package',
+            price: p.amount_paid,
+            amountPaid: p.amount_paid,
+            purchasedAt: p.purchased_at,
+            expiresAt: p.expires_at,
+            status: p.status,
+            packageSnapshot: p.package_snapshot
+        })) as unknown as Purchase[];
+    },
+
+    async getSystemStats(): Promise<SystemStats> {
+        const sb = getSupabase() as any;
+
+        const { count: totalUsers } = await sb.from('profiles').select('*', { count: 'exact', head: true });
+        const { count: totalCoaches } = await sb.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'coach');
+        const { count: totalStudents } = await sb.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student');
+        const { count: bannedUsers } = await sb.from('profiles').select('*', { count: 'exact', head: true }).eq('is_banned', true);
+
+        const { count: totalStores } = await sb.from('gym_stores').select('*', { count: 'exact', head: true });
+        const { count: activeStores } = await sb.from('gym_stores').select('*', { count: 'exact', head: true }).eq('is_active', true);
+        const { count: bannedStores } = await sb.from('gym_stores').select('*', { count: 'exact', head: true }).eq('is_banned', true);
+
+        // Purchases & Revenue
+        const { data: purchases } = await sb.from('purchases').select('amount_paid');
+        const totalRevenue = purchases ? purchases.reduce((sum: number, p: any) => sum + (p.amount_paid || 0), 0) : 0;
+        const totalPurchases = purchases ? purchases.length : 0;
+
+        // Mocking expenses and growth for now as they require time-series data or complex queries
+        const totalExpenses = totalRevenue * 0.2;
+        const netProfit = totalRevenue - totalExpenses;
+        const platformCommission = totalRevenue * 0.1;
+        const monthlyGrowth = 15; // Mock
+
+        return {
+            totalUsers: totalUsers || 0,
+            totalCoaches: totalCoaches || 0,
+            totalStudents: totalStudents || 0,
+            bannedUsers: bannedUsers || 0,
+            totalStores: totalStores || 0,
+            activeStores: activeStores || 0,
+            bannedStores: bannedStores || 0,
+            totalPurchases,
+            totalRevenue,
+            totalExpenses,
+            netProfit,
+            platformCommission,
+            monthlyGrowth
+        };
     }
 };
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
-import { Purchase, GroupClass } from '@/lib/mock-service'; // Keep types for now
+import { Purchase, GroupClass } from '@/lib/types';
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,14 +25,11 @@ export default function StudentDashboard() {
             setUser(currentUser);
             if (!currentUser) return;
 
-            const [purchaseData, allClasses] = await Promise.all([
-                dataService.getPurchases(), // Supabase service getPurchases usually gets all, we need to filter or it might already filter by RLS?
-                // Checking supabase-service implementation: getPurchases() returns all.
-                // We will filter client side for now.
-                dataService.getGroupClasses(),
+            const [myPurchases, allClasses] = await Promise.all([
+                dataService.getPurchases(currentUser.id),
+                dataService.getGroupClasses(), // TODO: Filter by enrolled classes server-side?
             ]);
 
-            const myPurchases = purchaseData.filter((p: Purchase) => p.studentId === currentUser.id);
             setPurchases(myPurchases);
 
             // Katıldığı sınıfları filtrele

@@ -3,16 +3,20 @@
 import { useEffect, useState } from 'react';
 import { CoachChat } from '@/components/dashboard/chat/coach-chat';
 import { StudentChat } from '@/components/dashboard/chat/student-chat';
-import { authService, Profile } from '@/lib/mock-service';
+import { supabaseAuthService as authService } from '@/lib/supabase-service';
+import { Profile } from '@/types/database';
 
 export default function ChatPage() {
     const [user, setUser] = useState<Profile | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const currentUser = authService.getUser();
-        setUser(currentUser);
-        setIsLoading(false);
+        async function load() {
+            const currentUser = await authService.getUser();
+            setUser(currentUser);
+            setIsLoading(false);
+        }
+        load();
     }, []);
 
     // Hide mobile bottom nav and layout padding when chat is open

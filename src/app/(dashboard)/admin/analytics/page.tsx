@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { dataService } from '@/lib/mock-service';
+import { supabaseDataService } from '@/lib/supabase-service';
+import { SystemStats } from '@/lib/types';
 import {
     ArrowLeft,
     TrendingUp,
@@ -22,22 +23,6 @@ import {
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-
-interface SystemStats {
-    totalUsers: number;
-    totalCoaches: number;
-    totalStudents: number;
-    bannedUsers: number;
-    totalStores: number;
-    activeStores: number;
-    bannedStores: number;
-    totalPurchases: number;
-    totalRevenue: number;
-    totalExpenses: number;
-    netProfit: number;
-    platformCommission: number;
-    monthlyGrowth: number;
-}
 
 // Mock monthly data
 const MONTHLY_DATA = [
@@ -73,7 +58,7 @@ export default function AdminAnalyticsPage() {
 
     const loadStats = async () => {
         setIsLoading(true);
-        const data = await dataService.getSystemStats();
+        const data = await supabaseDataService.getSystemStats();
         setStats(data);
         setIsLoading(false);
     };

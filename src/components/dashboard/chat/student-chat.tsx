@@ -5,21 +5,13 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Search, Send, ArrowLeft, Check, CheckCheck, Smile, ImagePlus, Lock, Store } from 'lucide-react';
 import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
-import { Message, Profile, Purchase, GymStore } from '@/lib/mock-service'; // Types still from mock-service? Or move types to supabase-service?
-// Actually supabase-service imports types from './types', which might be better to import from there or rely on inference.
-// But to minimize diffs, let's keep types import if they match.
-// Wait, supabase-service exports types? No.
-// Let's use types from '@/lib/types' if possible or keep mock-service types if they are compatible.
-// `supabase-service.ts` imports from `./types`. Let's assume `@/lib/types` exists and is the source.
+import { Purchase, GymStore, Message, Conversation } from '@/lib/types';
+import { Profile } from '@/types/database';
 
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
-interface Conversation {
-    partner: Profile;
-    lastMessage?: Message;
-    unreadCount: number;
-}
+
 
 export function StudentChat() {
     const router = useRouter();

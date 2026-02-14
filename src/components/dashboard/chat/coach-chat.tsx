@@ -4,15 +4,10 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Search, Send, User, ArrowLeft, Check, CheckCheck, Smile, ImagePlus } from 'lucide-react';
 import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
-import { Message, Profile } from '@/lib/mock-service';
+import { Purchase, GymStore, Message, Conversation } from '@/lib/types';
+import { Profile } from '@/types/database';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-
-interface Conversation {
-    partner: Profile;
-    lastMessage?: Message;
-    unreadCount: number;
-}
 
 export function CoachChat() {
     const [conversations, setConversations] = useState<Conversation[]>([]);

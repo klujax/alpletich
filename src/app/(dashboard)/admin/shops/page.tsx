@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { dataService } from '@/lib/mock-service';
+import { supabaseDataService } from '@/lib/supabase-service'; // Fixed import
 import {
     Store,
     Search,
@@ -47,7 +47,7 @@ export default function AdminShopsPage() {
 
     const loadStores = async () => {
         setIsLoading(true);
-        const data = await dataService.getStores();
+        const data = await supabaseDataService.getStores();
         setStores(data);
         setIsLoading(false);
     };
@@ -57,8 +57,8 @@ export default function AdminShopsPage() {
         setShowFinancialModal(true);
         setFinancialsLoading(true);
 
-        const financials = await dataService.getStoreFinancials(store.id);
-        financials.netProfit = financials.totalRevenue - financials.totalExpenses;
+        const financials = await supabaseDataService.getStoreFinancials(store.id);
+        // Financials from service already includes netProfit
         setStoreFinancials(financials);
         setFinancialsLoading(false);
     };

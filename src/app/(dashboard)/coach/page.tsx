@@ -7,12 +7,15 @@ import {
     Users, Store, Plus, TrendingUp, ChevronRight, ShoppingBag,
     CalendarDays, Star, DollarSign, MessageCircle, Package
 } from 'lucide-react';
-import { dataService, authService, GymStore, SalesPackage, Purchase, GroupClass } from '@/lib/mock-service';
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { GymStore, SalesPackage, Purchase, GroupClass } from '@/lib/types';
+import { Profile } from '@/types/database';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
 export default function CoachDashboard() {
+    const [user, setUser] = useState<Profile | null>(null);
     const [store, setStore] = useState<GymStore | null>(null);
     const [packages, setPackages] = useState<SalesPackage[]>([]);
     const [classes, setClasses] = useState<GroupClass[]>([]);
@@ -22,15 +25,17 @@ export default function CoachDashboard() {
 
     useEffect(() => {
         async function load() {
-            const user = authService.getUser();
-            if (!user) return;
+            const currentUser = await authService.getUser();
+            if (!currentUser) return;
+            setUser(currentUser); // Set user state
 
-            const [shopData, pkgs, cls, students, allPurchases] = await Promise.all([
-                dataService.getStoreByCoachId(user.id),
-                dataService.getPackages(user.id),
-                dataService.getGroupClasses(user.id),
-                dataService.getStudentsByCoach(user.id),
-                dataService.getPurchases(),
+            // Note: Parallel fetching
+            const [shopData, pkgs, cls, students, myPurchases] = await Promise.all([
+                dataService.getStoreByOwnerId(currentUser.id),
+                dataService.getPackages(currentUser.id),
+                dataService.getGroupClasses(currentUser.id),
+                dataService.getCoachStudents(currentUser.id),
+                dataService.getCoachPurchases(currentUser.id),
             ]);
 
             setStore(shopData);
@@ -38,7 +43,7 @@ export default function CoachDashboard() {
             setClasses(cls);
             setStudentCount(students.length);
 
-            const myPurchases = allPurchases.filter((p: Purchase) => p.coachId === user.id);
+            // Purchases are already filtered by coachId in getCoachPurchases
             const revenue = myPurchases.reduce((sum: number, p: Purchase) => sum + p.price, 0);
             setTotalRevenue(revenue);
 
@@ -67,10 +72,10 @@ export default function CoachDashboard() {
                             Eğitmen Paneli
                         </div>
                         <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">
-                            Hoş geldin, {authService.getUser()?.full_name?.split(' ')[0]}! 👋
+                            Hoş geldin, {user?.full_name?.split(' ')[0]}! 👋
                         </h1>
                         <p className="text-slate-500 font-bold text-lg">
-                            {store ? `${store.name} • ${store.totalStudents} aktif öğrenci` : 'Henüz bir dükkanın bulunmuyor. Hemen bir tane oluştur!'}
+                            {store ? `${store.name} • ${studentCount} aktif öğrenci` : 'Henüz bir dükkanın bulunmuyor. Hemen bir tane oluştur!'}
                         </p>
                     </div>
                     {!store && (

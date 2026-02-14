@@ -3,6 +3,22 @@ import { UserRole, Profile } from '@/types/database';
 
 export type { UserRole, Profile };
 
+export interface SystemStats {
+    totalUsers: number;
+    totalCoaches: number;
+    totalStudents: number;
+    bannedUsers: number;
+    totalStores: number;
+    activeStores: number;
+    bannedStores: number;
+    totalPurchases: number;
+    totalRevenue: number;
+    totalExpenses: number;
+    netProfit: number;
+    platformCommission: number;
+    monthlyGrowth: number;
+}
+
 export interface SalesPackage {
     id: string;
     coachId: string;
@@ -101,6 +117,7 @@ export interface SportCategory {
     description: string;
     color: string;
     isSystemDefault?: boolean;
+    createdAt: string;
 }
 
 export interface GroupClass {
@@ -127,6 +144,7 @@ export interface GroupClass {
 export interface Purchase {
     id: string;
     studentId: string;
+    userId: string;
     coachId: string;
     shopId: string;
     packageId?: string;
@@ -134,6 +152,7 @@ export interface Purchase {
     type: 'package' | 'group_class';
     packageName: string;
     price: number;
+    amountPaid: number;
     status: 'active' | 'expired' | 'refunded';
     purchasedAt: string;
     expiresAt?: string;

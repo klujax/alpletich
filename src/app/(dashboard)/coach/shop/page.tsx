@@ -8,7 +8,8 @@ import { Modal } from '@/components/ui/modal';
 import {
     Store, Edit, Star, Users, DollarSign, Package, Eye, ExternalLink, Settings
 } from 'lucide-react';
-import { dataService, authService, GymStore, SalesPackage, Review, SportCategory } from '@/lib/mock-service';
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { GymStore, SalesPackage, Review, SportCategory } from '@/lib/types';
 import { toast } from 'sonner';
 
 export const dynamic = 'force-dynamic';
@@ -29,15 +30,15 @@ export default function CoachShopPage() {
 
     const loadData = async () => {
         setIsLoading(true);
-        const user = authService.getUser();
+        const user = await authService.getUser();
         if (!user) return;
         const [shopData, pkgs, revs, sportsData] = await Promise.all([
-            dataService.getStoreByCoachId(user.id),
+            dataService.getCoachStore(user.id),
             dataService.getPackages(user.id),
             dataService.getReviews(undefined, user.id),
             dataService.getSports(),
         ]);
-        setStore(shopData);
+        setStore(shopData || null);
         setPackages(pkgs);
         setReviews(revs);
         setSports(sportsData);
@@ -45,22 +46,40 @@ export default function CoachShopPage() {
     };
 
     const handleCreateStore = async () => {
-        const user = authService.getUser();
+        const user = await authService.getUser();
         if (!user || !newShopName) return;
-        await dataService.createStore(user.id, newShopName, newShopCategory || 'Genel');
-        setIsCreateModalOpen(false);
-        setNewShopName('');
-        setNewShopCategory('');
-        toast.success('Dükkanın başarıyla açıldı! 🎉');
-        loadData();
+
+        try {
+            await dataService.createStore({
+                owner_id: user.id, // Using owner_id as expected by DB via any cast in service or if types align
+                name: newShopName,
+                category: newShopCategory || 'Genel',
+                slug: newShopName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+                description: 'Yeni dükkan'
+            } as any);
+
+            setIsCreateModalOpen(false);
+            setNewShopName('');
+            setNewShopCategory('');
+            toast.success('Dükkanın başarıyla açıldı! 🎉');
+            loadData();
+        } catch (error) {
+            console.error(error);
+            toast.error('Dükkan oluşturulamadı');
+        }
     };
 
     const handleUpdateStore = async () => {
         if (!store) return;
-        await dataService.updateStore({ ...store, ...editData });
-        setIsEditModalOpen(false);
-        toast.success('Dükkan bilgileri güncellendi');
-        loadData();
+        try {
+            await dataService.updateStore({ ...store, ...editData });
+            setIsEditModalOpen(false);
+            toast.success('Dükkan bilgileri güncellendi');
+            loadData();
+        } catch (error) {
+            console.error(error);
+            toast.error('Güncelleme başarısız');
+        }
     };
 
     const openEditModal = () => {

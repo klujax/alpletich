@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { dataService } from '@/lib/mock-service';
+import { supabaseDataService } from '@/lib/supabase-service'; // Fixed import
 import {
     Users,
     Search,
@@ -51,18 +51,19 @@ export default function AdminUsersPage() {
 
     const loadUsers = async () => {
         setIsLoading(true);
-        const data = await dataService.getAllUsers();
+        const data = await supabaseDataService.getAllUsers();
         // Filter out admin users - only show coaches and students
-        setUsers(data.filter((u: any) => u.role !== 'admin'));
+        // Need to cast to compatible type or ensure getAllUsers returns compatible generic
+        setUsers(data.filter((u: any) => u.role !== 'admin') as unknown as UserWithBan[]);
         setIsLoading(false);
     };
 
     const handleBanUser = async (userId: string, isBanned: boolean) => {
         setActionLoading(true);
         if (isBanned) {
-            await dataService.unbanUser(userId);
+            await supabaseDataService.unbanUser(userId);
         } else {
-            await dataService.banUser(userId);
+            await supabaseDataService.banUser(userId);
         }
         await loadUsers();
         setActionLoading(false);
@@ -71,7 +72,7 @@ export default function AdminUsersPage() {
     const handleDeleteUser = async () => {
         if (!selectedUser) return;
         setActionLoading(true);
-        await dataService.deleteUser(selectedUser.id);
+        await supabaseDataService.deleteUser(selectedUser.id);
         await loadUsers();
         setShowDeleteModal(false);
         setSelectedUser(null);

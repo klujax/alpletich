@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { dataService } from '@/lib/mock-service';
+import { supabaseDataService } from '@/lib/supabase-service';
+import { SystemStats } from '@/lib/types';
 import {
     Users,
     Store,
@@ -21,22 +22,6 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
-interface SystemStats {
-    totalUsers: number;
-    totalCoaches: number;
-    totalStudents: number;
-    bannedUsers: number;
-    totalStores: number;
-    activeStores: number;
-    bannedStores: number;
-    totalPurchases: number;
-    totalRevenue: number;
-    totalExpenses: number;
-    netProfit: number;
-    platformCommission: number;
-    monthlyGrowth: number;
-}
-
 export default function AdminDashboard() {
     const [stats, setStats] = useState<SystemStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -47,7 +32,7 @@ export default function AdminDashboard() {
 
     const loadStats = async () => {
         setIsLoading(true);
-        const data = await dataService.getSystemStats();
+        const data = await supabaseDataService.getSystemStats();
         setStats(data);
         setIsLoading(false);
     };

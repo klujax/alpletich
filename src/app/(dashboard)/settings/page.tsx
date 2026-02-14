@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Bell, Lock, User, Shield, LogOut, Loader2, Save, Smartphone, Mail } from 'lucide-react';
 import { toast } from 'sonner';
-import { authService } from '@/lib/mock-service';
+import { supabaseAuthService as authService } from '@/lib/supabase-service'; // Use real service
 import { Profile } from '@/types/database';
 
 export default function SettingsPage() {
@@ -25,7 +25,7 @@ export default function SettingsPage() {
 
     useEffect(() => {
         const loadUser = async () => {
-            const userData = authService.getUser();
+            const userData = await authService.getUser();
             if (userData) {
                 setUser(userData);
                 setFullName(userData.full_name || '');
@@ -41,6 +41,7 @@ export default function SettingsPage() {
         if (!user) return;
         setIsSaving(true);
         try {
+            // supabase-service updateProfile might return slightly different structure, check it
             const { user: updatedUser, error } = await authService.updateProfile(user.id, {
                 full_name: fullName,
                 phone: phone,
@@ -48,7 +49,7 @@ export default function SettingsPage() {
             });
 
             if (error) {
-                toast.error(error);
+                toast.error(error.message || 'Güncelleme hatası');
             } else if (updatedUser) {
                 setUser(updatedUser);
                 toast.success('Profil bilgileriniz güncellendi.');

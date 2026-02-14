@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { dataService, GymStore, Purchase } from '@/lib/mock-service';
+import { supabaseDataService } from '@/lib/supabase-service';
+import { GymStore, Purchase } from '@/lib/types';
 import { DollarSign, TrendingUp, TrendingDown, PiggyBank, Store } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -15,8 +16,8 @@ export default function AdminRevenuePage() {
     useEffect(() => {
         async function load() {
             const [storeData, purchaseData] = await Promise.all([
-                dataService.getStores(),
-                dataService.getPurchases(),
+                supabaseDataService.getStores(),
+                supabaseDataService.getPurchases(),
             ]);
             setStores(storeData);
             setPurchases(purchaseData);

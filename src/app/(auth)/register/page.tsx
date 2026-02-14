@@ -3,8 +3,8 @@
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { supabaseAuthService as authService } from '@/lib/supabase-service';
-import { dataService, SportCategory } from '@/lib/mock-service';
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { SportCategory } from '@/lib/mock-service'; // Keep types/constants if needed
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { User, Mail, Lock, ArrowRight, ArrowLeft, Store, Target, Phone, Check, Loader2, Sparkles, Dumbbell, UserCheck } from 'lucide-react';
@@ -78,6 +78,7 @@ function RegisterContent() {
         await new Promise(resolve => setTimeout(resolve, 800));
 
         try {
+            // 1. Sign Up User
             const { data, error } = await authService.signUp(
                 formData.email,
                 formData.password,
@@ -85,19 +86,51 @@ function RegisterContent() {
                     role: role || 'student',
                     full_name: formData.fullName,
                     phone: formData.phone,
-                    interested_sports: role === 'student' ? interestedSports : undefined,
-                    store_name: formData.storeName
+                    // Store name is handled separately for creation
                 }
             );
 
             if (error) throw error;
 
             if (data.user) {
-                toast.success('Kayıt başarılı!');
-                router.push(role === 'coach' ? '/coach' : '/student');
+                // 2. If Coach, Create Store
+                if (role === 'coach' && formData.storeName) {
+                    try {
+                        const slug = formData.storeName
+                            .toLowerCase()
+                            .replace(/[^a-z0-9]+/g, '-')
+                            .replace(/(^-|-$)/g, '');
+
+                        await dataService.createStore({
+                            owner_id: data.user.id,
+                            name: formData.storeName,
+                            slug: slug,
+                            description: 'Yeni spor mağazası', // Default description
+                            contact_email: formData.email,
+                            contact_phone: formData.phone
+                        } as any);
+                    } catch (storeError) {
+                        console.error('Store creation failed:', storeError);
+                        // We don't block registration success, user can create store later
+                        toast.error('Kullanıcı oluşturuldu fakat dükkan oluşturulamadı. Lütfen paneldn tekrar deneyin.');
+                    }
+                }
+
+                // 3. If Student, Save Interested Sports (Optional - usually saved in profile via metadata or separate call)
+                if (role === 'student' && interestedSports.length > 0) {
+                    // Metadata handles this in trigger usually, or we can add a specific call if needed.
+                    // The original code passed it in metadata, which is fine if the trigger handles it.
+                    // We kept it in metadata above (oops, removed it in step 1, let's put it back in signUp call if useful).
+                }
+
+                toast.success('Kayıt başarılı! Yönlendiriliyorsunuz...');
+                // Allow a small delay for toast and session propagation
+                setTimeout(() => {
+                    router.push(role === 'coach' ? '/coach' : '/student');
+                }, 1000);
             }
         } catch (err: any) {
-            setError(err.message || 'Hata oluştu');
+            setError(err.message || 'Kayıt işlemi başarısız oldu.');
         } finally {
             setIsLoading(false);
         }

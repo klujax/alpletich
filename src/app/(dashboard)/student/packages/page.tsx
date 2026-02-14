@@ -5,7 +5,7 @@ import { Package, Calendar, Clock, CheckCircle2, ShoppingBag } from 'lucide-reac
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
-import { Purchase } from '@/lib/mock-service';
+import { Purchase } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,9 +18,8 @@ export default function StudentPackagesPage() {
             const user = await authService.getUser();
             if (!user) return;
 
-            // Get Purchases
-            const allPurchases = await dataService.getPurchases();
-            const myPurchases = allPurchases.filter((p: Purchase) => p.studentId === user.id);
+            // Get Purchases filtered by user
+            const myPurchases = await dataService.getPurchases(user.id);
 
             // Map to UI model
             const mappedPackages = await Promise.all(myPurchases.map(async (p: Purchase) => {
