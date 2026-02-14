@@ -528,6 +528,10 @@ export const authService = {
 
     getSessionUser: async () => {
         if (isSupabaseConfigured && supabase) {
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError || !session) {
+                return { user: null, error: sessionError || 'No session found' };
+            }
             const { data: { user }, error } = await supabase.auth.getUser();
             return { user, error };
         }
