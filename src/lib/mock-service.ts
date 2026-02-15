@@ -278,13 +278,20 @@ export const authService = {
     signIn: async (email: string, password?: string) => {
         if (isSupabaseConfigured && supabase) {
             try {
-                // We know supabase is not null here due to the check on line 279,
-                // but TypeScript's control flow analysis might not pick it up if 'supabase' is imported/global.
-                // Assuming 'supabase' variable from closure or import is what we check.
-                const { data, error } = await supabase!.auth.signInWithPassword({
+                const { data, error } = await supabase.auth.signInWithPassword({
                     email, password: password || '123456',
                 });
-                if (error) return { user: null, error: error!.message };
+
+                if (error) {
+                    if (error.message.includes("Email not confirmed")) {
+                        return { user: null, error: "Lütfen e-posta adresinize gelen onay linkine tıklayarak hesabınızı doğrulayın." };
+                    }
+                    if (error.message.includes("Invalid login credentials")) {
+                        return { user: null, error: "E-posta veya şifre hatalı." };
+                    }
+                    return { user: null, error: error.message };
+                }
+
                 if (data.user) {
                     let { data: profile, error: profileError } = await supabase!
                         .from('profiles').select('*').eq('id', data.user!.id).single();
@@ -351,11 +358,37 @@ export const authService = {
     signUp: async (email: string, role: UserRole, fullName: string, password?: string, phone?: string, interestedSports?: string[], storeName?: string) => {
         if (isSupabaseConfigured && supabase) {
             try {
+                // Determine redirect URL based on environment
+                const redirectTo = typeof window !== 'undefined'
+                    ? `${window.location.origin}/auth/callback`
+                    : undefined;
+
                 const { data, error } = await supabase.auth.signUp({
-                    email, password: password || '123456',
-                    options: { data: { full_name: fullName, role: role, phone: phone, interested_sports: interestedSports } }
+                    email,
+                    password: password || '123456',
+                    options: {
+                        data: { full_name: fullName, role: role, phone: phone, interested_sports: interestedSports },
+                        emailRedirectTo: redirectTo
+                    }
                 });
-                if (error) return { user: null, error: error.message };
+
+                if (error) {
+                    console.error("Supabase SignUp Error:", error);
+                    // Translate common errors
+                    if (error.message.includes("Database error")) return { user: null, error: "Veritabanı hatası. Lütfen daha sonra tekrar deneyin." };
+                    if (error.message.includes("unique constraint")) return { user: null, error: "Bu e-posta adresi zaten kayıtlı." };
+                    if (error.message.includes("rate limit")) return { user: null, error: "Çok fazla deneme yaptınız. Lütfen biraz bekleyin." };
+                    return { user: null, error: error.message };
+                }
+
+                // Check if session is missing (implies email confirmation required)
+                if (data.user && !data.session) {
+                    return {
+                        user: null,
+                        error: "Kayıt başarılı! Lütfen e-posta adresinize (spam kutusu dahil) gelen onay linkine tıklayın."
+                    };
+                }
+
                 if (data.user) {
                     const newUser: Profile = {
                         id: data.user.id, email, role, full_name: fullName,
