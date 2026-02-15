@@ -1,13 +1,13 @@
 'use client';
 
-import { authService, dataService } from '@/lib/mock-service';
-import { GroupClass } from '@/lib/mock-service'; // Keep types 
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { GroupClass } from '@/lib/types'; // Correct types 
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CalendarDays, Clock, Users, Video, ChevronRight } from 'lucide-react';
 import { Profile } from '@/lib/types';
-import { Purchase } from '@/lib/mock-service';
+import { Purchase } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 

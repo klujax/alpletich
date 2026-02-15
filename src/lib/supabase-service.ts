@@ -207,7 +207,11 @@ export const supabaseDataService = {
 
         const { data, error } = await query;
         if (error) {
-            console.warn('Supabase getGroupClasses error (Table missing?):', error.message);
+            if (error.code === '404' || error.message.includes('404')) {
+                console.error('CRITICAL: "group_classes" table not found within Supabase. Please run "supabase/migrations/999_fix_all_missing_tables.sql" in your Supabase SQL Editor.');
+            } else {
+                console.warn('Supabase getGroupClasses error:', error.message);
+            }
             return [];
         }
 

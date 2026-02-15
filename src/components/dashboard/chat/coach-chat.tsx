@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Search, Send, User, ArrowLeft, Check, CheckCheck, Smile, ImagePlus } from 'lucide-react';
-import { authService, dataService } from '@/lib/mock-service';
+import { MessageCircle, Search, Send, User, ArrowLeft, Check, CheckCheck, Smile, ImagePlus, Video } from 'lucide-react';
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
 import { Purchase, GymStore, Message, Conversation } from '@/lib/types';
 import { Profile } from '@/types/database';
 import { cn } from '@/lib/utils';
@@ -325,6 +325,8 @@ export function CoachChat() {
                                     Çevrimiçi
                                 </p>
                             </div>
+
+
                         </div>
 
                         {/* Messages */}

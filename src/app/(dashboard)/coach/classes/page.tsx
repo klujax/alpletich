@@ -10,7 +10,8 @@ import { Modal } from '@/components/ui/modal';
 import {
     Plus, CalendarDays, Users, Clock, Video, Link2, CheckCircle, XCircle
 } from 'lucide-react';
-import { dataService, authService, GroupClass, GymStore, SportCategory } from '@/lib/mock-service';
+import { supabaseDataService as dataService, supabaseAuthService as authService } from '@/lib/supabase-service';
+import { GroupClass, GymStore, SportCategory } from '@/lib/types';
 import { toast } from 'sonner';
 
 export const dynamic = 'force-dynamic';
@@ -31,21 +32,29 @@ export default function CoachClassesPage() {
 
     const loadData = async () => {
         setIsLoading(true);
-        const user = authService.getUser();
+        const user = await authService.getUser();
         if (!user) return;
-        const [cls, shopData, sportsData] = await Promise.all([
-            dataService.getGroupClasses(user.id),
-            dataService.getStoreByCoachId(user.id),
+
+        // Supabase implementation quirks: some methods might return promises directly, some might not match mock EXACTLY.
+        // We will fetch stores and find the coach's store manually if getStoreByCoachId doesn't exist.
+
+        const [cls, stores, sportsData] = await Promise.all([
+            dataService.getGroupClasses(), // Supabase service usually returns all, need to filter by coachId
+            dataService.getStores(),
             dataService.getSports(),
         ]);
-        setClasses(cls);
-        setStore(shopData);
+
+        const myStore = stores.find(s => s.coachId === user.id) || null;
+        const myClasses = cls.filter((c: GroupClass) => c.coachId === user.id);
+
+        setClasses(myClasses);
+        setStore(myStore);
         setSports(sportsData);
         setIsLoading(false);
     };
 
     const handleCreate = async () => {
-        const user = authService.getUser();
+        const user = await authService.getUser();
         if (!user || !store) { toast.error('Önce dükkanınızı açmalısınız'); return; }
         if (!form.title || !form.date || !form.time) { toast.error('Başlık, tarih ve saat gerekli'); return; }
 
@@ -191,8 +200,8 @@ export default function CoachClassesPage() {
                                             setForm({ ...form, recurrenceDays: newDays });
                                         }}
                                         className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${form.recurrenceDays.includes(idx)
-                                                ? 'bg-green-600 text-white shadow-md shadow-green-200'
-                                                : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-100'
+                                            ? 'bg-green-600 text-white shadow-md shadow-green-200'
+                                            : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-100'
                                             }`}
                                     >
                                         {day}

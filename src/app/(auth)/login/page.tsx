@@ -66,11 +66,11 @@ export default function LoginPage() {
         setError(null);
         setSuccessMsg(null);
         try {
-            // const { error } = await authService.resendConfirmation(email);
-            // if (error) throw error;
-            // setSuccessMsg('Doğrulama e-postası tekrar gönderildi. Lütfen gelen kutunuzu ve spam klasörünü kontrol edin.');
-            setError('Dev modunda bu özellik kullanılamaz.');
+            const { error } = await authService.resendConfirmation(email);
+            if (error) throw error;
+            setSuccessMsg('Doğrulama e-postası tekrar gönderildi. Lütfen gelen kutunuzu, spam ve diğer klasörleri kontrol edin.');
         } catch (err: any) {
+            console.error(err);
             setError('E-posta gönderilemedi: ' + (err.message || 'Bilinmeyen hata'));
         } finally {
             setResendLoading(false);

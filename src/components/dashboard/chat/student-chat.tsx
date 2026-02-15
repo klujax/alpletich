@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Search, Send, ArrowLeft, Check, CheckCheck, Smile, ImagePlus, Lock, Store } from 'lucide-react';
+import { MessageCircle, Search, Send, ArrowLeft, Check, CheckCheck, Smile, ImagePlus, Lock, Store, Video } from 'lucide-react';
 import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
 import { Purchase, GymStore, Message, Conversation } from '@/lib/types';
 import { Profile } from '@/types/database';
@@ -385,6 +385,8 @@ export function StudentChat() {
                                     Çevrimiçi
                                 </p>
                             </div>
+
+
                         </div>
 
                         {/* Messages */}

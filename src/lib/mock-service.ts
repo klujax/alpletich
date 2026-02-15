@@ -579,6 +579,12 @@ export const authService = {
         return null;
     },
 
+    resendConfirmation: async (email: string) => {
+        if (isSupabaseConfigured) return supabaseAuthService.resendConfirmation(email);
+        await new Promise(resolve => setTimeout(resolve, 800));
+        return { data: {}, error: null };
+    }
+
 };
 
 // =============================================
