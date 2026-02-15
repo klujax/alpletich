@@ -40,17 +40,28 @@ export default function LoginPage() {
             }
 
         } catch (err: any) {
-            console.error('Login error:', err);
-            const msg = (err.message || '').toLowerCase();
+            const msg = (err.message || '');
+            const lowerMsg = msg.toLowerCase();
 
-            if (msg.includes('email not confirmed') || msg.includes('not confirmed') || msg.includes('onay linkine') || msg.includes('doğrulayın')) {
+            // Check for verification error (Supabase standard or our custom Turkish message)
+            if (lowerMsg.includes('email not confirmed') ||
+                lowerMsg.includes('not confirmed') ||
+                lowerMsg.includes('onay linkine') ||
+                lowerMsg.includes('doğrulayın')) {
+
+                // This is an expected state, so we don't log it as an error
                 setError('E-posta adresi doğrulanmamış.');
-            } else if (err.status === 400 || msg.includes('400')) {
-                setError('E-posta veya şifre hatalı ve ya e-posta doğrulanmamış. Lütfen bilgilerinizi kontrol edin.');
-            } else if (err.status === 429 || msg.includes('429')) {
-                setError('Çok fazla başarısız giriş denemesi. Lütfen bir süre bekleyip tekrar deneyin.');
             } else {
-                setError(err.message || 'Giriş yapılamadı. Tekrar deneyin.');
+                // Log actual unexpected errors
+                console.error('Login error:', err);
+
+                if (err.status === 400 || lowerMsg.includes('400')) {
+                    setError('E-posta veya şifre hatalı ve ya e-posta doğrulanmamış. Lütfen bilgilerinizi kontrol edin.');
+                } else if (err.status === 429 || lowerMsg.includes('429')) {
+                    setError('Çok fazla başarısız giriş denemesi. Lütfen bir süre bekleyip tekrar deneyin.');
+                } else {
+                    setError(err.message || 'Giriş yapılamadı. Tekrar deneyin.');
+                }
             }
         } finally {
             setIsLoading(false);
