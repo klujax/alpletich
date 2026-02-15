@@ -28,6 +28,7 @@ export interface Profile {
   interested_sports?: string[];
   created_at: string;
   updated_at: string;
+  active_program_id?: string | null;
 }
 
 export interface GymStore {

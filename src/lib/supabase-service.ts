@@ -78,6 +78,23 @@ export const supabaseDataService = {
         });
     },
 
+    async setActiveProgram(userId: string, packageId: string) {
+        const sb = getSupabase() as any;
+        const { error } = await sb
+            .from('profiles')
+            .update({ active_program_id: packageId })
+            .eq('id', userId);
+
+        if (error) {
+            console.error("Error setting active program:", error);
+            // Fallback to metadata if column doesn't exist yet (for smooth migration)
+            await sb.auth.updateUser({
+                data: { active_program_id: packageId }
+            });
+        }
+        return !error;
+    },
+
     // --- SPORTS ---
     async getSports(): Promise<any[]> {
         // Return static list for now as per mock-service

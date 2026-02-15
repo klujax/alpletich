@@ -1,6 +1,6 @@
 'use client';
 
-import { authService, dataService } from '@/lib/mock-service';
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
 import { Purchase, GroupClass } from '@/lib/types';
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -33,6 +33,8 @@ export default function StudentDashboard() {
             setPurchases(myPurchases);
 
             // Katıldığı sınıfları filtrele
+            // Note: Supabase implementation of getGroupClasses returns plain objects.
+            // We assume enrollment logic/check remains similar or we need a specific endpoint for 'my classes'
             const myClasses = allClasses.filter((c: GroupClass) =>
                 c.enrolledParticipants && c.enrolledParticipants.includes(currentUser.id) && c.status === 'scheduled'
             );

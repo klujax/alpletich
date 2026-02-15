@@ -1,7 +1,7 @@
 'use client';
 
-import { authService, dataService } from '@/lib/mock-service';
-import { Purchase, GymStore, SalesPackage } from '@/lib/mock-service'; // Keep types for now
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { Purchase, GymStore, SalesPackage } from '@/lib/types'; // Correct types import
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,18 +27,16 @@ export default function StudentCoursesPage() {
         async function load() {
             const user = await authService.getUser();
             if (!user) return;
-            // Supabase getPurchases() returns ALL purchases, so we filter.
-            const [allPurchases, storeData, packageData] = await Promise.all([
-                dataService.getPurchases(),
+            // Supabase getPurchases(userId) filters by user already.
+            const [myPurchases, storeData, packageData] = await Promise.all([
+                dataService.getPurchases(user.id),
                 dataService.getStores(),
                 dataService.getPackages(),
             ]);
 
-            const myPurchases = allPurchases.filter((p: Purchase) => p.studentId === user.id);
-            const activePurchases = myPurchases.filter(p => !p.packageSnapshot || p.packageSnapshot.packageType === 'program' || p.status === 'active');
-            // Logic: Programs might be 'completed' but still accessible if they are programs.
-            // Or if active/expired.
-            // For now, let's just show all purchases as in mock service.
+            // No need to filter again if getPurchases(user.id) works as expected
+            // const myPurchases = allPurchases.filter((p: Purchase) => p.studentId === user.id);
+            // const activePurchases = myPurchases.filter(p => !p.packageSnapshot || p.packageSnapshot.packageType === 'program' || p.status === 'active');
 
             setPurchases(myPurchases);
             setStores(storeData);
@@ -76,9 +74,12 @@ export default function StudentCoursesPage() {
             if ((dataService as any).setActiveProgram) {
                 await (dataService as any).setActiveProgram(user.id, purchase.packageId);
             } else {
-                // Placeholder: maybe set local storage or do nothing if not simpler way
+                // Fallback for types not yet updated or similar
                 localStorage.setItem('activeProgramId', purchase.packageId);
             }
+
+            // Also set in localStorage for immediate optimistic UI updates if needed
+            localStorage.setItem('activeProgramId', purchase.packageId);
 
             window.location.href = '/student/workouts';
         }
