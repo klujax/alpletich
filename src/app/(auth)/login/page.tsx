@@ -43,7 +43,7 @@ export default function LoginPage() {
             console.error('Login error:', err);
             const msg = (err.message || '').toLowerCase();
 
-            if (msg.includes('email not confirmed') || msg.includes('not confirmed')) {
+            if (msg.includes('email not confirmed') || msg.includes('not confirmed') || msg.includes('onay linkine') || msg.includes('doğrulayın')) {
                 setError('E-posta adresi doğrulanmamış.');
             } else if (err.status === 400 || msg.includes('400')) {
                 setError('E-posta veya şifre hatalı ve ya e-posta doğrulanmamış. Lütfen bilgilerinizi kontrol edin.');
