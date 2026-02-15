@@ -90,7 +90,17 @@ function RegisterContent() {
                 formData.storeName // Pass store name directly to signUp for automatic store creation in mock
             );
 
-            if (error) throw new Error(error);
+            if (error) {
+                if (error.includes("Kayıt başarılı")) {
+                    toast.success(error);
+                    // Optional: redirect to login or show a success state
+                    setTimeout(() => {
+                        router.push('/login');
+                    }, 2000);
+                    return;
+                }
+                throw new Error(error);
+            }
 
             if (user) {
                 // Store creation is handled inside mock authService.signUp for coaches if storeName is provided.
