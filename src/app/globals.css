@@ -134,13 +134,6 @@
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
   }
-
-  @media (min-width: 1024px) {
-    html {
-      font-size: 14px;
-      /* Slight zoom out for desktop */
-    }
-  }
 }
 
 /* Hide scrollbar but keep scroll functionality */

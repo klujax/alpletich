@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authService, dataService } from '@/lib/mock-service';
-import { SportCategory } from '@/lib/mock-service'; // Keep types/constants if needed
+import { SportCategory } from '@/lib/mock-service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { User, Mail, Lock, ArrowRight, ArrowLeft, Store, Target, Phone, Check, Loader2, Sparkles, Dumbbell, UserCheck } from 'lucide-react';
@@ -75,58 +75,50 @@ function RegisterContent() {
     const handleRegister = async () => {
         setIsLoading(true);
         setError(null);
-        await new Promise(resolve => setTimeout(resolve, 800));
+        await new Promise(resolve => setTimeout(resolve, 400));
 
         try {
-            // 1. Sign Up User
-            // Mock signUp signature: (email, role, fullName, password, phone, interestedSports, storeName)
-            const { user, error } = await authService.signUp(
+            const { user, error: signUpError } = await authService.signUp(
                 formData.email,
                 role || 'student',
                 formData.fullName,
                 formData.password,
                 formData.phone,
                 interestedSports,
-                formData.storeName // Pass store name directly to signUp for automatic store creation in mock
+                formData.storeName
             );
 
-            if (error) {
-                if (error.includes("Kayıt başarılı")) {
-                    toast.success(error);
-                    // Optional: redirect to login or show a success state
+            if (signUpError) {
+                if (signUpError.includes("Kayıt başarılı")) {
+                    toast.success('Kayıt başarılı! E-posta adresinizi kontrol edin.', {
+                        description: 'Spam klasörünü de kontrol etmeyi unutmayın.',
+                        duration: 6000,
+                    });
                     setTimeout(() => {
                         router.push('/login');
                     }, 2000);
                     return;
                 }
-                throw new Error(error);
+                throw new Error(signUpError);
             }
 
             if (user) {
-                // Store creation is handled inside mock authService.signUp for coaches if storeName is provided.
-                // So we don't need to call createStore manually here for the Mock service.
-                // However, if we were using the real service, we would.
-                // For now, since we switched to mock service completely, we can skip explicit createStore call 
-                // because the mock signUp handles it (lines 335-345 in mock-service.ts).
-
                 toast.success('Kayıt başarılı! Yönlendiriliyorsunuz...');
-                // Allow a small delay for toast and session propagation
                 setTimeout(() => {
                     router.push(role === 'coach' ? '/coach' : '/student');
                 }, 1000);
             }
         } catch (err: any) {
             console.error('Registration error:', err);
-            if (err.message && err.message.includes('Type error')) {
-                setError('Bir sistem hatası oluştu. Lütfen sayfayı yenileyip tekrar deneyin.');
-            } else if (err.status === 429 || (err.message && (err.message.includes('429') || err.message.includes('rate limit')))) {
+            const msg = err.message || '';
+            if (msg.includes('already') || msg.includes('zaten')) {
+                setError('Bu e-posta adresi zaten kayıtlı. Giriş yapmayı deneyin.');
+            } else if (err.status === 429 || msg.includes('429') || msg.includes('rate limit')) {
                 setError('E-posta gönderim limiti aşıldı. Lütfen farklı bir e-posta adresi kullanın veya 1 saat bekleyin.');
-            } else if (err.message && err.message.includes('defaults')) {
-                // Ignore defaults-related benign errors if registration succeeded
-                if (!error) return;
-                setError('Kayıt işlemi tamamlanırken bir uyarı oluştu fakat hesabınız açılmış olabilir. Giriş yapmayı deneyin.');
+            } else if (msg.includes('Type error') || msg.includes('Database error')) {
+                setError('Bir sistem hatası oluştu. Lütfen tekrar deneyin.');
             } else {
-                setError(err.message || 'Kayıt işlemi başarısız oldu.');
+                setError(msg || 'Kayıt işlemi başarısız oldu.');
             }
         } finally {
             setIsLoading(false);
@@ -138,29 +130,29 @@ function RegisterContent() {
     // ROLE SELECTION
     if (step === 'role_selection') {
         return (
-            <div className="w-full max-w-lg flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <h1 className="text-4xl font-black text-slate-900 mb-8 tracking-tighter text-center">Hesabınızı Oluşturun</h1>
-                <div className="w-full space-y-4">
-                    <button onClick={() => handleRoleSelect('student')} className="w-full p-6 rounded-3xl bg-white border-2 border-slate-100 hover:border-green-600 hover:bg-green-50 text-left transition-all duration-200 group flex items-center gap-5">
-                        <div className="w-12 h-12 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors">
-                            <UserCheck className="w-6 h-6" />
+            <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <h1 className="text-3xl lg:text-2xl font-black text-slate-900 mb-6 lg:mb-6 tracking-tighter text-center">Hesabınızı Oluşturun</h1>
+                <div className="w-full space-y-3">
+                    <button onClick={() => handleRoleSelect('student')} className="w-full p-4 lg:p-4 rounded-2xl lg:rounded-xl bg-white border-2 border-slate-100 hover:border-green-600 hover:bg-green-50 text-left transition-all duration-200 group flex items-center gap-4">
+                        <div className="w-10 h-10 lg:w-9 lg:h-9 rounded-xl lg:rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors">
+                            <UserCheck className="w-5 h-5 lg:w-4 lg:h-4" />
                         </div>
                         <div className="flex-1">
-                            <h3 className="font-black text-slate-900 group-hover:text-green-700">Öğrenci Girişi</h3>
-                            <p className="text-sm font-bold text-slate-400 group-hover:text-green-600/70">Koç bulmak istiyorum</p>
+                            <h3 className="font-black text-slate-900 group-hover:text-green-700 text-sm lg:text-sm">Öğrenci Girişi</h3>
+                            <p className="text-xs font-bold text-slate-400 group-hover:text-green-600/70">Koç bulmak istiyorum</p>
                         </div>
-                        <ArrowRight className="w-5 h-5 text-slate-200 group-hover:text-green-600" />
+                        <ArrowRight className="w-4 h-4 text-slate-200 group-hover:text-green-600" />
                     </button>
 
-                    <button onClick={() => handleRoleSelect('coach')} className="w-full p-6 rounded-3xl bg-white border-2 border-slate-100 hover:border-green-600 hover:bg-green-50 text-left transition-all duration-200 group flex items-center gap-5">
-                        <div className="w-12 h-12 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors">
-                            <Store className="w-6 h-6" />
+                    <button onClick={() => handleRoleSelect('coach')} className="w-full p-4 lg:p-4 rounded-2xl lg:rounded-xl bg-white border-2 border-slate-100 hover:border-green-600 hover:bg-green-50 text-left transition-all duration-200 group flex items-center gap-4">
+                        <div className="w-10 h-10 lg:w-9 lg:h-9 rounded-xl lg:rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors">
+                            <Store className="w-5 h-5 lg:w-4 lg:h-4" />
                         </div>
                         <div className="flex-1">
-                            <h3 className="font-black text-slate-900 group-hover:text-green-700">Eğitmen Girişi</h3>
-                            <p className="text-sm font-bold text-slate-400 group-hover:text-green-600/70">Ders vermek istiyorum</p>
+                            <h3 className="font-black text-slate-900 group-hover:text-green-700 text-sm lg:text-sm">Eğitmen Girişi</h3>
+                            <p className="text-xs font-bold text-slate-400 group-hover:text-green-600/70">Ders vermek istiyorum</p>
                         </div>
-                        <ArrowRight className="w-5 h-5 text-slate-200 group-hover:text-green-600" />
+                        <ArrowRight className="w-4 h-4 text-slate-200 group-hover:text-green-600" />
                     </button>
                 </div>
             </div>
@@ -170,24 +162,24 @@ function RegisterContent() {
     // PERSONAL INFO
     if (step === 'personal_info') {
         return (
-            <div className="w-full max-w-[400px] flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <div className="w-full mb-8 text-center">
-                    <button onClick={() => router.push('/')} className="text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-green-600 flex items-center gap-1 mx-auto mb-4">
+            <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="w-full mb-6 lg:mb-6 text-center">
+                    <button onClick={() => router.push('/')} className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-green-600 flex items-center gap-1 mx-auto mb-3">
                         <ArrowLeft className="w-3 h-3" /> Ana Sayfaya Dön
                     </button>
-                    <h1 className="text-3xl font-black text-slate-900 mb-2 tracking-tighter">
+                    <h1 className="text-2xl lg:text-xl font-black text-slate-900 mb-1 tracking-tighter">
                         {isCoach ? 'Eğitmen Kaydı' : 'Öğrenci Kaydı'}
                     </h1>
-                    <p className="text-sm font-bold text-slate-400">Bilgilerinizi girerek başlayın.</p>
+                    <p className="text-xs lg:text-sm font-bold text-slate-400">Bilgilerinizi girerek başlayın.</p>
                 </div>
 
-                <form onSubmit={handlePersonalInfoSubmit} className="w-full space-y-4">
+                <form onSubmit={handlePersonalInfoSubmit} className="w-full space-y-3">
                     <Input
                         placeholder="Ad Soyad"
                         value={formData.fullName}
                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                         required
-                        className="h-12 border-2 border-slate-100 focus:border-green-600 rounded-2xl px-5 font-bold"
+                        className="h-11 lg:h-10 border-2 border-slate-100 focus:border-green-600 rounded-xl lg:rounded-lg px-4 font-bold text-sm"
                     />
                     {isCoach && (
                         <Input
@@ -195,7 +187,7 @@ function RegisterContent() {
                             value={formData.storeName}
                             onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
                             required
-                            className="h-12 border-2 border-slate-100 focus:border-green-600 rounded-2xl px-5 font-bold"
+                            className="h-11 lg:h-10 border-2 border-slate-100 focus:border-green-600 rounded-xl lg:rounded-lg px-4 font-bold text-sm"
                         />
                     )}
                     <Input
@@ -204,7 +196,7 @@ function RegisterContent() {
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         required
-                        className="h-12 border-2 border-slate-100 focus:border-green-600 rounded-2xl px-5 font-bold"
+                        className="h-11 lg:h-10 border-2 border-slate-100 focus:border-green-600 rounded-xl lg:rounded-lg px-4 font-bold text-sm"
                     />
                     <Input
                         type="email"
@@ -212,7 +204,7 @@ function RegisterContent() {
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         required
-                        className="h-12 border-2 border-slate-100 focus:border-green-600 rounded-2xl px-5 font-bold"
+                        className="h-11 lg:h-10 border-2 border-slate-100 focus:border-green-600 rounded-xl lg:rounded-lg px-4 font-bold text-sm"
                     />
                     <Input
                         type="password"
@@ -220,7 +212,7 @@ function RegisterContent() {
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         required
-                        className="h-12 border-2 border-slate-100 focus:border-green-600 rounded-2xl px-5 font-bold"
+                        className="h-11 lg:h-10 border-2 border-slate-100 focus:border-green-600 rounded-xl lg:rounded-lg px-4 font-bold text-sm"
                     />
 
                     {error && <p className="text-xs font-bold text-red-500 text-center">{error}</p>}
@@ -228,11 +220,11 @@ function RegisterContent() {
                     <Button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full h-14 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-black text-lg transition-transform active:scale-95 shadow-lg shadow-green-600/20"
+                        className="w-full h-12 lg:h-10 rounded-xl lg:rounded-lg bg-green-600 hover:bg-green-700 text-white font-black text-base lg:text-sm transition-transform active:scale-95 shadow-lg shadow-green-600/20"
                     >
-                        {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
+                        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                             <span className="flex items-center gap-2">
-                                {isCoach ? 'Hesabı Oluştur' : 'Devam Et'} <ArrowRight className="w-5 h-5" />
+                                {isCoach ? 'Hesabı Oluştur' : 'Devam Et'} <ArrowRight className="w-4 h-4" />
                             </span>
                         )}
                     </Button>
@@ -244,16 +236,16 @@ function RegisterContent() {
     // SPORT SELECTION
     if (step === 'sport_selection') {
         return (
-            <div className="w-full max-w-[500px] flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700 overflow-hidden">
-                <div className="w-full mb-8 text-center px-4">
-                    <button onClick={() => setStep('personal_info')} className="text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-green-600 flex items-center gap-1 mx-auto mb-4">
+            <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700 overflow-hidden">
+                <div className="w-full mb-6 text-center">
+                    <button onClick={() => setStep('personal_info')} className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-green-600 flex items-center gap-1 mx-auto mb-3">
                         <ArrowLeft className="w-3 h-3" /> Bilgilere Dön
                     </button>
-                    <h1 className="text-3xl font-black text-slate-900 mb-2 tracking-tighter leading-tight">İlgi Alanlarınızı Seçin</h1>
-                    <p className="text-sm font-bold text-slate-400">Sana en uygun koçları bulalım.</p>
+                    <h1 className="text-2xl lg:text-xl font-black text-slate-900 mb-1 tracking-tighter leading-tight">İlgi Alanlarınızı Seçin</h1>
+                    <p className="text-xs lg:text-sm font-bold text-slate-400">Sana en uygun koçları bulalım.</p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 w-full px-4 mb-8">
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-2 w-full mb-6">
                     {availableSports.map((sport) => {
                         const isSelected = interestedSports.includes(sport.id);
                         return (
@@ -261,27 +253,27 @@ function RegisterContent() {
                                 key={sport.id}
                                 onClick={() => toggleSport(sport.id)}
                                 className={cn(
-                                    "p-4 rounded-2xl border-2 transition-all flex items-center gap-3 active:scale-95",
+                                    "p-3 lg:p-2.5 rounded-xl lg:rounded-lg border-2 transition-all flex items-center gap-2 active:scale-95",
                                     isSelected ? "border-green-600 bg-green-50 shadow-sm" : "border-slate-100 bg-white hover:border-green-200"
                                 )}
                             >
-                                <span className="text-2xl">{sport.icon}</span>
-                                <span className={cn("font-bold text-sm", isSelected ? "text-green-700" : "text-slate-600")}>
+                                <span className="text-lg lg:text-base">{sport.icon}</span>
+                                <span className={cn("font-bold text-xs", isSelected ? "text-green-700" : "text-slate-600")}>
                                     {sport.name}
                                 </span>
-                                {isSelected && <Check className="w-4 h-4 ml-auto text-green-600" />}
+                                {isSelected && <Check className="w-3 h-3 ml-auto text-green-600" />}
                             </button>
                         );
                     })}
                 </div>
 
-                <div className="w-full px-4 mb-8">
+                <div className="w-full">
                     <Button
                         onClick={handleRegister}
                         disabled={interestedSports.length === 0 || isLoading}
-                        className="w-full h-14 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-black text-lg transition-transform active:scale-95 shadow-lg shadow-green-600/20"
+                        className="w-full h-12 lg:h-10 rounded-xl lg:rounded-lg bg-green-600 hover:bg-green-700 text-white font-black text-base lg:text-sm transition-transform active:scale-95 shadow-lg shadow-green-600/20"
                     >
-                        {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Kayıt Ol'}
+                        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Kayıt Ol'}
                     </Button>
                 </div>
             </div>

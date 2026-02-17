@@ -376,17 +376,9 @@ export const authService = {
                     console.error("Supabase SignUp Error:", error);
                     // Translate common errors
                     if (error.message.includes("Database error")) return { user: null, error: "Veritabanı hatası. Lütfen daha sonra tekrar deneyin." };
-                    if (error.message.includes("unique constraint")) return { user: null, error: "Bu e-posta adresi zaten kayıtlı." };
+                    if (error.message.includes("unique constraint") || error.message.includes("already registered") || error.message.includes("already been registered")) return { user: null, error: "Bu e-posta adresi zaten kayıtlı." };
                     if (error.message.includes("rate limit")) return { user: null, error: "Çok fazla deneme yaptınız. Lütfen biraz bekleyin." };
                     return { user: null, error: error.message };
-                }
-
-                // Check if session is missing (implies email confirmation required)
-                if (data.user && !data.session) {
-                    return {
-                        user: null,
-                        error: "Kayıt başarılı! Lütfen e-posta adresinize (spam kutusu dahil) gelen onay linkine tıklayın."
-                    };
                 }
 
                 if (data.user) {
@@ -397,22 +389,23 @@ export const authService = {
                         created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
                     };
 
-                    // Insert profile explicitly (since we don't have a trigger)
-                    const { error: profileError } = await supabase
-                        .from('profiles')
-                        .insert({
-                            id: newUser.id,
-                            email: newUser.email,
-                            role: newUser.role,
-                            full_name: newUser.full_name,
-                            phone: newUser.phone,
-                            // avatar_url: null,
-                            // bio: null
-                        } as any);
+                    // Always try to insert profile (regardless of session status)
+                    try {
+                        const { error: profileError } = await supabase
+                            .from('profiles')
+                            .insert({
+                                id: newUser.id,
+                                email: newUser.email,
+                                role: newUser.role,
+                                full_name: newUser.full_name,
+                                phone: newUser.phone,
+                            } as any);
 
-                    if (profileError) {
-                        console.error("Profile insertion failed:", profileError);
-                        // We continue, but store creation might fail if FK constraint exists
+                        if (profileError && !profileError.message.includes('duplicate')) {
+                            console.error("Profile insertion failed:", profileError);
+                        }
+                    } catch (profileErr) {
+                        console.error("Profile creation error:", profileErr);
                     }
 
                     // If coach, create store
@@ -428,11 +421,18 @@ export const authService = {
                             });
                         } catch (storeErr) {
                             console.error("Store creation failed:", storeErr);
-                            // Should we fail the signup? Or just log? 
-                            // For now, allow signup but log error.
                         }
                     }
 
+                    // Check if session is missing (email confirmation required)
+                    if (!data.session) {
+                        return {
+                            user: null,
+                            error: "Kayıt başarılı! Lütfen e-posta adresinize (spam kutusu dahil) gelen onay linkine tıklayın."
+                        };
+                    }
+
+                    // Session exists - user can login immediately
                     if (typeof window !== 'undefined') {
                         localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(newUser));
                         document.cookie = `mock_role=${role}; path=/`;
