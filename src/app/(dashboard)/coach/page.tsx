@@ -25,29 +25,38 @@ export default function CoachDashboard() {
 
     useEffect(() => {
         async function load() {
-            const currentUser = await authService.getUser();
-            if (!currentUser) return;
-            setUser(currentUser); // Set user state
+            try {
+                const currentUser = await authService.getUser();
+                if (!currentUser) {
+                    setIsLoading(false);
+                    return;
+                }
+                setUser(currentUser);
 
-            // Note: Parallel fetching
-            const [shopData, pkgs, cls, students, myPurchases] = await Promise.all([
-                dataService.getStoreByOwnerId(currentUser.id),
-                dataService.getPackages(currentUser.id),
-                dataService.getGroupClasses(currentUser.id),
-                dataService.getCoachStudents(currentUser.id),
-                dataService.getCoachPurchases(currentUser.id),
-            ]);
+                try {
+                    const [shopData, pkgs, cls, students, myPurchases] = await Promise.all([
+                        dataService.getStoreByOwnerId(currentUser.id),
+                        dataService.getPackages(currentUser.id),
+                        dataService.getGroupClasses(currentUser.id),
+                        dataService.getCoachStudents(currentUser.id),
+                        dataService.getCoachPurchases(currentUser.id),
+                    ]);
 
-            setStore(shopData);
-            setPackages(pkgs);
-            setClasses(cls);
-            setStudentCount(students.length);
+                    setStore(shopData);
+                    setPackages(pkgs);
+                    setClasses(cls);
+                    setStudentCount(students.length);
 
-            // Purchases are already filtered by coachId in getCoachPurchases
-            const revenue = myPurchases.reduce((sum: number, p: Purchase) => sum + p.price, 0);
-            setTotalRevenue(revenue);
-
-            setIsLoading(false);
+                    const revenue = myPurchases.reduce((sum: number, p: Purchase) => sum + p.price, 0);
+                    setTotalRevenue(revenue);
+                } catch (dataErr) {
+                    console.warn("Data loading error:", dataErr);
+                }
+            } catch (err) {
+                console.error("Coach dashboard load error:", err);
+            } finally {
+                setIsLoading(false);
+            }
         }
         load();
     }, []);

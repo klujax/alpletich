@@ -404,6 +404,11 @@ export const authService = {
                     return { user: null, error: error.message };
                 }
 
+                // Check if user already exists (Supabase returns user with empty identities for duplicate emails)
+                if (data.user && data.user.identities && data.user.identities.length === 0) {
+                    return { user: null, error: "Bu e-posta adresi zaten kayıtlı. Lütfen giriş yapın." };
+                }
+
                 if (data.user) {
                     const newUser: Profile = {
                         id: data.user.id, email, role, full_name: fullName,

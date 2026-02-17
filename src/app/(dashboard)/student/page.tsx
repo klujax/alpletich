@@ -21,49 +21,58 @@ export default function StudentDashboard() {
 
     useEffect(() => {
         async function load() {
-            const currentUser = await authService.getUser();
-            setUser(currentUser);
-            if (!currentUser) return;
+            try {
+                const currentUser = await authService.getUser();
+                setUser(currentUser);
+                if (!currentUser) {
+                    setIsLoading(false);
+                    return;
+                }
 
-            const [myPurchases, allClasses] = await Promise.all([
-                dataService.getPurchases(currentUser.id),
-                dataService.getGroupClasses(), // TODO: Filter by enrolled classes server-side?
-            ]);
+                try {
+                    const [myPurchases, allClasses] = await Promise.all([
+                        dataService.getPurchases(currentUser.id),
+                        dataService.getGroupClasses(),
+                    ]);
 
-            setPurchases(myPurchases);
+                    setPurchases(myPurchases);
 
-            // Katıldığı sınıfları filtrele
-            // Note: Supabase implementation of getGroupClasses returns plain objects.
-            // We assume enrollment logic/check remains similar or we need a specific endpoint for 'my classes'
-            const myClasses = allClasses.filter((c: GroupClass) =>
-                c.enrolledParticipants && c.enrolledParticipants.includes(currentUser.id) && c.status === 'scheduled'
-            );
-            setUpcomingClasses(myClasses);
-            setIsLoading(false);
+                    const myClasses = allClasses.filter((c: GroupClass) =>
+                        c.enrolledParticipants && c.enrolledParticipants.includes(currentUser.id) && c.status === 'scheduled'
+                    );
+                    setUpcomingClasses(myClasses);
 
-            // Notification Logic
-            const now = new Date();
-            const imminentClass = myClasses.find((c: GroupClass) => {
-                const d = new Date(c.scheduledAt);
-                const diffHours = (d.getTime() - now.getTime()) / 3600000;
-                return diffHours > 0 && diffHours < 24;
-            });
-
-            if (imminentClass) {
-                const d = new Date(imminentClass.scheduledAt);
-                const timeStr = d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-                const isToday = d.getDate() === now.getDate();
-
-                setTimeout(() => {
-                    toast.message(`🔔 Yaklaşan Ders: ${imminentClass.title}`, {
-                        description: `${isToday ? 'Bugün' : 'Yarın'} saat ${timeStr}'da canlı dersiniz var! Hazırlanın.`,
-                        action: {
-                            label: 'Derse Git',
-                            onClick: () => window.location.href = '/student/classes'
-                        },
-                        duration: 8000,
+                    // Notification Logic
+                    const now = new Date();
+                    const imminentClass = myClasses.find((c: GroupClass) => {
+                        const d = new Date(c.scheduledAt);
+                        const diffHours = (d.getTime() - now.getTime()) / 3600000;
+                        return diffHours > 0 && diffHours < 24;
                     });
-                }, 1500);
+
+                    if (imminentClass) {
+                        const d = new Date(imminentClass.scheduledAt);
+                        const timeStr = d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+                        const isToday = d.getDate() === now.getDate();
+
+                        setTimeout(() => {
+                            toast.message(`🔔 Yaklaşan Ders: ${imminentClass.title}`, {
+                                description: `${isToday ? 'Bugün' : 'Yarın'} saat ${timeStr}'da canlı dersiniz var! Hazırlanın.`,
+                                action: {
+                                    label: 'Derse Git',
+                                    onClick: () => window.location.href = '/student/classes'
+                                },
+                                duration: 8000,
+                            });
+                        }, 1500);
+                    }
+                } catch (dataErr) {
+                    console.warn("Student data loading error:", dataErr);
+                }
+            } catch (err) {
+                console.error("Student dashboard load error:", err);
+            } finally {
+                setIsLoading(false);
             }
         }
         load();

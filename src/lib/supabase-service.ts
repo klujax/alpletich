@@ -666,11 +666,26 @@ export const supabaseAuthService = {
     },
 
     async getUser() {
-        const { data } = await getSupabase().auth.getUser();
-        if (!data.user) return null;
-        // Fetch profile
-        const { data: profile } = await getSupabase().from('profiles').select('*').eq('id', data.user.id).single();
-        return profile ? (toCamels(profile) as Profile) : null;
+        try {
+            const { data } = await getSupabase().auth.getUser();
+            if (data.user) {
+                // Fetch profile from Supabase
+                const { data: profile } = await getSupabase().from('profiles').select('*').eq('id', data.user.id).single();
+                if (profile) return toCamels(profile) as Profile;
+            }
+        } catch (err) {
+            console.warn("Supabase getUser failed, falling back to localStorage:", err);
+        }
+        // Fallback: read from localStorage (set during signUp/signIn in mock-service)
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('sportaly_user');
+            if (stored) {
+                try {
+                    return JSON.parse(stored) as Profile;
+                } catch { }
+            }
+        }
+        return null;
     },
 
     async updateProfile(userId: string, updates: Partial<Profile>) {
