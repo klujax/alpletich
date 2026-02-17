@@ -283,9 +283,6 @@ export const authService = {
                 });
 
                 if (error) {
-                    if (error.message.includes("Email not confirmed")) {
-                        return { user: null, error: "Lütfen e-posta adresinize gelen onay linkine tıklayarak hesabınızı doğrulayın." };
-                    }
                     if (error.message.includes("Invalid login credentials")) {
                         return { user: null, error: "E-posta veya şifre hatalı." };
                     }
@@ -424,15 +421,7 @@ export const authService = {
                         }
                     }
 
-                    // Check if session is missing (email confirmation required)
-                    if (!data.session) {
-                        return {
-                            user: null,
-                            error: "Kayıt başarılı! Lütfen e-posta adresinize (spam kutusu dahil) gelen onay linkine tıklayın."
-                        };
-                    }
-
-                    // Session exists - user can login immediately
+                    // Save user locally regardless of session status
                     if (typeof window !== 'undefined') {
                         localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(newUser));
                         document.cookie = `mock_role=${role}; path=/`;
