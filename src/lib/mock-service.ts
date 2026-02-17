@@ -293,15 +293,16 @@ export const authService = {
                     let { data: profile, error: profileError } = await supabase!
                         .from('profiles').select('*').eq('id', data.user!.id).single();
 
-                    // Fallback: Create profile if missing
+                    // Fallback: Create profile if missing (first login after signup)
                     if (!profile) {
                         const metadata = data.user.user_metadata || {};
+                        const newRole = metadata.role || 'student';
                         const { error: insertError } = await supabase!
                             .from('profiles')
                             .insert({
                                 id: data.user.id,
                                 email: email,
-                                role: metadata.role || 'student',
+                                role: newRole,
                                 full_name: metadata.full_name,
                                 phone: metadata.phone
                             } as any);
@@ -310,6 +311,31 @@ export const authService = {
                             const { data: newProfile } = await supabase!.from('profiles').select('*').eq('id', data.user.id).single();
                             profile = newProfile;
                             profileError = null;
+
+                            // If coach, also create store on first login
+                            if (newRole === 'coach') {
+                                const pendingStoreName = typeof window !== 'undefined'
+                                    ? localStorage.getItem('pending_store_name')
+                                    : null;
+                                const storeName = pendingStoreName || metadata.storeName || `${metadata.full_name || 'Koç'} Dükkanı`;
+                                try {
+                                    await supabaseDataService.createStore({
+                                        coachId: data.user.id,
+                                        name: storeName,
+                                        category: 'Genel',
+                                        slug: storeName.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
+                                        isActive: true,
+                                        isBanned: false
+                                    });
+                                    if (typeof window !== 'undefined') {
+                                        localStorage.removeItem('pending_store_name');
+                                    }
+                                } catch (storeErr) {
+                                    console.warn("Store creation on first login:", storeErr);
+                                }
+                            }
+                        } else {
+                            console.error("Profile creation on login failed:", insertError);
                         }
                     }
 
@@ -364,7 +390,7 @@ export const authService = {
                     email,
                     password: password || '123456',
                     options: {
-                        data: { full_name: fullName, role: role, phone: phone, interested_sports: interestedSports },
+                        data: { full_name: fullName, role: role, phone: phone, interested_sports: interestedSports, storeName: storeName || undefined },
                         emailRedirectTo: redirectTo
                     }
                 });
@@ -386,43 +412,17 @@ export const authService = {
                         created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
                     };
 
-                    // Always try to insert profile (regardless of session status)
-                    try {
-                        const { error: profileError } = await supabase
-                            .from('profiles')
-                            .insert({
-                                id: newUser.id,
-                                email: newUser.email,
-                                role: newUser.role,
-                                full_name: newUser.full_name,
-                                phone: newUser.phone,
-                            } as any);
+                    // NOTE: We do NOT insert profile/store here because the user
+                    // doesn't have an authenticated session yet (RLS will block it).
+                    // All metadata is stored in auth.user_metadata during signUp.
+                    // Profile & store creation happens in signIn's fallback logic.
 
-                        if (profileError && !profileError.message.includes('duplicate')) {
-                            console.error("Profile insertion failed:", profileError);
-                        }
-                    } catch (profileErr) {
-                        console.error("Profile creation error:", profileErr);
-                    }
-
-                    // If coach, create store
-                    if (role === 'coach' && storeName) {
-                        try {
-                            await supabaseDataService.createStore({
-                                coachId: newUser.id,
-                                name: storeName,
-                                category: 'Genel',
-                                slug: storeName.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
-                                isActive: true,
-                                isBanned: false
-                            });
-                        } catch (storeErr) {
-                            console.error("Store creation failed:", storeErr);
-                        }
-                    }
-
-                    // Save user locally regardless of session status
+                    // Save user locally so the app can navigate to dashboard
                     if (typeof window !== 'undefined') {
+                        // Also save storeName for coach profile creation on first login
+                        if (role === 'coach' && storeName) {
+                            localStorage.setItem('pending_store_name', storeName);
+                        }
                         localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(newUser));
                         document.cookie = `mock_role=${role}; path=/`;
                     }
