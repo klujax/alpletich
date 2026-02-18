@@ -18,7 +18,7 @@
 | **RLS Politikaları** | ⚠️ Eksik | Birçok tabloda RLS tanımsız |
 | **UI/UX** | ✅ İyi | Modern ve şık tasarım |
 | **Mobil Uyumluluk** | ✅ İyi | Mobile-first tasarım, PWA manifest mevcut |
-| **Deploy** | 🚀 Hazır | Vercel deploy için hazır |
+| **Deploy** | 🚀 Canlıda | **[alperen-spor.vercel.app](https://alperen-spor.vercel.app)** |
 
 ---
 
