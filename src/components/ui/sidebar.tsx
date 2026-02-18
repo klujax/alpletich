@@ -106,11 +106,8 @@ export function Sidebar({ role }: SidebarProps) {
         >
             {/* Logo Section */}
             <div className="p-8 pb-6">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center text-white shadow-sm">
-                        <Dumbbell className="w-6 h-6" />
-                    </div>
-                    <span className="text-xl font-black text-slate-900 tracking-tighter uppercase">Sport<span className="text-green-600">aly</span></span>
+                <div className="flex items-center justify-center">
+                    <img src="/logo.png" alt="Sportaly Logo" className="h-12 w-auto object-contain" />
                 </div>
             </div>
 
