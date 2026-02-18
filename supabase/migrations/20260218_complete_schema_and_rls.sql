@@ -2,6 +2,19 @@
 -- 1. EKSİK TABLOLARIN OLUŞTURULMASI
 -- =============================================
 
+-- Profiles Table (Users)
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  full_name TEXT,
+  email TEXT,
+  phone TEXT,
+  role TEXT DEFAULT 'student',
+  avatar_url TEXT,
+  interested_sports TEXT[],
+  active_program_id TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 -- Group Classes Table
 CREATE TABLE IF NOT EXISTS public.group_classes (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -81,6 +94,15 @@ CREATE POLICY "Users can update their own notifications" ON public.notifications
 -- Purchases tablosuna user_id ve student_id ekle (Eğer yoksa)
 DO $$ 
 BEGIN 
+    -- Profiles Checks
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'profiles' AND column_name = 'interested_sports') THEN
+        ALTER TABLE public.profiles ADD COLUMN interested_sports TEXT[];
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'profiles' AND column_name = 'active_program_id') THEN
+        ALTER TABLE public.profiles ADD COLUMN active_program_id TEXT;
+    END IF;
+
+    -- Purchases Checks 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'purchases' AND column_name = 'user_id') THEN
         ALTER TABLE public.purchases ADD COLUMN user_id UUID REFERENCES public.profiles(id);
     END IF;
@@ -212,4 +234,22 @@ begin;
 commit;
 alter publication supabase_realtime add table public.messages;
 alter publication supabase_realtime add table public.notifications;
+
+-- =============================================
+-- 5. TRIGGERS (Auto-create Profile)
+-- =============================================
+
+CREATE OR REPLACE FUNCTION public.handle_new_user() 
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, full_name, role)
+  VALUES (new.id, new.email, new.raw_user_meta_data->>'full_name', COALESCE(new.raw_user_meta_data->>'role', 'student'));
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
