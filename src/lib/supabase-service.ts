@@ -637,7 +637,8 @@ export const supabaseDataService = {
             platformCommission,
             monthlyGrowth
         };
-    }
+    },
+
 };
 
 export const supabaseAuthService = {

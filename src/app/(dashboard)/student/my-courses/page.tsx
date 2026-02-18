@@ -71,10 +71,10 @@ export default function StudentCoursesPage() {
             // For now I'll check if it exists or simulate it.
             // In a real app we might update a 'current_program' field on the user profile or a separate table.
 
-            if ((dataService as any).setActiveProgram) {
-                await (dataService as any).setActiveProgram(user.id, purchase.packageId);
+            if (dataService.setActiveProgram) {
+                await dataService.setActiveProgram(user.id, purchase.packageId);
             } else {
-                // Fallback for types not yet updated or similar
+                // Fallback just in case
                 localStorage.setItem('activeProgramId', purchase.packageId);
             }
 
