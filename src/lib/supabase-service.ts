@@ -560,7 +560,7 @@ export const supabaseDataService = {
     },
     async getStoreByOwnerId(ownerId: string): Promise<GymStore | null> {
         const sb = getSupabase() as any;
-        const { data } = await sb.from('gym_stores').select('*').eq('owner_id', ownerId).single();
+        const { data } = await sb.from('gym_stores').select('*').eq('coach_id', ownerId).maybeSingle();
         return data ? toCamels(data) : null;
     },
 
