@@ -51,7 +51,7 @@ export default function CoachShopPage() {
 
         try {
             await dataService.createStore({
-                owner_id: user.id, // Using owner_id as expected by DB via any cast in service or if types align
+                coachId: user.id,
                 name: newShopName,
                 category: newShopCategory || 'Genel',
                 slug: newShopName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),

@@ -136,8 +136,9 @@ export const supabaseDataService = {
 
     async getCoachStore(coachId: string): Promise<GymStore | undefined> {
         const sb = getSupabase() as any;
-        const { data, error } = await sb.from('gym_stores').select('*').eq('coach_id', coachId).single();
-        if (error && error.code !== 'PGRST116') { // PGRST116 is 'Row not found' which is fine
+        const { data, error } = await sb.from('gym_stores').select('*').eq('coach_id', coachId).maybeSingle();
+
+        if (error) {
             console.warn('Supabase getCoachStore error:', error.message);
         }
         return data ? toCamels(data) : undefined;
@@ -145,8 +146,8 @@ export const supabaseDataService = {
 
     async getStoreById(storeId: string): Promise<GymStore | null> {
         const sb = getSupabase() as any;
-        const { data, error } = await sb.from('gym_stores').select('*').eq('id', storeId).single();
-        if (error && error.code !== 'PGRST116') {
+        const { data, error } = await sb.from('gym_stores').select('*').eq('id', storeId).maybeSingle();
+        if (error) {
             console.warn('Supabase getStoreById error:', error.message);
         }
         return data ? toCamels(data) : null;
