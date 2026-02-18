@@ -55,8 +55,34 @@ CREATE TABLE IF NOT EXISTS public.exercises (
 -- =============================================
 
 -- =============================================
--- 2. MEVCUT TABLOLARIN GÜNCELLENMESİ
+-- 2. MEVCUT TABLORIN GÜNCELLENMESİ (KOLON KONTROLLERİ)
 -- =============================================
+
+-- Purchases tablosuna user_id ve student_id ekle (Eğer yoksa)
+DO $$ 
+BEGIN 
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'purchases' AND column_name = 'user_id') THEN
+        ALTER TABLE public.purchases ADD COLUMN user_id UUID REFERENCES public.profiles(id);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'purchases' AND column_name = 'student_id') THEN
+        ALTER TABLE public.purchases ADD COLUMN student_id UUID REFERENCES public.profiles(id);
+    END IF;
+    -- Reviews tablosu için
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'reviews' AND column_name = 'user_id') THEN
+        ALTER TABLE public.reviews ADD COLUMN user_id UUID REFERENCES public.profiles(id);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'reviews' AND column_name = 'student_id') THEN
+        ALTER TABLE public.reviews ADD COLUMN student_id UUID REFERENCES public.profiles(id);
+    END IF;
+      -- Class enrollments tablosu için
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'class_enrollments' AND column_name = 'student_id') THEN
+        ALTER TABLE public.class_enrollments ADD COLUMN student_id UUID REFERENCES public.profiles(id);
+    END IF;
+END $$;
+
+-- Veri Uyumluluğu: Eğer student_id dolu ama user_id boş ise kopyala (Geriye dönük uyumluluk)
+UPDATE public.purchases SET user_id = student_id WHERE user_id IS NULL AND student_id IS NOT NULL;
+UPDATE public.reviews SET user_id = student_id WHERE user_id IS NULL AND student_id IS NOT NULL;
 
 -- (Buradaki kolon isim değişikliği kodu kaldırıldı çünkü mevcut kod timestamp ve read kullanıyor)
 
