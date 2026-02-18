@@ -5,7 +5,8 @@ import { useParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, MessageCircle, Package, Calendar } from 'lucide-react';
-import { dataService, authService, Purchase, MOCK_USERS } from '@/lib/mock-service';
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { Purchase, Profile } from '@/lib/types';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -19,16 +20,22 @@ export default function StudentDetailPage() {
 
     useEffect(() => {
         async function load() {
-            const user = authService.getUser();
-            if (!user) return;
+            try {
+                const user = await authService.getUser();
+                if (!user) return;
 
-            const studentData = MOCK_USERS.find(u => u.id === studentId);
-            setStudent(studentData);
+                // Fetch student profile from Supabase
+                const studentData = await dataService.getProfile(studentId);
+                setStudent(studentData);
 
-            const allPurchases = await dataService.getPurchases(studentId);
-            const myPurchases = allPurchases.filter((p: Purchase) => p.coachId === user.id);
-            setPurchases(myPurchases);
-            setIsLoading(false);
+                const allPurchases = await dataService.getPurchases(studentId);
+                const myPurchases = allPurchases.filter((p: Purchase) => p.coachId === user.id);
+                setPurchases(myPurchases);
+            } catch (err) {
+                console.error('Failed to load student:', err);
+            } finally {
+                setIsLoading(false);
+            }
         }
         load();
     }, [studentId]);

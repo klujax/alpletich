@@ -1,8 +1,7 @@
 'use client';
 
 import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
-import { Purchase, GymStore, Review } from '@/lib/mock-service'; // Keep types but remove MOCK_USERS
-import { Profile } from '@/lib/types';
+import { Purchase, GymStore, Review, Profile } from '@/lib/types';
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

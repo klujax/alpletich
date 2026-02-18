@@ -691,6 +691,9 @@ export const supabaseAuthService = {
     async updateProfile(userId: string, updates: Partial<Profile>) {
         return supabaseDataService.updateProfile(userId, updates);
     },
+    async resetPassword(email: string) {
+        return supabaseDataService.resetPassword(email);
+    },
     async resendConfirmation(email: string) {
         const sb = getSupabase();
         return await sb.auth.resend({ type: 'signup', email });

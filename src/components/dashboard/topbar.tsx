@@ -10,7 +10,7 @@ import {
     Search,
     Store,
 } from 'lucide-react';
-import { authService } from '@/lib/mock-service';
+import { supabaseAuthService as authService } from '@/lib/supabase-service';
 import { cn } from '@/lib/utils';
 
 export function DashboardTopbar() {

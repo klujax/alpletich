@@ -1,7 +1,7 @@
 'use client';
 
-import { authService, dataService } from '@/lib/mock-service';
-import { SalesPackage, Purchase } from '@/lib/mock-service'; // Keep types from mock service for now
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { SalesPackage, Purchase } from '@/lib/types';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';

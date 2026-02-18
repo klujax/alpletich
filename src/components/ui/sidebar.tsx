@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './button';
-import { authService, dataService } from '@/lib/mock-service';
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
 
 interface SidebarProps {
     role: 'coach' | 'student' | 'admin';
@@ -39,7 +39,7 @@ export function Sidebar({ role }: SidebarProps) {
                 return;
             }
 
-            const user = authService.getUser();
+            const user = await authService.getUser();
             if (!user) return;
 
             // Fetch purchases and packages to check if user has active coaching package

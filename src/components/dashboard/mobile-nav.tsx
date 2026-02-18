@@ -18,7 +18,7 @@ import {
     Play
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { authService, dataService } from "@/lib/mock-service";
+import { supabaseAuthService as authService, supabaseDataService as dataService } from "@/lib/supabase-service";
 
 interface MobileBottomNavProps {
     role: 'coach' | 'student' | 'admin';
@@ -35,7 +35,7 @@ export function MobileBottomNav({ role }: MobileBottomNavProps) {
                 return;
             }
 
-            const user = authService.getUser();
+            const user = await authService.getUser();
             if (!user) return;
 
             const [purchases, packages] = await Promise.all([

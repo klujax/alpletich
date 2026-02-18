@@ -1,7 +1,7 @@
 'use client';
 
 import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
-import { SportCategory } from '@/lib/mock-service'; // Keep types from mock service
+import { SportCategory } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

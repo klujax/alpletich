@@ -9,7 +9,7 @@ import {
     Plus, Users, Star, Trash2, Edit, Package, Dumbbell, X, ChevronDown, ChevronUp, Video, Upload, Play, FileVideo
 } from 'lucide-react';
 import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
-import { SalesPackage, GymStore, SportCategory, WorkoutDay, Exercise } from '@/lib/mock-service'; // Keep types
+import { SalesPackage, GymStore, SportCategory, WorkoutDay, Exercise } from '@/lib/types';
 import { toast } from 'sonner';
 
 export const dynamic = 'force-dynamic';

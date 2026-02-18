@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { authService } from '@/lib/mock-service';
+import { supabaseAuthService as authService } from '@/lib/supabase-service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowRight, Loader2, MoveRight, ArrowLeft } from 'lucide-react';
@@ -19,24 +19,30 @@ export default function LoginPage() {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
-        await new Promise(resolve => setTimeout(resolve, 600));
 
         try {
-            const { user, error } = await authService.signIn(email, password);
-            if (error) throw new Error(error);
+            const { data, error } = await authService.signIn(email, password);
+            if (error) throw error;
 
-            if (user) {
-                const profile = user;
-                if (profile.role === 'admin') router.push('/admin');
-                else if (profile.role === 'coach') router.push('/coach');
-                else router.push('/student');
+            if (data?.user) {
+                // Fetch profile to get role
+                const profile = await authService.getUser();
+                if (profile) {
+                    // Store in localStorage for session fallback
+                    if (typeof window !== 'undefined') {
+                        localStorage.setItem('sportaly_user', JSON.stringify(profile));
+                    }
+                    if (profile.role === 'admin') router.push('/admin');
+                    else if (profile.role === 'coach') router.push('/coach');
+                    else router.push('/student');
+                }
             }
 
         } catch (err: any) {
             const msg = (err.message || '');
             console.error('Login error:', err);
 
-            if (err.status === 400 || msg.includes('400')) {
+            if (err.status === 400 || msg.includes('400') || msg.includes('Invalid login')) {
                 setError('E-posta veya şifre hatalı. Lütfen bilgilerinizi kontrol edin.');
             } else if (err.status === 429 || msg.includes('429')) {
                 setError('Çok fazla başarısız giriş denemesi. Lütfen bir süre bekleyip tekrar deneyin.');

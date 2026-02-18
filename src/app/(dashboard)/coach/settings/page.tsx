@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { User, Mail, Phone, Lock, Save, Plus, Camera, Loader2, ShieldCheck, UserPlus } from 'lucide-react';
-import { authService, dataService, Profile } from '@/lib/mock-service';
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { Profile } from '@/lib/types';
 import { toast } from 'sonner';
 
 export default function SettingsPage() {
@@ -40,16 +41,21 @@ export default function SettingsPage() {
     }, []);
 
     const loadUser = async () => {
-        const currentUser = authService.getUser();
-        if (currentUser) {
-            setUser(currentUser);
-            setFormData({
-                full_name: currentUser.full_name,
-                email: currentUser.email,
-                phone: currentUser.phone || '',
-            });
+        try {
+            const currentUser = await authService.getUser();
+            if (currentUser) {
+                setUser(currentUser);
+                setFormData({
+                    full_name: currentUser.full_name ?? '',
+                    email: currentUser.email ?? '',
+                    phone: currentUser.phone ?? '',
+                });
+            }
+        } catch (err) {
+            console.error('Failed to load user:', err);
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
     };
 
     const handleProfileUpdate = async (e: React.FormEvent) => {
@@ -58,16 +64,19 @@ export default function SettingsPage() {
         setIsSaving(true);
 
         try {
-            // Mock update simulation
-            const updatedUser = { ...user, ...formData };
-            // Gerçek update metodu mock-service'de olmadığı için localUser update ediyoruz
+            await authService.updateProfile(user.id, formData);
+            // Update localStorage fallback
             if (typeof window !== 'undefined') {
-                localStorage.setItem('alperen_spor_user', JSON.stringify(updatedUser));
+                const stored = localStorage.getItem('sportaly_user');
+                if (stored) {
+                    try {
+                        const parsed = JSON.parse(stored);
+                        localStorage.setItem('sportaly_user', JSON.stringify({ ...parsed, ...formData }));
+                    } catch { }
+                }
             }
-
-            // Re-fetch to update state
             await loadUser();
-            toast.success('Profil bilgileri güncellendi');
+            toast.success('Profil bilgileri güncellendi ✅');
         } catch (error) {
             toast.error('Güncelleme başarısız');
         } finally {
@@ -85,15 +94,14 @@ export default function SettingsPage() {
                 return;
             }
 
-            // authService.signUp fonksiyonunu kullanabiliriz
-            // Role: 'coach'
-            const { user: newUser, error } = await authService.signUp(
+            // Supabase signUp ile yeni koç hesabı oluştur
+            const { data, error } = await authService.signUp(
                 newCoach.email,
-                'coach',
-                newCoach.full_name
+                newCoach.password,
+                { full_name: newCoach.full_name, role: 'coach' }
             );
 
-            if (error) throw new Error(error);
+            if (error) throw new Error(error.message);
 
             toast.success('Yeni hoca başarıyla eklendi');
             setNewCoach({ full_name: '', email: '', password: '' });

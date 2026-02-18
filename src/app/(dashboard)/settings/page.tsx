@@ -7,15 +7,16 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
-import { Bell, Lock, User, Shield, LogOut, Loader2, Save, Smartphone, Mail } from 'lucide-react';
+import { Bell, Lock, User, Shield, LogOut, Loader2, Save, Smartphone, Mail, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { authService } from '@/lib/mock-service'; // Use real service
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
 import { Profile } from '@/types/database';
 
 export default function SettingsPage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [isResettingPassword, setIsResettingPassword] = useState(false);
     const [user, setUser] = useState<Profile | null>(null);
 
     // Form States
@@ -26,30 +27,24 @@ export default function SettingsPage() {
     const [notifications, setNotifications] = useState({
         workout_reminders: true,
         message_alerts: true,
-        two_factor: false
     });
 
     useEffect(() => {
         const loadUser = async () => {
-            setIsLoading(true);
-            const userData = await authService.getUser();
-            if (userData) {
-                setUser(userData);
-                setFullName(userData.full_name || '');
-                setEmail(userData.email || '');
-                setPhone(userData.phone || '');
+            try {
+                setIsLoading(true);
+                const userData = await authService.getUser();
+                if (userData) {
+                    setUser(userData);
+                    setFullName(userData.full_name || '');
+                    setEmail(userData.email || '');
+                    setPhone(userData.phone || '');
+                }
+            } catch (err) {
+                console.error('Settings load error:', err);
+            } finally {
+                setIsLoading(false);
             }
-
-            // Load metadata for settings
-            const { user: sessionUser } = await authService.getSessionUser();
-            if (sessionUser && sessionUser.user_metadata) {
-                setNotifications({
-                    workout_reminders: sessionUser.user_metadata.workout_reminders ?? true,
-                    message_alerts: sessionUser.user_metadata.message_alerts ?? true,
-                    two_factor: sessionUser.user_metadata.two_factor ?? false
-                });
-            }
-            setIsLoading(false);
         };
         loadUser();
     }, []);
@@ -58,59 +53,36 @@ export default function SettingsPage() {
         if (!user) return;
         setIsSaving(true);
         try {
-            const { error } = await authService.updateProfile(user.id, {
+            await dataService.updateProfile(user.id, {
                 full_name: fullName,
                 phone: phone,
                 email: email
             });
 
-            if (error) {
-                toast.error('Güncelleme hatası: ' + error.message);
-            } else {
-                toast.success('Profil bilgileriniz güncellendi.');
-                // Refresh user data
-                const updated = await authService.getUser();
-                if (updated) setUser(updated);
-            }
-        } catch (error) {
-            toast.error('Bir hata oluştu.');
+            toast.success('Ayarlar başarıyla güncellendi! ✅', {
+                description: 'Profil bilgileriniz kaydedildi.',
+                duration: 4000,
+            });
+
+            // Refresh user data
+            const updated = await authService.getUser();
+            if (updated) setUser(updated);
+        } catch (error: any) {
+            console.error('Settings save error:', error);
+            toast.error('Güncelleme sırasında bir hata oluştu.', {
+                description: error?.message || 'Lütfen tekrar deneyin.',
+            });
         } finally {
             setIsSaving(false);
         }
     };
 
-    const handleMetadataUpdate = async (key: string, value: boolean) => {
-        if (!user) return;
-
-        // Store previous state for rollback
-        const previousSettings = { ...notifications };
-
-        // Optimistic update
-        setNotifications(prev => ({ ...prev, [key]: value }));
-
-        try {
-            const { error } = await authService.updateUserMetadata(user.id, {
-                [key]: value
-            });
-
-            if (error) {
-                console.error('Metadata update error:', error);
-                toast.error('Ayarlar kaydedilemedi: ' + error.message);
-                // Revert to previous state
-                setNotifications(previousSettings);
-            } else {
-                toast.success('Ayarlar güncellendi.');
-            }
-        } catch (e: any) {
-            console.error('Metadata update exception:', e);
-            toast.error('Bağlantı hatası.');
-            // Revert to previous state
-            setNotifications(previousSettings);
-        }
-    };
-
     const handlePasswordReset = async () => {
-        if (!email) return;
+        if (!email) {
+            toast.error('E-posta adresi bulunamadı.');
+            return;
+        }
+        setIsResettingPassword(true);
         try {
             const { error } = await authService.resetPassword(email);
             if (error) {
@@ -121,7 +93,10 @@ export default function SettingsPage() {
                     toast.error('Şifre sıfırlama hatası: ' + error.message);
                 }
             } else {
-                toast.success('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.');
+                toast.success('Şifre sıfırlama bağlantısı gönderildi! 📧', {
+                    description: `${email} adresine şifre değiştirme linki gönderildi. E-postanızı kontrol edin.`,
+                    duration: 8000,
+                });
             }
         } catch (error: any) {
             console.error('Password reset exception:', error);
@@ -130,11 +105,17 @@ export default function SettingsPage() {
             } else {
                 toast.error(error.message || 'Şifre sıfırlama başarısız.');
             }
+        } finally {
+            setIsResettingPassword(false);
         }
     };
 
     const handleLogout = async () => {
         await authService.signOut();
+        // Also clear localStorage
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('sportaly_user');
+        }
         toast.success('Çıkış yapıldı.');
         router.push('/login');
     };
@@ -202,7 +183,7 @@ export default function SettingsPage() {
                 </CardContent>
             </Card>
 
-            {/* Security Section */}
+            {/* Security Section — Password Reset */}
             <Card className="border-slate-200 shadow-sm overflow-hidden bg-white">
                 <CardHeader className="bg-slate-50 border-b border-slate-100 pb-4">
                     <div className="flex items-center gap-3">
@@ -210,24 +191,23 @@ export default function SettingsPage() {
                         <CardTitle className="font-bold text-lg text-slate-800">Güvenlik</CardTitle>
                     </div>
                 </CardHeader>
-                <CardContent className="space-y-6 pt-6 bg-white">
-                    <div className="flex items-center justify-between py-2">
-                        <div className="space-y-0.5">
-                            <Label className="text-base font-bold text-slate-700">İki Aşamalı Doğrulama</Label>
-                            <p className="text-sm text-slate-400">Giriş yaparken ekstra güvenlik katmanı.</p>
-                        </div>
-                        <Switch
-                            checked={notifications.two_factor}
-                            onCheckedChange={(checked) => handleMetadataUpdate('two_factor', checked)}
-                        />
-                    </div>
-                    <div className="pt-2 border-t border-slate-50">
+                <CardContent className="space-y-4 pt-6 bg-white">
+                    <div className="space-y-2">
+                        <p className="text-sm text-slate-500">
+                            Şifrenizi değiştirmek için aşağıdaki butona tıklayın. E-posta adresinize şifre sıfırlama bağlantısı gönderilecektir.
+                        </p>
                         <Button
                             variant="outline"
-                            className="w-full justify-start text-slate-600 font-bold hover:text-slate-900"
+                            className="w-full justify-start text-slate-600 font-bold hover:text-slate-900 h-12"
                             onClick={handlePasswordReset}
+                            disabled={isResettingPassword}
                         >
-                            <Lock className="w-4 h-4 mr-2" /> Şifre Değiştir
+                            {isResettingPassword ? (
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            ) : (
+                                <Lock className="w-4 h-4 mr-2" />
+                            )}
+                            {isResettingPassword ? 'Gönderiliyor...' : 'Şifre Değiştir (E-posta ile)'}
                         </Button>
                     </div>
                 </CardContent>
@@ -249,7 +229,7 @@ export default function SettingsPage() {
                         </div>
                         <Switch
                             checked={notifications.workout_reminders}
-                            onCheckedChange={(checked) => handleMetadataUpdate('workout_reminders', checked)}
+                            onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, workout_reminders: checked }))}
                         />
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
@@ -259,7 +239,7 @@ export default function SettingsPage() {
                         </div>
                         <Switch
                             checked={notifications.message_alerts}
-                            onCheckedChange={(checked) => handleMetadataUpdate('message_alerts', checked)}
+                            onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, message_alerts: checked }))}
                         />
                     </div>
                 </CardContent>

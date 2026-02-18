@@ -1,8 +1,7 @@
 'use client';
 
 import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
-import { Purchase } from '@/lib/mock-service'; // Keep types from mock service
-import { Profile } from '@/lib/types'; // Use proper Profile type
+import { Purchase, Profile } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';

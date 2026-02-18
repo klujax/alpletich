@@ -3,8 +3,8 @@
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { authService, dataService } from '@/lib/mock-service';
-import { SportCategory } from '@/lib/mock-service';
+import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import { SportCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowRight, ArrowLeft, Store, Phone, Check, Loader2, UserCheck } from 'lucide-react';
@@ -75,24 +75,59 @@ function RegisterContent() {
     const handleRegister = async () => {
         setIsLoading(true);
         setError(null);
-        await new Promise(resolve => setTimeout(resolve, 400));
 
         try {
-            const { user, error: signUpError } = await authService.signUp(
+            // Supabase signUp: (email, password, metadata)
+            const { data, error: signUpError } = await authService.signUp(
                 formData.email,
-                role || 'student',
-                formData.fullName,
                 formData.password,
-                formData.phone,
-                interestedSports,
-                formData.storeName
+                {
+                    full_name: formData.fullName,
+                    role: role || 'student',
+                    phone: formData.phone || null,
+                    interested_sports: interestedSports.length > 0 ? interestedSports : null,
+                }
             );
 
             if (signUpError) {
-                throw new Error(signUpError);
+                throw signUpError;
             }
 
-            if (user) {
+            if (data?.user) {
+                // Create profile in profiles table
+                const profileData = {
+                    id: data.user.id,
+                    email: formData.email,
+                    full_name: formData.fullName,
+                    role: role || 'student',
+                    phone: formData.phone || null,
+                    interested_sports: interestedSports.length > 0 ? interestedSports : undefined,
+                };
+
+                await dataService.updateProfile(data.user.id, profileData);
+
+                // If coach, create store
+                if (role === 'coach' && formData.storeName) {
+                    try {
+                        await dataService.createStore({
+                            coachId: data.user.id,
+                            name: formData.storeName,
+                            slug: formData.storeName.toLowerCase().replace(/\s+/g, '-'),
+                            description: '',
+                            logoEmoji: '🏋️',
+                            themeColor: 'green',
+                            category: 'Fitness',
+                        } as any);
+                    } catch (storeErr) {
+                        console.warn('Store creation failed, can be created later:', storeErr);
+                    }
+                }
+
+                // Store profile in localStorage for session fallback
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem('sportaly_user', JSON.stringify(profileData));
+                }
+
                 toast.success('Kayıt başarılı! Yönlendiriliyorsunuz...');
                 setTimeout(() => {
                     router.push(role === 'coach' ? '/coach' : '/student');
@@ -101,7 +136,7 @@ function RegisterContent() {
         } catch (err: any) {
             console.error('Registration error:', err);
             const msg = err.message || '';
-            if (msg.includes('already') || msg.includes('zaten')) {
+            if (msg.includes('already') || msg.includes('zaten') || msg.includes('already been registered')) {
                 setError('Bu e-posta adresi zaten kayıtlı. Giriş yapmayı deneyin.');
             } else if (err.status === 429 || msg.includes('429') || msg.includes('rate limit')) {
                 setError('Çok fazla deneme. Lütfen farklı bir e-posta kullanın veya 1 saat bekleyin.');
