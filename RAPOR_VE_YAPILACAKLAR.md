@@ -56,8 +56,10 @@ Tüm dosyalardaki `@/lib/mock-service` importları `@/lib/supabase-service` ile 
 ## 🟡 GELECEKTE YAPILACAKLAR (Deploy Sonrası)
 
 ### Güvenlik
-- [ ] RLS politikalarını tüm tablolara ekle (gym_stores, sales_packages, purchases, messages, reviews)
-- [ ] Eksik tabloları Supabase'te oluştur (group_classes, class_enrollments vb.)
+### Güvenlik & Veritabanı (Çok Önemli)
+- [x] **RLS Politikaları ve Eksik Tablolar**
+  - Tüm tablolar (reviews, group_classes, vb.) ve güvenlik kuralları (RLS) tek bir SQL dosyasında toplandı.
+  - **YAPILACAK:** `supabase/migrations/20260218_complete_schema_and_rls.sql` dosyasını Supabase SQL Editor'de çalıştırın.
 - [ ] API routes ile hassas işlemleri server-side'a taşı
 
 ### Fonksiyonel
