@@ -665,11 +665,14 @@ export const supabaseAuthService = {
 
     async signUp(email: string, password?: string, metadata?: any) {
         const sb = getSupabase();
+        if (!password) throw new Error('Şifre gereklidir.');
+        const redirectUrl = typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined;
         return await sb.auth.signUp({
             email,
-            password: password || '123456', // Default fallback or error if needed, but signup usually implies password
+            password,
             options: {
-                data: metadata
+                data: metadata,
+                emailRedirectTo: redirectUrl
             }
         });
     },

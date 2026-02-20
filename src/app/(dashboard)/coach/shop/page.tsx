@@ -50,11 +50,20 @@ export default function CoachShopPage() {
         if (!user || !newShopName) return;
 
         try {
+            // Generate a safe slug from store name
+            const baseSlug = newShopName
+                .toLowerCase()
+                .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
+                .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/(^-|-$)/g, '');
+            const slug = baseSlug + '-' + Date.now().toString(36);
+
             await dataService.createStore({
                 coachId: user.id,
                 name: newShopName,
                 category: newShopCategory || 'Genel',
-                slug: newShopName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+                slug: slug,
                 description: 'Yeni dükkan'
             } as any);
 
@@ -63,9 +72,9 @@ export default function CoachShopPage() {
             setNewShopCategory('');
             toast.success('Dükkanın başarıyla açıldı! 🎉');
             loadData();
-        } catch (error) {
-            console.error(error);
-            toast.error('Dükkan oluşturulamadı');
+        } catch (error: any) {
+            console.error('Store creation error:', error);
+            toast.error(error?.message || 'Dükkan oluşturulamadı');
         }
     };
 

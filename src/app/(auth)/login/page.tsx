@@ -39,12 +39,14 @@ export default function LoginPage() {
             }
 
         } catch (err: any) {
-            const msg = (err.message || '');
+            const msg = (err.message || '').toLowerCase();
             console.error('Login error:', err);
 
-            if (err.status === 400 || msg.includes('400') || msg.includes('Invalid login')) {
+            if (msg.includes('email not confirmed') || msg.includes('email_not_confirmed')) {
+                setError('E-posta adresiniz henüz doğrulanmamış. Lütfen e-postanızı kontrol edin veya yeni doğrulama maili isteyin.');
+            } else if (err.status === 400 || msg.includes('invalid login') || msg.includes('invalid_credentials')) {
                 setError('E-posta veya şifre hatalı. Lütfen bilgilerinizi kontrol edin.');
-            } else if (err.status === 429 || msg.includes('429')) {
+            } else if (err.status === 429 || msg.includes('429') || msg.includes('rate limit')) {
                 setError('Çok fazla başarısız giriş denemesi. Lütfen bir süre bekleyip tekrar deneyin.');
             } else {
                 setError(err.message || 'Giriş yapılamadı. Tekrar deneyin.');

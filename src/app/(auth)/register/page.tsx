@@ -94,7 +94,18 @@ function RegisterContent() {
             }
 
             if (data?.user) {
-                // Create profile in profiles table
+                // Check if email confirmation is required (no session = confirmation needed)
+                if (!data.session) {
+                    // Email confirmation required
+                    toast.success('Kayıt başarılı! E-posta adresinize doğrulama linki gönderildi. Lütfen e-postanızı kontrol edin.');
+                    setTimeout(() => {
+                        router.push('/login');
+                    }, 2000);
+                    return;
+                }
+
+                // Session exists - email auto-confirmed, proceed normally
+                // Create/update profile in profiles table
                 const profileData = {
                     id: data.user.id,
                     email: formData.email,
@@ -104,7 +115,11 @@ function RegisterContent() {
                     interested_sports: interestedSports.length > 0 ? interestedSports : undefined,
                 };
 
-                await dataService.updateProfile(data.user.id, profileData);
+                try {
+                    await dataService.updateProfile(data.user.id, profileData);
+                } catch (profileErr) {
+                    console.warn('Profile update failed (trigger may have created it):', profileErr);
+                }
 
                 // If coach, create store
                 if (role === 'coach' && formData.storeName) {
@@ -112,7 +127,7 @@ function RegisterContent() {
                         await dataService.createStore({
                             coachId: data.user.id,
                             name: formData.storeName,
-                            slug: formData.storeName.toLowerCase().replace(/\s+/g, '-'),
+                            slug: formData.storeName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
                             description: '',
                             logoEmoji: '🏋️',
                             themeColor: 'green',
@@ -135,13 +150,15 @@ function RegisterContent() {
             }
         } catch (err: any) {
             console.error('Registration error:', err);
-            const msg = err.message || '';
+            const msg = (err.message || '').toLowerCase();
             if (msg.includes('already') || msg.includes('zaten') || msg.includes('already been registered')) {
                 setError('Bu e-posta adresi zaten kayıtlı. Giriş yapmayı deneyin.');
             } else if (err.status === 429 || msg.includes('429') || msg.includes('rate limit')) {
                 setError('Çok fazla deneme. Lütfen farklı bir e-posta kullanın veya 1 saat bekleyin.');
-            } else if (msg.includes('Type error') || msg.includes('Database error')) {
+            } else if (msg.includes('type error') || msg.includes('database error')) {
                 setError('Bir sistem hatası oluştu. Lütfen tekrar deneyin.');
+            } else if (msg.includes('invalid') && msg.includes('email')) {
+                setError('Geçersiz e-posta adresi. Lütfen geçerli bir e-posta girin.');
             } else {
                 setError(msg || 'Kayıt işlemi başarısız oldu.');
             }
