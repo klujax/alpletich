@@ -117,7 +117,7 @@ export function Sidebar({ role }: SidebarProps) {
                 </div>
                 {links.map((link) => {
                     const isDashboardRoot = link.href === '/student' || link.href === '/coach' || link.href === '/admin';
-                    const isActive = link.href === pathname || (!isDashboardRoot && pathname.startsWith(link.href + '/'));
+                    const isActive = link.href === pathname || (!isDashboardRoot && pathname?.startsWith(link.href + '/'));
 
                     return (
                         <Link

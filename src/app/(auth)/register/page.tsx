@@ -15,7 +15,7 @@ type Step = 'role_selection' | 'personal_info' | 'sport_selection';
 
 function RegisterContent() {
     const searchParams = useSearchParams();
-    const initialRole = searchParams.get('role');
+    const initialRole = searchParams?.get('role') || null;
     const router = useRouter();
 
     const [step, setStep] = useState<Step>('role_selection');
@@ -77,10 +77,20 @@ function RegisterContent() {
         setError(null);
 
         try {
+            // Trim whitespace from email
+            const cleanEmail = formData.email.trim();
+            const cleanPassword = formData.password;
+
+            if (!cleanEmail || !cleanEmail.includes('@')) {
+                setError('Lütfen geçerli bir e-posta adresi girin.');
+                setIsLoading(false);
+                return;
+            }
+
             // Supabase signUp: (email, password, metadata)
             const { data, error: signUpError } = await authService.signUp(
-                formData.email,
-                formData.password,
+                cleanEmail,
+                cleanPassword,
                 {
                     full_name: formData.fullName,
                     role: role || 'student',
@@ -108,7 +118,7 @@ function RegisterContent() {
                 // Create/update profile in profiles table
                 const profileData = {
                     id: data.user.id,
-                    email: formData.email,
+                    email: cleanEmail,
                     full_name: formData.fullName,
                     role: role || 'student',
                     phone: formData.phone || null,
@@ -158,7 +168,7 @@ function RegisterContent() {
             } else if (msg.includes('type error') || msg.includes('database error')) {
                 setError('Bir sistem hatası oluştu. Lütfen tekrar deneyin.');
             } else if (msg.includes('invalid') && msg.includes('email')) {
-                setError('Geçersiz e-posta adresi. Lütfen geçerli bir e-posta girin.');
+                setError('Geçersiz e-posta adresi formati. Lütfen başında veya sonunda boşluk bırakmadan e-posta girin.');
             } else {
                 setError(msg || 'Kayıt işlemi başarısız oldu.');
             }

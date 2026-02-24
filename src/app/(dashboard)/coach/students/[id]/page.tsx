@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
 
 export default function StudentDetailPage() {
     const params = useParams();
-    const studentId = params.id as string;
+    const studentId = params?.id as string;
     const [student, setStudent] = useState<any>(null);
     const [purchases, setPurchases] = useState<Purchase[]>([]);
     const [isLoading, setIsLoading] = useState(true);

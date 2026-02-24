@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 export function StudentChat() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const partnerIdParam = searchParams.get('partner');
+    const partnerIdParam = searchParams?.get('partner');
 
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [selectedPartner, setSelectedPartner] = useState<Profile | null>(null);

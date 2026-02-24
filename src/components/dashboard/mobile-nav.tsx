@@ -96,7 +96,7 @@ export function MobileBottomNav({ role }: MobileBottomNavProps) {
             <div className="flex items-center justify-evenly w-full overflow-x-auto no-scrollbar h-[4.5rem] px-1">
                 {links.map((link) => {
                     const isDashboardRoot = link.href === '/student' || link.href === '/coach' || link.href === '/admin';
-                    const isActive = link.href === pathname || (!isDashboardRoot && pathname.startsWith(link.href));
+                    const isActive = link.href === pathname || (!isDashboardRoot && pathname?.startsWith(link.href));
 
                     return (
                         <Link
