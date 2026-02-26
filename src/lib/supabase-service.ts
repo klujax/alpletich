@@ -191,22 +191,22 @@ export const supabaseDataService = {
             description: d.description || '',
             price: d.price,
             packageType: d.package_type,
-            totalWeeks: d.duration_weeks || 4,
+            totalWeeks: d.total_weeks || 4,
             features: d.features || [],
             workoutPlan: d.workout_plan || undefined,
             nutritionPlan: d.nutrition_plan || undefined,
-            isPublished: d.is_active,
+            isPublished: d.is_published || false,
             createdAt: d.created_at,
-            // Virtual UI fields
-            accessDuration: d.duration_weeks ? `${d.duration_weeks} Hafta` : 'Süresiz',
-            sport: 'Fitness',
-            hasChatSupport: true,
-            hasGroupClass: false,
-            maxStudents: 50,
-            enrolledStudents: 0,
-            rating: 5,
-            reviewCount: 0,
-            programContent: []
+            // Virtual UI fields or from DB
+            accessDuration: d.access_duration || (d.total_weeks ? `${d.total_weeks} Hafta` : 'Süresiz'),
+            sport: d.sport || 'Fitness',
+            hasChatSupport: d.has_chat_support || false,
+            hasGroupClass: d.has_group_class || false,
+            maxStudents: d.max_students || 50,
+            enrolledStudents: d.enrolled_students || 0,
+            rating: d.rating || 0,
+            reviewCount: d.review_count || 0,
+            programContent: d.program_content || []
         })) as SalesPackage[];
     },
 
@@ -219,11 +219,11 @@ export const supabaseDataService = {
             description: pkg.description,
             price: pkg.price,
             package_type: pkg.packageType,
-            duration_weeks: pkg.totalWeeks,
+            total_weeks: pkg.totalWeeks,
             features: pkg.features,
             workout_plan: pkg.workoutPlan,
             nutrition_plan: pkg.nutritionPlan,
-            is_active: pkg.isPublished
+            is_published: pkg.isPublished
         };
         const { data, error } = await sb.from('sales_packages').insert(dbPkg).select().single();
         if (error) throw error;
@@ -244,11 +244,11 @@ export const supabaseDataService = {
         if (pkg.description !== undefined) dbPkg.description = pkg.description;
         if (pkg.price !== undefined) dbPkg.price = pkg.price;
         if (pkg.packageType !== undefined) dbPkg.package_type = pkg.packageType;
-        if (pkg.totalWeeks !== undefined) dbPkg.duration_weeks = pkg.totalWeeks;
+        if (pkg.totalWeeks !== undefined) dbPkg.total_weeks = pkg.totalWeeks;
         if (pkg.features !== undefined) dbPkg.features = pkg.features;
         if (pkg.workoutPlan !== undefined) dbPkg.workout_plan = pkg.workoutPlan;
         if (pkg.nutritionPlan !== undefined) dbPkg.nutrition_plan = pkg.nutritionPlan;
-        if (pkg.isPublished !== undefined) dbPkg.is_active = pkg.isPublished;
+        if (pkg.isPublished !== undefined) dbPkg.is_published = pkg.isPublished;
 
         const { data, error } = await sb.from('sales_packages').update(dbPkg).eq('id', pkg.id).select().single();
         if (error) throw error;
@@ -358,9 +358,9 @@ export const supabaseDataService = {
 
         // 2. Calculate Expiry
         let expiresAt = null;
-        if (pkg.package_type === 'coaching' && pkg.duration_weeks) {
+        if (pkg.package_type === 'coaching' && pkg.total_weeks) {
             const date = new Date();
-            date.setDate(date.getDate() + (pkg.duration_weeks * 7));
+            date.setDate(date.getDate() + (pkg.total_weeks * 7));
             expiresAt = date.toISOString();
         }
 

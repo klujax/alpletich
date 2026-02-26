@@ -62,11 +62,11 @@ export interface SalesPackageDB {
   image_url: string | null;
   highlight_color: string | null;
   package_type: 'program' | 'coaching' | 'bundle';
-  duration_weeks: number | null;
+  total_weeks: number | null;
   features: any | null; // JSONB
   workout_plan: any | null; // JSONB
   nutrition_plan: any | null; // JSONB
-  is_active: boolean;
+  is_published: boolean;
   created_at: string;
 }
 
