@@ -26,6 +26,10 @@ export interface Profile {
   bio?: string | null;
   sports?: string | null;
   interested_sports?: string[];
+  height?: number | null;
+  weight?: number | null;
+  location?: string | null;
+  sports_history?: string | null;
   created_at: string;
   updated_at: string;
   active_program_id?: string | null;

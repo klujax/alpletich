@@ -107,7 +107,7 @@ export function Sidebar({ role }: SidebarProps) {
             {/* Logo Section */}
             <div className="p-8 pb-6">
                 <div className="flex items-center justify-center">
-                    <img src="/logo.png" alt="Sportaly Logo" className="h-12 w-auto object-contain" />
+                    <img src="/shark-logo.jpg" alt="Sportaly Logo" className="h-12 w-auto object-contain rounded-xl" />
                 </div>
             </div>
 

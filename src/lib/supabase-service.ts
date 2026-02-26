@@ -182,24 +182,82 @@ export const supabaseDataService = {
             console.warn('Supabase getPackages error (Table missing?):', error.message);
             return [];
         }
-        return toCamels(data || []);
+
+        return data.map((d: any) => ({
+            id: d.id,
+            coachId: d.coach_id,
+            shopId: d.shop_id,
+            name: d.name,
+            description: d.description || '',
+            price: d.price,
+            packageType: d.package_type,
+            totalWeeks: d.duration_weeks || 4,
+            features: d.features || [],
+            workoutPlan: d.workout_plan || undefined,
+            nutritionPlan: d.nutrition_plan || undefined,
+            isPublished: d.is_active,
+            createdAt: d.created_at,
+            // Virtual UI fields
+            accessDuration: d.duration_weeks ? `${d.duration_weeks} Hafta` : 'Süresiz',
+            sport: 'Fitness',
+            hasChatSupport: true,
+            hasGroupClass: false,
+            maxStudents: 50,
+            enrolledStudents: 0,
+            rating: 5,
+            reviewCount: 0,
+            programContent: []
+        })) as SalesPackage[];
     },
 
     async createPackage(pkg: Omit<SalesPackage, 'id' | 'createdAt'>) {
         const sb = getSupabase() as any;
-        const dbPkg = toSnakes(pkg);
+        const dbPkg = {
+            shop_id: pkg.shopId,
+            coach_id: pkg.coachId,
+            name: pkg.name,
+            description: pkg.description,
+            price: pkg.price,
+            package_type: pkg.packageType,
+            duration_weeks: pkg.totalWeeks,
+            features: pkg.features,
+            workout_plan: pkg.workoutPlan,
+            nutrition_plan: pkg.nutritionPlan,
+            is_active: pkg.isPublished
+        };
         const { data, error } = await sb.from('sales_packages').insert(dbPkg).select().single();
         if (error) throw error;
-        return toCamels(data);
+
+        return {
+            ...pkg,
+            id: data.id,
+            createdAt: data.created_at
+        } as SalesPackage;
     },
 
     async updatePackage(pkg: Partial<SalesPackage>) {
         const sb = getSupabase() as any;
-        const dbPkg = toSnakes(pkg);
-        const { id, ...updates } = dbPkg;
-        const { data, error } = await sb.from('sales_packages').update(updates).eq('id', id).select().single();
+        const dbPkg: any = {};
+        if (pkg.shopId !== undefined) dbPkg.shop_id = pkg.shopId;
+        if (pkg.coachId !== undefined) dbPkg.coach_id = pkg.coachId;
+        if (pkg.name !== undefined) dbPkg.name = pkg.name;
+        if (pkg.description !== undefined) dbPkg.description = pkg.description;
+        if (pkg.price !== undefined) dbPkg.price = pkg.price;
+        if (pkg.packageType !== undefined) dbPkg.package_type = pkg.packageType;
+        if (pkg.totalWeeks !== undefined) dbPkg.duration_weeks = pkg.totalWeeks;
+        if (pkg.features !== undefined) dbPkg.features = pkg.features;
+        if (pkg.workoutPlan !== undefined) dbPkg.workout_plan = pkg.workoutPlan;
+        if (pkg.nutritionPlan !== undefined) dbPkg.nutrition_plan = pkg.nutritionPlan;
+        if (pkg.isPublished !== undefined) dbPkg.is_active = pkg.isPublished;
+
+        const { data, error } = await sb.from('sales_packages').update(dbPkg).eq('id', pkg.id).select().single();
         if (error) throw error;
-        return toCamels(data);
+
+        return {
+            ...pkg,
+            id: data.id,
+            createdAt: data.created_at
+        } as SalesPackage;
     },
 
     async deletePackage(packageId: string) {
@@ -375,11 +433,12 @@ export const supabaseDataService = {
             .from('messages')
             .select('*')
             .or(`and(sender_id.eq.${userId},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${userId})`)
-            .order('timestamp', { ascending: true });
+            .order('created_at', { ascending: true });
 
         const camelData = toCamels(data || []);
         return camelData.map((m: any) => ({
             ...m,
+            timestamp: m.createdAt,
             read: m.isRead !== undefined ? m.isRead : m.read
         }));
     },
@@ -401,13 +460,14 @@ export const supabaseDataService = {
             .from('messages')
             .select('*')
             .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
-            .order('timestamp', { ascending: false });
+            .order('created_at', { ascending: false });
 
         if (error || !messages) return [];
 
         const camelMessagesRaw = toCamels(messages);
         const camelMessages = (camelMessagesRaw || []).map((m: any) => ({
             ...m,
+            timestamp: m.createdAt,
             read: m.isRead !== undefined ? m.isRead : m.read
         })) as Message[];
         const partnerIds = new Set<string>();
@@ -464,6 +524,7 @@ export const supabaseDataService = {
         const camelData = toCamels(data);
         return {
             ...camelData,
+            timestamp: camelData.createdAt,
             read: camelData.isRead !== undefined ? camelData.isRead : camelData.read
         };
     },

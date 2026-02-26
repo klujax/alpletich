@@ -28,6 +28,10 @@ function RegisterContent() {
         password: '',
         phone: '',
         storeName: '',
+        height: '',
+        weight: '',
+        location: '',
+        sportsHistory: '',
     });
 
     const [interestedSports, setInterestedSports] = useState<string[]>([]);
@@ -96,6 +100,11 @@ function RegisterContent() {
                     role: role || 'student',
                     phone: formData.phone || null,
                     interested_sports: interestedSports.length > 0 ? interestedSports : null,
+                    height: formData.height || null,
+                    weight: formData.weight || null,
+                    location: formData.location || null,
+                    sports_history: formData.sportsHistory || null,
+                    store_name: formData.storeName || null,
                 }
             );
 
@@ -123,6 +132,10 @@ function RegisterContent() {
                     role: role || 'student',
                     phone: formData.phone || null,
                     interested_sports: interestedSports.length > 0 ? interestedSports : undefined,
+                    height: formData.height ? Number(formData.height) : undefined,
+                    weight: formData.weight ? Number(formData.weight) : undefined,
+                    location: formData.location || undefined,
+                    sports_history: formData.sportsHistory || undefined,
                 };
 
                 try {
@@ -235,10 +248,47 @@ function RegisterContent() {
                     />
                     {isCoach && (
                         <Input
-                            placeholder="Dükkan / İşletme Adı"
+                            placeholder="Nerede Hocalık Yapıyorsunuz? (Dükkan / İşletme Adı)"
                             value={formData.storeName}
                             onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
                             required
+                            className="h-11 md:h-9 border-2 border-slate-100 focus:border-green-600 rounded-xl md:rounded-lg px-4 md:px-3 font-bold text-sm md:text-xs"
+                        />
+                    )}
+                    <select
+                        value={formData.location}
+                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                        required
+                        className="flex w-full h-11 md:h-9 border-2 border-slate-100 focus:border-green-600 focus-visible:outline-none focus:ring-0 rounded-xl md:rounded-lg px-4 md:px-3 font-bold text-sm md:text-xs bg-white text-slate-900 appearance-none"
+                    >
+                        <option value="" disabled>Nerede Yaşıyorsunuz? (İl Seçin)</option>
+                        {["Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın", "Balıkesir", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Isparta", "Mersin", "İstanbul", "İzmir", "Kars", "Kastamonu", "Kayseri", "Kırklareli", "Kırşehir", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Kahramanmaraş", "Mardin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Şanlıurfa", "Uşak", "Van", "Yozgat", "Zonguldak", "Aksaray", "Bayburt", "Karaman", "Kırıkkale", "Batman", "Şırnak", "Bartın", "Ardahan", "Iğdır", "Yalova", "Karabük", "Kilis", "Osmaniye", "Düzce"].map(city => (
+                            <option key={city} value={city}>{city}</option>
+                        ))}
+                    </select>
+                    <div className="grid grid-cols-2 gap-2.5 md:gap-2">
+                        <Input
+                            type="number"
+                            placeholder="Boy (cm)"
+                            value={formData.height}
+                            onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+                            required
+                            className="h-11 md:h-9 border-2 border-slate-100 focus:border-green-600 rounded-xl md:rounded-lg px-4 md:px-3 font-bold text-sm md:text-xs"
+                        />
+                        <Input
+                            type="number"
+                            placeholder="Kilo (kg)"
+                            value={formData.weight}
+                            onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                            required
+                            className="h-11 md:h-9 border-2 border-slate-100 focus:border-green-600 rounded-xl md:rounded-lg px-4 md:px-3 font-bold text-sm md:text-xs"
+                        />
+                    </div>
+                    {!isCoach && (
+                        <Input
+                            placeholder="Spor Geçmişiniz (Örn: 2 yıl fitness, yüzme vb.)"
+                            value={formData.sportsHistory}
+                            onChange={(e) => setFormData({ ...formData, sportsHistory: e.target.value })}
                             className="h-11 md:h-9 border-2 border-slate-100 focus:border-green-600 rounded-xl md:rounded-lg px-4 md:px-3 font-bold text-sm md:text-xs"
                         />
                     )}
@@ -276,7 +326,7 @@ function RegisterContent() {
                     >
                         {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                             <span className="flex items-center gap-2">
-                                {isCoach ? 'Hesabı Oluştur' : 'Devam Et'} <ArrowRight className="w-4 h-4 md:w-3.5 md:h-3.5" />
+                                Devam Et <ArrowRight className="w-4 h-4 md:w-3.5 md:h-3.5" />
                             </span>
                         )}
                     </Button>
@@ -301,7 +351,9 @@ function RegisterContent() {
                         <ArrowLeft className="w-3 h-3" /> Bilgilere Dön
                     </button>
                     <h1 className="text-2xl md:text-lg font-black text-slate-900 mb-1 tracking-tighter leading-tight">İlgi Alanlarınızı Seçin</h1>
-                    <p className="text-xs md:text-[11px] font-bold text-slate-400">Sana en uygun koçları bulalım.</p>
+                    <p className="text-xs md:text-[11px] font-bold text-slate-400">
+                        {isCoach ? 'Uzmanlık alanlarınızı/ilgilenilen branşları seçin.' : 'Sana en uygun koçları bulalım.'}
+                    </p>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-1.5 w-full mb-5 md:mb-3">
