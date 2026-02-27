@@ -196,29 +196,37 @@ function RegisterContent() {
     if (step === 'role_selection') {
         return (
             <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <h1 className="text-2xl md:text-lg font-black text-slate-900 mb-5 md:mb-4 tracking-tighter text-center">Hesabınızı Oluşturun</h1>
-                <div className="w-full space-y-2.5 md:space-y-2">
-                    <button onClick={() => handleRoleSelect('student')} className="w-full p-4 md:p-3 rounded-2xl md:rounded-lg bg-white border-2 border-slate-100 hover:border-green-600 hover:bg-green-50 text-left transition-all duration-200 group flex items-center gap-3 md:gap-2.5">
-                        <div className="w-10 h-10 md:w-8 md:h-8 rounded-xl md:rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors">
-                            <UserCheck className="w-5 h-5 md:w-4 md:h-4" />
+                <h1 className="text-2xl md:text-xl lg:text-2xl font-black text-slate-900 mb-1 tracking-tighter text-center">Hesabınızı Oluşturun</h1>
+                <p className="text-xs lg:text-sm font-bold text-slate-400 mb-5 lg:mb-6 text-center">Rolünüzü seçerek başlayın</p>
+                <div className="w-full space-y-2.5 lg:space-y-3">
+                    <button onClick={() => handleRoleSelect('student')} className="w-full p-4 lg:p-5 rounded-2xl bg-white border-2 border-slate-100 hover:border-green-600 hover:bg-green-50 text-left transition-all duration-200 group flex items-center gap-3 lg:gap-4">
+                        <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors">
+                            <UserCheck className="w-5 h-5 lg:w-6 lg:h-6" />
                         </div>
                         <div className="flex-1">
-                            <h3 className="font-black text-slate-900 group-hover:text-green-700 text-sm md:text-xs">Öğrenci Girişi</h3>
-                            <p className="text-xs md:text-[10px] font-bold text-slate-400 group-hover:text-green-600/70">Koç bulmak istiyorum</p>
+                            <h3 className="font-black text-slate-900 group-hover:text-green-700 text-sm lg:text-base">Öğrenciyim</h3>
+                            <p className="text-xs lg:text-sm font-bold text-slate-400 group-hover:text-green-600/70">Koç bulmak ve antrenman yapmak istiyorum</p>
                         </div>
-                        <ArrowRight className="w-4 h-4 md:w-3.5 md:h-3.5 text-slate-200 group-hover:text-green-600" />
+                        <ArrowRight className="w-4 h-4 lg:w-5 lg:h-5 text-slate-200 group-hover:text-green-600" />
                     </button>
 
-                    <button onClick={() => handleRoleSelect('coach')} className="w-full p-4 md:p-3 rounded-2xl md:rounded-lg bg-white border-2 border-slate-100 hover:border-green-600 hover:bg-green-50 text-left transition-all duration-200 group flex items-center gap-3 md:gap-2.5">
-                        <div className="w-10 h-10 md:w-8 md:h-8 rounded-xl md:rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors">
-                            <Store className="w-5 h-5 md:w-4 md:h-4" />
+                    <button onClick={() => handleRoleSelect('coach')} className="w-full p-4 lg:p-5 rounded-2xl bg-white border-2 border-slate-100 hover:border-green-600 hover:bg-green-50 text-left transition-all duration-200 group flex items-center gap-3 lg:gap-4">
+                        <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors">
+                            <Store className="w-5 h-5 lg:w-6 lg:h-6" />
                         </div>
                         <div className="flex-1">
-                            <h3 className="font-black text-slate-900 group-hover:text-green-700 text-sm md:text-xs">Eğitmen Girişi</h3>
-                            <p className="text-xs md:text-[10px] font-bold text-slate-400 group-hover:text-green-600/70">Ders vermek istiyorum</p>
+                            <h3 className="font-black text-slate-900 group-hover:text-green-700 text-sm lg:text-base">Eğitmenim</h3>
+                            <p className="text-xs lg:text-sm font-bold text-slate-400 group-hover:text-green-600/70">Ders vermek ve öğrenci bulmak istiyorum</p>
                         </div>
-                        <ArrowRight className="w-4 h-4 md:w-3.5 md:h-3.5 text-slate-200 group-hover:text-green-600" />
+                        <ArrowRight className="w-4 h-4 lg:w-5 lg:h-5 text-slate-200 group-hover:text-green-600" />
                     </button>
+                </div>
+
+                <div className="mt-5 lg:mt-6 text-center w-full">
+                    <p className="text-xs lg:text-sm font-bold text-slate-400">
+                        Zaten hesabınız var mı?{' '}
+                        <Link href="/login" className="text-green-600 hover:text-green-700 underline">Giriş Yapın</Link>
+                    </p>
                 </div>
             </div>
         );
@@ -228,23 +236,23 @@ function RegisterContent() {
     if (step === 'personal_info') {
         return (
             <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <div className="w-full mb-5 md:mb-3 text-center">
-                    <button onClick={() => { setStep('role_selection'); setRole(null); }} className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-green-600 flex items-center gap-1 mx-auto mb-2">
+                <div className="w-full mb-5 lg:mb-6 text-center">
+                    <button onClick={() => { setStep('role_selection'); setRole(null); }} className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-green-600 flex items-center gap-1 mx-auto mb-2">
                         <ArrowLeft className="w-3 h-3" /> Geri Dön
                     </button>
-                    <h1 className="text-2xl md:text-lg font-black text-slate-900 mb-1 tracking-tighter">
+                    <h1 className="text-2xl lg:text-2xl font-black text-slate-900 mb-1 tracking-tighter">
                         {isCoach ? 'Eğitmen Kaydı' : 'Öğrenci Kaydı'}
                     </h1>
-                    <p className="text-xs md:text-[11px] font-bold text-slate-400">Bilgilerinizi girerek başlayın.</p>
+                    <p className="text-xs lg:text-sm font-bold text-slate-400">Bilgilerinizi girerek başlayın.</p>
                 </div>
 
-                <form onSubmit={handlePersonalInfoSubmit} className="w-full space-y-2.5 md:space-y-2">
+                <form onSubmit={handlePersonalInfoSubmit} className="w-full space-y-3 lg:space-y-3.5">
                     <Input
                         placeholder="Ad Soyad"
                         value={formData.fullName}
                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                         required
-                        className="h-11 md:h-9 border-2 border-slate-100 focus:border-green-600 rounded-xl md:rounded-lg px-4 md:px-3 font-bold text-sm md:text-xs"
+                        className="h-11 lg:h-12 border-2 border-slate-100 focus:border-green-600 rounded-xl px-4 font-bold text-sm lg:text-base"
                     />
                     {isCoach && (
                         <Input
@@ -252,28 +260,28 @@ function RegisterContent() {
                             value={formData.storeName}
                             onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
                             required
-                            className="h-11 md:h-9 border-2 border-slate-100 focus:border-green-600 rounded-xl md:rounded-lg px-4 md:px-3 font-bold text-sm md:text-xs"
+                            className="h-11 lg:h-12 border-2 border-slate-100 focus:border-green-600 rounded-xl px-4 font-bold text-sm lg:text-base"
                         />
                     )}
                     <select
                         value={formData.location}
                         onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                         required
-                        className="flex w-full h-11 md:h-9 border-2 border-slate-100 focus:border-green-600 focus-visible:outline-none focus:ring-0 rounded-xl md:rounded-lg px-4 md:px-3 font-bold text-sm md:text-xs bg-white text-slate-900 appearance-none"
+                        className="flex w-full h-11 lg:h-12 border-2 border-slate-100 focus:border-green-600 focus-visible:outline-none focus:ring-0 rounded-xl px-4 font-bold text-sm lg:text-base bg-white text-slate-900 appearance-none"
                     >
                         <option value="" disabled>Nerede Yaşıyorsunuz? (İl Seçin)</option>
                         {["Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın", "Balıkesir", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Isparta", "Mersin", "İstanbul", "İzmir", "Kars", "Kastamonu", "Kayseri", "Kırklareli", "Kırşehir", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Kahramanmaraş", "Mardin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Şanlıurfa", "Uşak", "Van", "Yozgat", "Zonguldak", "Aksaray", "Bayburt", "Karaman", "Kırıkkale", "Batman", "Şırnak", "Bartın", "Ardahan", "Iğdır", "Yalova", "Karabük", "Kilis", "Osmaniye", "Düzce"].map(city => (
                             <option key={city} value={city}>{city}</option>
                         ))}
                     </select>
-                    <div className="grid grid-cols-2 gap-2.5 md:gap-2">
+                    <div className="grid grid-cols-2 gap-3">
                         <Input
                             type="number"
                             placeholder="Boy (cm)"
                             value={formData.height}
                             onChange={(e) => setFormData({ ...formData, height: e.target.value })}
                             required
-                            className="h-11 md:h-9 border-2 border-slate-100 focus:border-green-600 rounded-xl md:rounded-lg px-4 md:px-3 font-bold text-sm md:text-xs"
+                            className="h-11 lg:h-12 border-2 border-slate-100 focus:border-green-600 rounded-xl px-4 font-bold text-sm lg:text-base"
                         />
                         <Input
                             type="number"
@@ -281,7 +289,7 @@ function RegisterContent() {
                             value={formData.weight}
                             onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
                             required
-                            className="h-11 md:h-9 border-2 border-slate-100 focus:border-green-600 rounded-xl md:rounded-lg px-4 md:px-3 font-bold text-sm md:text-xs"
+                            className="h-11 lg:h-12 border-2 border-slate-100 focus:border-green-600 rounded-xl px-4 font-bold text-sm lg:text-base"
                         />
                     </div>
                     {!isCoach && (
@@ -289,7 +297,7 @@ function RegisterContent() {
                             placeholder="Spor Geçmişiniz (Örn: 2 yıl fitness, yüzme vb.)"
                             value={formData.sportsHistory}
                             onChange={(e) => setFormData({ ...formData, sportsHistory: e.target.value })}
-                            className="h-11 md:h-9 border-2 border-slate-100 focus:border-green-600 rounded-xl md:rounded-lg px-4 md:px-3 font-bold text-sm md:text-xs"
+                            className="h-11 lg:h-12 border-2 border-slate-100 focus:border-green-600 rounded-xl px-4 font-bold text-sm lg:text-base"
                         />
                     )}
                     <Input
@@ -298,7 +306,7 @@ function RegisterContent() {
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         required
-                        className="h-11 md:h-9 border-2 border-slate-100 focus:border-green-600 rounded-xl md:rounded-lg px-4 md:px-3 font-bold text-sm md:text-xs"
+                        className="h-11 lg:h-12 border-2 border-slate-100 focus:border-green-600 rounded-xl px-4 font-bold text-sm lg:text-base"
                     />
                     <Input
                         type="email"
@@ -306,7 +314,7 @@ function RegisterContent() {
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         required
-                        className="h-11 md:h-9 border-2 border-slate-100 focus:border-green-600 rounded-xl md:rounded-lg px-4 md:px-3 font-bold text-sm md:text-xs"
+                        className="h-11 lg:h-12 border-2 border-slate-100 focus:border-green-600 rounded-xl px-4 font-bold text-sm lg:text-base"
                     />
                     <Input
                         type="password"
@@ -314,7 +322,7 @@ function RegisterContent() {
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         required
-                        className="h-11 md:h-9 border-2 border-slate-100 focus:border-green-600 rounded-xl md:rounded-lg px-4 md:px-3 font-bold text-sm md:text-xs"
+                        className="h-11 lg:h-12 border-2 border-slate-100 focus:border-green-600 rounded-xl px-4 font-bold text-sm lg:text-base"
                     />
 
                     {error && <p className="text-xs md:text-[11px] font-bold text-red-500 text-center">{error}</p>}
@@ -322,7 +330,7 @@ function RegisterContent() {
                     <Button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full h-11 md:h-9 rounded-xl md:rounded-lg bg-green-600 hover:bg-green-700 text-white font-black text-sm md:text-xs transition-transform active:scale-95 shadow-lg shadow-green-600/20"
+                        className="w-full h-11 lg:h-12 rounded-xl bg-green-600 hover:bg-green-700 text-white font-black text-sm lg:text-base transition-transform active:scale-95 shadow-lg shadow-green-600/20"
                     >
                         {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                             <span className="flex items-center gap-2">
