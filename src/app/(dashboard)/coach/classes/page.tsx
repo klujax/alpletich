@@ -150,7 +150,7 @@ export default function CoachClassesPage() {
                                     </span>
                                     <span className="flex items-center gap-1.5 text-xs font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg">
                                         <Users className="w-3.5 h-3.5" />
-                                        {cls.enrolledParticipants.length}/{cls.maxParticipants}
+                                        {(cls.enrolledParticipants?.length || 0)}/{cls.maxParticipants}
                                     </span>
                                 </div>
 
