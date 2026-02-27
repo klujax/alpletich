@@ -105,9 +105,9 @@ export function Sidebar({ role }: SidebarProps) {
             className="fixed top-0 left-0 h-full w-64 bg-white border-r border-slate-200 z-50 flex flex-col font-sans"
         >
             {/* Logo Section */}
-            <div className="p-8 pb-6">
+            <div className="p-6 pb-4">
                 <div className="flex items-center justify-center">
-                    <img src="/shark-logo.jpg" alt="Sportaly Logo" className="h-12 w-auto object-contain rounded-xl" />
+                    <img src="/sp-logo.png" alt="SP Logo" className="h-14 w-auto object-contain" />
                 </div>
             </div>
 
