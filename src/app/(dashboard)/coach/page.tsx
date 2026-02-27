@@ -155,7 +155,7 @@ export default function CoachDashboard() {
                                                 <p className="font-bold text-slate-900">{cls.title}</p>
                                                 <p className="text-xs text-slate-500 font-medium">
                                                     {new Date(cls.scheduledAt).toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'short' })}
-                                                    {' • '}{cls.enrolledParticipants.length}/{cls.maxParticipants} katılımcı
+                                                    {' • '}{(cls.enrolledParticipants?.length || 0)}/{cls.maxParticipants} katılımcı
                                                 </p>
                                             </div>
                                         </div>

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
-import { Bell, Lock, User, Shield, LogOut, Loader2, Save, Smartphone, Mail, CheckCircle } from 'lucide-react';
+import { Bell, Lock, User, Shield, LogOut, Loader2, Save, Smartphone, Mail, CheckCircle, MapPin, Ruler, Scale, Dumbbell } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
 import { Profile } from '@/types/database';
@@ -23,6 +23,10 @@ export default function SettingsPage() {
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
+    const [height, setHeight] = useState('');
+    const [weight, setWeight] = useState('');
+    const [location, setLocation] = useState('');
+    const [sportsHistory, setSportsHistory] = useState('');
 
     const [notifications, setNotifications] = useState({
         workout_reminders: true,
@@ -39,6 +43,10 @@ export default function SettingsPage() {
                     setFullName(userData.full_name || '');
                     setEmail(userData.email || '');
                     setPhone(userData.phone || '');
+                    setHeight(userData.height ? String(userData.height) : '');
+                    setWeight(userData.weight ? String(userData.weight) : '');
+                    setLocation(userData.location || '');
+                    setSportsHistory(userData.sports_history || '');
                 }
             } catch (err) {
                 console.error('Settings load error:', err);
@@ -56,8 +64,12 @@ export default function SettingsPage() {
             await dataService.updateProfile(user.id, {
                 full_name: fullName,
                 phone: phone,
-                email: email
-            });
+                email: email,
+                height: height ? Number(height) : null,
+                weight: weight ? Number(weight) : null,
+                location: location || null,
+                sports_history: sportsHistory || null,
+            } as any);
 
             toast.success('Ayarlar başarıyla güncellendi! ✅', {
                 description: 'Profil bilgileriniz kaydedildi.',
@@ -176,6 +188,78 @@ export default function SettingsPage() {
                                     onChange={(e) => setPhone(e.target.value)}
                                     className="pl-9 bg-slate-50 border-slate-200 font-medium focus-visible:ring-green-500"
                                     placeholder="+90 5XX XXX XX XX"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Physical Info Section */}
+            <Card className="border-slate-200 shadow-sm overflow-hidden bg-white">
+                <CardHeader className="bg-slate-50 border-b border-slate-100 pb-4">
+                    <div className="flex items-center gap-3">
+                        <Ruler className="w-5 h-5 text-purple-600" />
+                        <CardTitle className="font-bold text-lg text-slate-800">Fiziksel Bilgiler</CardTitle>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-6 pt-6 bg-white">
+                    <div className="grid gap-6 md:grid-cols-2">
+                        <div className="space-y-2">
+                            <Label htmlFor="height">Boy (cm)</Label>
+                            <div className="relative">
+                                <Ruler className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                                <Input
+                                    id="height"
+                                    type="number"
+                                    value={height}
+                                    onChange={(e) => setHeight(e.target.value)}
+                                    className="pl-9 bg-slate-50 border-slate-200 font-medium focus-visible:ring-green-500"
+                                    placeholder="175"
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="weight">Kilo (kg)</Label>
+                            <div className="relative">
+                                <Scale className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                                <Input
+                                    id="weight"
+                                    type="number"
+                                    value={weight}
+                                    onChange={(e) => setWeight(e.target.value)}
+                                    className="pl-9 bg-slate-50 border-slate-200 font-medium focus-visible:ring-green-500"
+                                    placeholder="75"
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="location">Konum (İl)</Label>
+                            <div className="relative">
+                                <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                                <select
+                                    id="location"
+                                    value={location}
+                                    onChange={(e) => setLocation(e.target.value)}
+                                    className="flex w-full h-10 pl-9 pr-4 bg-slate-50 border border-slate-200 rounded-md font-medium text-sm focus-visible:ring-green-500 focus-visible:outline-none focus:ring-2 focus:ring-green-500/20"
+                                >
+                                    <option value="">Seçiniz</option>
+                                    {["Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın", "Balıkesir", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Isparta", "Mersin", "İstanbul", "İzmir", "Kars", "Kastamonu", "Kayseri", "Kırklareli", "Kırşehir", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Kahramanmaraş", "Mardin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Şanlıurfa", "Uşak", "Van", "Yozgat", "Zonguldak", "Aksaray", "Bayburt", "Karaman", "Kırıkkale", "Batman", "Şırnak", "Bartın", "Ardahan", "Iğdır", "Yalova", "Karabük", "Kilis", "Osmaniye", "Düzce"].map(city => (
+                                        <option key={city} value={city}>{city}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="sportsHistory">Spor Geçmişi</Label>
+                            <div className="relative">
+                                <Dumbbell className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                                <Input
+                                    id="sportsHistory"
+                                    value={sportsHistory}
+                                    onChange={(e) => setSportsHistory(e.target.value)}
+                                    className="pl-9 bg-slate-50 border-slate-200 font-medium focus-visible:ring-green-500"
+                                    placeholder="Örn: 3 yıl fitness, 1 yıl yüzme"
                                 />
                             </div>
                         </div>
