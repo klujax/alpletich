@@ -38,7 +38,7 @@ export default function StudentClassesPage() {
             // - It is from one of my coaches (and scheduled/live) OR
             // - It is a system class
             const relevantClasses = allClasses.filter((c: GroupClass) =>
-                (c.enrolledParticipants && c.enrolledParticipants.includes(user.id)) ||
+                (Array.isArray(c.enrolledParticipants) && c.enrolledParticipants.includes(user.id)) ||
                 (myCoachIds.includes(c.coachId) && (c.status === 'scheduled' || c.status === 'live')) ||
                 c.coachId === 'system'
             );
@@ -101,7 +101,7 @@ export default function StudentClassesPage() {
                                                 <Clock className="w-3.5 h-3.5" /> {cls.durationMinutes} dk
                                             </span>
                                             <span className="flex items-center gap-1 text-xs font-bold bg-slate-50 text-slate-600 px-3 py-1.5 rounded-lg">
-                                                <Users className="w-3.5 h-3.5" /> {cls.enrolledParticipants.length}/{cls.maxParticipants}
+                                                <Users className="w-3.5 h-3.5" /> {(cls.enrolledParticipants || []).length}/{cls.maxParticipants}
                                             </span>
                                         </div>
 
