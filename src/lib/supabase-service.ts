@@ -51,15 +51,14 @@ export const supabaseDataService = {
             .eq('id', userId)
             .single();
 
-        if (error) return null;
-        if (error) return null;
-        return data as unknown as Profile;
+        if (error || !data) return null;
+        return data as Profile;
     },
 
     async updateProfile(userId: string, updates: Partial<Profile>) {
         const sb = getSupabase() as any;
-        const dbUpdates = toSnakes(updates);
-        return await sb.from('profiles').update(dbUpdates).eq('id', userId);
+        // Profile type already uses snake_case keys, no conversion needed
+        return await sb.from('profiles').update(updates).eq('id', userId);
     },
 
     async resetPassword(email: string) {
@@ -285,9 +284,43 @@ export const supabaseDataService = {
             return [];
         }
 
-        // Auto-renewal logic is mocked in frontend, but specialized backend job needed for real.
-        // For now, we return what's in DB.
-        return toCamels(data || []);
+        // Fetch enrollments for all classes
+        const classIds = (data || []).map((c: any) => c.id);
+        let enrollments: any[] = [];
+        if (classIds.length > 0) {
+            const { data: enrollData } = await sb
+                .from('class_enrollments')
+                .select('class_id, user_id')
+                .in('class_id', classIds);
+            enrollments = enrollData || [];
+        }
+
+        // Map classes with their enrolled participants
+        return (data || []).map((c: any) => {
+            const classEnrollments = enrollments
+                .filter((e: any) => e.class_id === c.id)
+                .map((e: any) => e.user_id);
+            return {
+                id: c.id,
+                coachId: c.coach_id,
+                shopId: c.shop_id,
+                packageId: c.package_id,
+                title: c.title,
+                description: c.description || '',
+                sport: c.sport || '',
+                scheduledAt: c.scheduled_at,
+                durationMinutes: c.duration_minutes || 60,
+                maxParticipants: c.max_participants || 20,
+                enrolledParticipants: classEnrollments,
+                meetingLink: c.meeting_link,
+                status: c.status,
+                price: c.price || 0,
+                createdAt: c.created_at,
+                recurrence: c.recurrence,
+                recurrenceDays: c.recurrence_days,
+                recurrenceTime: c.recurrence_time,
+            } as GroupClass;
+        });
     },
 
     async createGroupClass(cls: Partial<GroupClass>) {
@@ -746,9 +779,9 @@ export const supabaseAuthService = {
         try {
             const { data } = await getSupabase().auth.getUser();
             if (data.user) {
-                // Fetch profile from Supabase
+                // Fetch profile from Supabase - profile columns are already snake_case matching Profile type
                 const { data: profile } = await getSupabase().from('profiles').select('*').eq('id', data.user.id).single();
-                if (profile) return toCamels(profile) as Profile;
+                if (profile) return profile as Profile;
             }
         } catch (err) {
             console.warn("Supabase getUser failed, falling back to localStorage:", err);

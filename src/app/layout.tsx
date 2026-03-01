@@ -32,6 +32,10 @@ export const viewport: Viewport = {
   userScalable: true,
 };
 
+// Force dynamic rendering to avoid SSR/SSG issues  
+// with client-side providers  
+export const dynamic = 'force-dynamic';
+
 export default function RootLayout({
   children,
 }: Readonly<{
