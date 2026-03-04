@@ -46,7 +46,7 @@ export default function StudentCoachesPage() {
             if (coach) {
                 const store = storeData.find((s: GymStore) => s.coachId === coachId) || null;
                 const coachPurchases = myPurchases.filter((p: Purchase) => p.coachId === coachId);
-                const myReviews = reviewData.filter((r: Review) => r.coachId === coachId && r.studentId === user.id);
+                const myReviews = reviewData.filter((r: any) => r.coachId === coachId && (r.userId === user.id || r.studentId === user.id));
                 coachDetails.push({ coach, store, purchases: coachPurchases, reviews: myReviews });
             }
         }
@@ -62,8 +62,7 @@ export default function StudentCoachesPage() {
 
         try {
             await dataService.createReview({
-                studentId: user.id,
-                studentName: user.full_name || '',
+                userId: user.id, // Supabase expects user_id
                 coachId: selectedCoachId,
                 shopId: selectedShopId || '',
                 rating: reviewRating,

@@ -1,9 +1,42 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Store, UserCheck, ArrowRight } from 'lucide-react';
+import { Store, UserCheck, ArrowRight, Loader2 } from 'lucide-react';
+import { supabaseAuthService as authService } from '@/lib/supabase-service';
 
 export default function LandingPage() {
+  const router = useRouter();
+  const [isChecking, setIsChecking] = useState(true);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const user = await authService.getUser();
+        if (user) {
+          if (user.role === 'admin') router.push('/admin');
+          else if (user.role === 'coach') router.push('/coach');
+          else router.push('/student');
+        } else {
+          setIsChecking(false);
+        }
+      } catch (err) {
+        setIsChecking(false);
+      }
+    };
+    checkSession();
+  }, [router]);
+
+  if (isChecking) {
+    return (
+      <div className="min-h-screen w-full bg-gradient-to-b from-white to-slate-50 flex flex-col items-center justify-center p-4">
+        <Loader2 className="w-8 h-8 animate-spin text-green-600 mb-4" />
+        <p className="text-sm font-bold text-slate-400">Oturum kontrol ediliyor...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-white to-slate-50 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 font-sans">
 

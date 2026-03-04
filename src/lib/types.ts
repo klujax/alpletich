@@ -161,8 +161,9 @@ export interface Purchase {
 
 export interface Review {
     id: string;
-    studentId: string;
-    studentName: string;
+    studentId?: string;
+    userId?: string;
+    studentName?: string;
     coachId: string;
     shopId: string;
     packageId?: string;
