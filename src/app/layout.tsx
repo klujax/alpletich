@@ -28,13 +28,12 @@ export const viewport: Viewport = {
   themeColor: '#16a34a',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 5,
-  userScalable: true,
+  maximumScale: 1, // Disable pinch zoom to make it feel native
+  userScalable: false, // Prevent zoom on input focus for iOS
 };
 
 
-// Force dynamic rendering to avoid SSR/SSG issues
-export const dynamic = 'force-dynamic';
+// Removed force-dynamic to fix Next.js Edge SSR bugs
 
 export default function RootLayout({
   children,

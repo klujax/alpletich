@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Search, Send, User, ArrowLeft, Check, CheckCheck, Smile, ImagePlus, Video } from 'lucide-react';
 import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
@@ -10,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 export function CoachChat() {
+    const router = useRouter();
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [selectedPartner, setSelectedPartner] = useState<Profile | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
@@ -179,8 +181,14 @@ export function CoachChat() {
             )}>
                 {/* Header */}
                 <div className="px-5 py-4 border-b border-slate-100">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-black text-slate-900">Mesajlar</h2>
+                    <div className="flex items-center gap-3 mb-4">
+                        <button
+                            onClick={() => router.push('/coach')}
+                            className="w-10 h-10 -ml-2 rounded-full lg:hidden flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors"
+                        >
+                            <ArrowLeft className="w-6 h-6" />
+                        </button>
+                        <h2 className="text-xl font-black text-slate-900 flex-1">Mesajlar</h2>
                         {totalUnread > 0 && (
                             <div className="min-w-[24px] h-6 rounded-full bg-green-600 text-white text-xs font-black flex items-center justify-center px-2">
                                 {totalUnread}
