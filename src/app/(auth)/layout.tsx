@@ -13,7 +13,7 @@ export default function AuthLayout({
                 <div className="w-full max-w-sm sm:max-w-md lg:max-w-lg mx-auto flex flex-col items-center">
                     {/* Logo - Always at the same position */}
                     <div className="mb-6 lg:mb-8 shrink-0">
-                        <Image src="/sp-logo.png" alt="SP Logo" width={120} height={120} className="h-16 sm:h-20 lg:h-24 w-auto object-contain" />
+                        <Image src="/sp-logo.png" alt="SP Logo" width={160} height={80} className="h-12 w-auto object-contain" priority />
                     </div>
                     {/* Card wrapper for desktop */}
                     <div className="w-full lg:bg-white lg:rounded-3xl lg:shadow-xl lg:border lg:border-slate-100 lg:p-10">
