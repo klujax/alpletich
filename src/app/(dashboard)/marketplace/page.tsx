@@ -487,19 +487,22 @@ export default function MarketplacePage() {
                             <div className="pt-4 border-t border-slate-100">
                                 <h4 className="text-lg font-black text-slate-900 mb-4 tracking-tight">Eğitmen Değerlendirmeleri</h4>
                                 <div className="space-y-4 max-h-48 overflow-y-auto pr-2 no-scrollbar">
-                                    {detailReviews.map(r => (
-                                        <div key={r.id} className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <span className="font-bold text-sm text-slate-900">{r.studentName}</span>
-                                                <div className="flex gap-0.5">
-                                                    {Array.from({ length: 5 }).map((_, i) => (
-                                                        <Star key={i} className={`w-3.5 h-3.5 ${i < r.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`} />
-                                                    ))}
+                                    {detailReviews.map(r => {
+                                        const isComplaint = r.comment.includes('ŞİKAYET');
+                                        return (
+                                            <div key={r.id} className={`p-4 rounded-2xl border ${isComplaint ? 'bg-red-50/50 border-red-100' : 'bg-slate-50/50 border-slate-100'}`}>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <span className={`font-bold text-sm ${isComplaint ? 'text-red-900' : 'text-slate-900'}`}>{r.studentName || 'Kullanıcı'}</span>
+                                                    <div className="flex gap-0.5">
+                                                        {Array.from({ length: 5 }).map((_, i) => (
+                                                            <Star key={i} className={`w-3.5 h-3.5 ${i < r.rating ? (isComplaint ? 'text-red-500 fill-red-500' : 'text-amber-400 fill-amber-400') : 'text-slate-200'}`} />
+                                                        ))}
+                                                    </div>
                                                 </div>
+                                                <p className={`text-sm font-medium leading-relaxed italic ${isComplaint ? 'text-red-600' : 'text-slate-500'}`}>&quot;{r.comment}&quot;</p>
                                             </div>
-                                            <p className="text-sm text-slate-500 font-medium leading-relaxed italic">&quot;{r.comment}&quot;</p>
-                                        </div>
-                                    ))}
+                                        )
+                                    })}
                                 </div>
                             </div>
                         )}

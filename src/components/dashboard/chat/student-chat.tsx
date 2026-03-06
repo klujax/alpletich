@@ -100,10 +100,11 @@ export function StudentChat() {
             const stores = await dataService.getStores();
             const coachStore = stores.find((s: GymStore) => s.coachId === coachId);
 
-            // Allow if there is ANY active package from this coach (or their store)
+            // Allow if there is ANY active package from this coach (or their store) WITH chat support enabled
             const hasActivePackage = purchases.some((p: Purchase) =>
                 (p.coachId === coachId || (coachStore && p.shopId === coachStore.id)) &&
-                p.status === 'active'
+                p.status === 'active' &&
+                (p.packageSnapshot?.has_chat_support === true || p.packageSnapshot?.hasChatSupport === true)
             );
 
             setCanChat(hasActivePackage);
