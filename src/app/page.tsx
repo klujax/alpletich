@@ -45,7 +45,7 @@ export default function LandingPage() {
 
         {/* Logo - Fixed position */}
         <div className="mb-6 lg:mb-8 animate-in fade-in duration-500">
-          <Image src="/sp-logo.png" alt="SP Logo" width={240} height={120} className="h-16 sm:h-20 lg:h-24 w-auto object-contain" priority />
+          <Image src="/sp-logo.jpg" alt="SP Logo" width={120} height={120} className="h-16 sm:h-20 lg:h-24 w-auto object-contain" priority />
         </div>
 
         {/* Card wrapper for desktop */}

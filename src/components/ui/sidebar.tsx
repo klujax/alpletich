@@ -108,7 +108,7 @@ export function Sidebar({ role }: SidebarProps) {
             {/* Logo Section */}
             <div className="p-6 pb-4">
                 <div className="flex items-center justify-center">
-                    <Image src="/sp-logo.png" alt="SP Logo" width={160} height={80} className="h-12 w-auto object-contain" priority />
+                    <Image src="/sp-logo.jpg" alt="SP Logo" width={112} height={112} className="h-14 w-auto object-contain" priority />
                 </div>
             </div>
 
