@@ -60,11 +60,22 @@ export default function StudentCoachesPage() {
         if (!user || !selectedCoachId) return;
         if (!reviewComment.trim()) { toast.error('Yorum yazmalısınız'); return; }
 
+        let shopId = selectedShopId;
+        if (!shopId) {
+            const coachData = coaches.find(c => c.coach.id === selectedCoachId);
+            shopId = coachData?.purchases[0]?.shopId || '';
+        }
+
+        if (!shopId) {
+            toast.error('Koçun mağazası bulunamadı, değerlendirme yapılamıyor.');
+            return;
+        }
+
         try {
             await dataService.createReview({
                 userId: user.id, // Supabase expects user_id
                 coachId: selectedCoachId,
-                shopId: selectedShopId || '',
+                shopId: shopId,
                 rating: reviewRating,
                 comment: reviewComment,
             });

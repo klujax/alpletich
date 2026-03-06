@@ -184,7 +184,7 @@ export function CoachChat() {
                     <div className="flex items-center gap-3 mb-4">
                         <button
                             onClick={() => router.push('/coach')}
-                            className="w-10 h-10 -ml-2 rounded-full lg:hidden flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors"
+                            className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors"
                         >
                             <ArrowLeft className="w-6 h-6" />
                         </button>
