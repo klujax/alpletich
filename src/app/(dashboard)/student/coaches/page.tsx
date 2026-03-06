@@ -186,18 +186,12 @@ export default function StudentCoachesPage() {
                                     )}
 
                                     <div className="flex gap-2 mt-auto">
-                                        {hasChatSupport ? (
+                                        {hasChatSupport && (
                                             <Link href={`/chat?partner=${coach.id}`} className="flex-1">
                                                 <Button variant="outline" fullWidth className="border-slate-200 hover:bg-slate-50 font-bold text-sm">
                                                     <MessageCircle className="w-4 h-4 mr-1" /> Mesaj
                                                 </Button>
                                             </Link>
-                                        ) : (
-                                            <div className="flex-1" title="Satın aldığınız paket mesajlaşma özelliği içermiyor">
-                                                <Button disabled variant="outline" fullWidth className="border-slate-200 font-bold text-sm opacity-50 cursor-not-allowed">
-                                                    <MessageCircle className="w-4 h-4 mr-1 text-slate-400" /> Mesaj
-                                                </Button>
-                                            </div>
                                         )}
                                     </div>
 

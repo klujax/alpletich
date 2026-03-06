@@ -19,8 +19,8 @@ export const metadata: Metadata = {
   description: "Kişiselleştirilmiş antrenman programları ve profesyonel koç desteği",
   manifest: '/manifest.json',
   icons: {
-    icon: '/sp-logo.svg',
-    apple: '/sp-logo.svg',
+    icon: '/app-icon.png',
+    apple: '/app-icon.png',
   },
 };
 
