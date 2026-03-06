@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import {
     LayoutDashboard,
@@ -107,7 +108,7 @@ export function Sidebar({ role }: SidebarProps) {
             {/* Logo Section */}
             <div className="p-6 pb-4">
                 <div className="flex items-center justify-center">
-                    <img src="/sp-logo.png" alt="SP Logo" className="h-14 w-auto object-contain" />
+                    <Image src="/sp-logo.png" alt="SP Logo" width={112} height={56} className="h-14 w-auto object-contain" />
                 </div>
             </div>
 

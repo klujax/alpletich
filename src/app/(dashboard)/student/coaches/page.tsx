@@ -46,7 +46,7 @@ export default function StudentCoachesPage() {
             if (coach) {
                 const store = storeData.find((s: GymStore) => s.coachId === coachId) || null;
                 const coachPurchases = myPurchases.filter((p: Purchase) => p.coachId === coachId);
-                const myReviews = reviewData.filter((r: any) => r.coachId === coachId && (r.userId === user.id || r.studentId === user.id));
+                const myReviews = reviewData.filter((r: { coachId: string; userId?: string; studentId?: string }) => r.coachId === coachId && (r.userId === user.id || r.studentId === user.id)) as Review[];
                 coachDetails.push({ coach, store, purchases: coachPurchases, reviews: myReviews });
             }
         }

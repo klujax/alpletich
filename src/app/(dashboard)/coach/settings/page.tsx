@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { User, Mail, Phone, Lock, Save, Plus, Camera, Loader2, ShieldCheck, UserPlus } from 'lucide-react';
-import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
+import Image from 'next/image';
+import { supabaseAuthService as authService } from '@/lib/supabase-service';
 import { Profile } from '@/lib/types';
 import { toast } from 'sonner';
 
@@ -77,7 +78,7 @@ export default function SettingsPage() {
             }
             await loadUser();
             toast.success('Profil bilgileri güncellendi ✅');
-        } catch (error) {
+        } catch {
             toast.error('Güncelleme başarısız');
         } finally {
             setIsSaving(false);
@@ -95,13 +96,13 @@ export default function SettingsPage() {
             }
 
             // Supabase signUp ile yeni koç hesabı oluştur
-            const { data, error } = await authService.signUp(
+            const { error: signUpError } = await authService.signUp(
                 newCoach.email,
                 newCoach.password,
                 { full_name: newCoach.full_name, role: 'coach' }
             );
 
-            if (error) throw new Error(error.message);
+            if (signUpError) throw new Error(signUpError.message);
 
             toast.success('Yeni hoca başarıyla eklendi');
             setNewCoach({ full_name: '', email: '', password: '' });
@@ -142,7 +143,13 @@ export default function SettingsPage() {
                                     <div className="relative group cursor-pointer">
                                         <div className="w-24 h-24 rounded-full bg-slate-100 flex items-center justify-center border-4 border-white shadow-lg overflow-hidden">
                                             {user?.avatar_url ? (
-                                                <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                                                <Image
+                                                    src={user.avatar_url}
+                                                    alt="Profil fotoğrafı"
+                                                    width={96}
+                                                    height={96}
+                                                    className="w-full h-full object-cover"
+                                                />
                                             ) : (
                                                 <span className="text-2xl font-bold text-slate-400">
                                                     {(user?.full_name || 'K').slice(0, 2).toUpperCase()}
@@ -189,7 +196,7 @@ export default function SettingsPage() {
                         </CardContent>
                     </Card>
 
-                    {/* Şifre Değiştirme (Mock - UI Only) */}
+                    {/* Şifre Değiştirme */}
                     <Card className="border-slate-200 shadow-sm">
                         <CardHeader className="bg-slate-50 border-b border-slate-100 pb-4">
                             <div className="flex items-center gap-2">
@@ -205,6 +212,8 @@ export default function SettingsPage() {
                                     label="Mevcut Şifre"
                                     placeholder="••••••••"
                                     leftIcon={<Lock className="w-4 h-4" />}
+                                    value={passwordData.currentPassword}
+                                    onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                                 />
                                 <div className="grid md:grid-cols-2 gap-4">
                                     <Input
@@ -212,12 +221,16 @@ export default function SettingsPage() {
                                         label="Yeni Şifre"
                                         placeholder="••••••••"
                                         leftIcon={<Lock className="w-4 h-4" />}
+                                        value={passwordData.newPassword}
+                                        onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                                     />
                                     <Input
                                         type="password"
                                         label="Yeni Şifre (Tekrar)"
                                         placeholder="••••••••"
                                         leftIcon={<Lock className="w-4 h-4" />}
+                                        value={passwordData.confirmPassword}
+                                        onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                                     />
                                 </div>
                                 <div className="flex justify-end pt-2">

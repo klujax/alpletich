@@ -8,12 +8,8 @@ import {
     Store,
     TrendingUp,
     TrendingDown,
-    DollarSign,
-    Activity,
     Shield,
-    BarChart3,
     ArrowUpRight,
-    Wallet,
     PiggyBank,
     Percent
 } from 'lucide-react';

@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, MessageCircle, Package, Calendar } from 'lucide-react';
 import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
-import { Purchase, Profile } from '@/lib/types';
+import { Purchase } from '@/lib/types';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic';
 export default function StudentDetailPage() {
     const params = useParams();
     const studentId = params?.id as string;
-    const [student, setStudent] = useState<any>(null);
+    const [student, setStudent] = useState<{ full_name?: string | null; email?: string | null; id?: string } | null>(null);
     const [purchases, setPurchases] = useState<Purchase[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { User, MapPin, Camera, Trophy, Medal, Star, Dumbbell } from 'lucide-react';
+import { User, Camera, Trophy, Medal, Star, Dumbbell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 // import { Label } from '@/components/ui/label';
@@ -19,7 +19,7 @@ const Label = ({ htmlFor, children, className }: { htmlFor: string, children: Re
 );
 
 export default function ProfilePage() {
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<{ id: string; email?: string | null; full_name?: string | null; name?: string; role?: string | null; avatar_url?: string | null; sports?: string | null } | null>(null);
 
     const [isEditing, setIsEditing] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -38,7 +38,7 @@ export default function ProfilePage() {
                 setFormData({
                     full_name: u.full_name || '',
                     bio: u.bio || '',
-                    sports: (u as any).sports || '' // sports might not be in generic Profile type if custom
+                    sports: (u as { sports?: string }).sports || '' // sports might not be in generic Profile type if custom
                 });
             }
         };
@@ -110,7 +110,7 @@ export default function ProfilePage() {
                             {user.avatar_url ? (
                                 <img
                                     src={user.avatar_url}
-                                    alt={user.full_name || user.name}
+                                    alt={user.full_name || user.name || 'Profil Resmi'}
                                     className="w-full h-full object-cover"
                                 />
                             ) : (
@@ -229,7 +229,7 @@ export default function ProfilePage() {
                                         <span className="absolute left-3 top-2.5 sm:top-3 text-slate-400 text-xs sm:text-sm">@</span>
                                         <Input
                                             id="email"
-                                            defaultValue={user.email}
+                                            defaultValue={user.email || ''}
                                             readOnly={true}
                                             className="pl-7 bg-slate-50 border-slate-200 focus:bg-white transition-colors opacity-70 text-sm h-9 sm:h-10"
                                         />

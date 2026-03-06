@@ -2,7 +2,6 @@
 
 import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
 import { Purchase, Profile } from '@/lib/types';
-import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

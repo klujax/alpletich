@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Video, Trash2, Copy, Check } from 'lucide-react';
+import { Video, Trash2, Copy, Check } from 'lucide-react';
 import { VideoUpload } from '@/components/ui/video-upload';
-import { supabaseDataService, supabaseAuthService } from '@/lib/supabase-service';
+import { supabaseAuthService } from '@/lib/supabase-service';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 
@@ -94,7 +94,11 @@ export default function WorkoutsPage() {
                 <div className="lg:col-span-2">
                     <h3 className="text-lg font-bold text-slate-900 mb-4 px-1">Yüklenen Videolar</h3>
 
-                    {videos.length === 0 ? (
+                    {isLoading ? (
+                        <div className="flex items-center justify-center h-32">
+                            <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
+                        </div>
+                    ) : videos.length === 0 ? (
                         <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-12 text-center">
                             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
                                 <Video className="w-8 h-8 text-slate-300" />

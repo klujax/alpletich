@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
-    Play, Dumbbell, ChevronRight, ShoppingBag, CalendarDays, Star, Package, MessageCircle
+    Play, Dumbbell, ChevronRight, CalendarDays, Star, Package
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 export const dynamic = 'force-dynamic';
 
 export default function StudentDashboard() {
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<{ id: string; full_name?: string | null; role?: string | null } | null>(null);
     const [purchases, setPurchases] = useState<Purchase[]>([]);
     const [upcomingClasses, setUpcomingClasses] = useState<GroupClass[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -111,7 +111,7 @@ export default function StudentDashboard() {
                     { label: 'Aktif Ders', value: activePurchases.length, icon: Package, color: 'text-green-600', bg: 'bg-green-50' },
                     { label: 'Grup Dersi', value: upcomingClasses.length, icon: CalendarDays, color: 'text-blue-600', bg: 'bg-blue-50' },
                     { label: 'Eğitmen', value: [...new Set(purchases.map(p => p.coachId))].length, icon: Star, color: 'text-amber-600', bg: 'bg-amber-50' },
-                ].map((stat, index) => (
+                ].map((stat) => (
                     <Card key={stat.label} className="border-none shadow-sm bg-white rounded-2xl">
                         <CardContent className="p-6 flex items-center gap-4">
                             <div className={`w-12 h-12 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>

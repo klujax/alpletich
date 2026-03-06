@@ -5,7 +5,7 @@ import { GroupClass } from '@/lib/types'; // Correct types
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CalendarDays, Clock, Users, Video, ChevronRight } from 'lucide-react';
+import { CalendarDays, Clock, Users, Video } from 'lucide-react';
 import { Profile } from '@/lib/types';
 import { Purchase } from '@/lib/types';
 

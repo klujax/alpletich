@@ -10,7 +10,18 @@ import { Purchase } from '@/lib/types';
 export const dynamic = 'force-dynamic';
 
 export default function StudentPackagesPage() {
-    const [packages, setPackages] = useState<any[]>([]);
+    const [packages, setPackages] = useState<{
+        id: string;
+        name: string;
+        coachName: string;
+        type: string;
+        startDate: string;
+        endDate: string;
+        status: string;
+        progress: number;
+        features: string[];
+        price: number;
+    }[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {

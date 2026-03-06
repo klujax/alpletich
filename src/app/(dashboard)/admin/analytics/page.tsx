@@ -7,17 +7,12 @@ import {
     ArrowLeft,
     TrendingUp,
     TrendingDown,
-    DollarSign,
     Users,
     Store,
-    Calendar,
     ArrowUpRight,
     ArrowDownRight,
     PiggyBank,
-    Wallet,
     CreditCard,
-    BarChart3,
-    Activity,
     Target
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';

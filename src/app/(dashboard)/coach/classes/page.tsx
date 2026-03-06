@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Modal } from '@/components/ui/modal';
 import {
-    Plus, CalendarDays, Users, Clock, Video, Link2, CheckCircle, XCircle
+    Plus, CalendarDays, Users, Clock, Video
 } from 'lucide-react';
 import { supabaseDataService as dataService, supabaseAuthService as authService } from '@/lib/supabase-service';
 import { GroupClass, GymStore, SportCategory } from '@/lib/types';

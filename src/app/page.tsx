@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Store, UserCheck, ArrowRight, Loader2 } from 'lucide-react';
+import Image from 'next/image';
 import { supabaseAuthService as authService } from '@/lib/supabase-service';
 
 export default function LandingPage() {
@@ -21,7 +22,7 @@ export default function LandingPage() {
         } else {
           setIsChecking(false);
         }
-      } catch (err) {
+      } catch {
         setIsChecking(false);
       }
     };
@@ -44,7 +45,7 @@ export default function LandingPage() {
 
         {/* Logo - Fixed position */}
         <div className="mb-6 lg:mb-8 animate-in fade-in duration-500">
-          <img src="/sp-logo.png" alt="SP Logo" className="h-16 sm:h-20 lg:h-24 w-auto object-contain" />
+          <Image src="/sp-logo.png" alt="SP Logo" width={120} height={120} className="h-16 sm:h-20 lg:h-24 w-auto object-contain" />
         </div>
 
         {/* Card wrapper for desktop */}

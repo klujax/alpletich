@@ -6,9 +6,8 @@ import { useEffect, useState, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-    Search, Star, Users, ShoppingBag, Store, Filter, Check, ChevronRight, ChevronLeft, Clock, MessageCircle, Award, Target, Sparkles, TrendingUp, Zap, CalendarDays
+    Star, Users, ShoppingBag, Store, Check, ChevronRight, ChevronLeft, Clock, Award, Target, Sparkles, CalendarDays
 } from 'lucide-react';
 import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
 import { GymStore, SalesPackage, SportCategory, Review, GroupClass } from '@/lib/types';
@@ -26,8 +25,6 @@ export default function MarketplacePage() {
     const [selectedSport, setSelectedSport] = useState<string>('all');
     const [viewMode, setViewMode] = useState<'packages' | 'classes'>('packages');
     const [userInterests, setUserInterests] = useState<string[]>([]);
-    const [user, setUser] = useState<any>(null);
-    const router = useRouter();
     const scrollRef = useRef<HTMLDivElement>(null);
 
     const scroll = (direction: 'left' | 'right') => {
@@ -53,7 +50,6 @@ export default function MarketplacePage() {
         // Assuming current user is needed for interests
         const currentUser = await authService.getUser();
         if (currentUser) {
-            setUser(currentUser);
             if (currentUser.interested_sports && currentUser.interested_sports.length > 0) {
                 setUserInterests(currentUser.interested_sports); // Assuming array of strings
             }
@@ -501,7 +497,7 @@ export default function MarketplacePage() {
                                                     ))}
                                                 </div>
                                             </div>
-                                            <p className="text-sm text-slate-500 font-medium leading-relaxed italic">"{r.comment}"</p>
+                                            <p className="text-sm text-slate-500 font-medium leading-relaxed italic">&quot;{r.comment}&quot;</p>
                                         </div>
                                     ))}
                                 </div>

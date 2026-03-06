@@ -50,7 +50,6 @@ const COACH_DETAILS = {
 };
 
 export default function CoachShopPage() {
-    const params = useParams();
     const [cart, setCart] = useState<{ [key: string]: number }>({});
 
     const addToCart = (productId: string) => {
@@ -64,7 +63,8 @@ export default function CoachShopPage() {
         setCart(prev => {
             const newCount = (prev[productId] || 0) - 1;
             if (newCount <= 0) {
-                const { [productId]: _, ...rest } = prev;
+                const rest = { ...prev };
+                delete rest[productId];
                 return rest;
             }
             return { ...prev, [productId]: newCount };

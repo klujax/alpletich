@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
-    Users, Store, Plus, TrendingUp, ChevronRight, ShoppingBag,
+    Users, Plus, ChevronRight, ShoppingBag,
     CalendarDays, Star, DollarSign, MessageCircle, Package
 } from 'lucide-react';
 import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';

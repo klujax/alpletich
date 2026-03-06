@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabaseDataService } from '@/lib/supabase-service';
 import { GymStore, Purchase } from '@/lib/types';
-import { DollarSign, TrendingUp, TrendingDown, PiggyBank, Store } from 'lucide-react';
+import { DollarSign, TrendingUp, PiggyBank } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 

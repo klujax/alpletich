@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
-import { Bell, Lock, User, Shield, LogOut, Loader2, Save, Smartphone, Mail, CheckCircle, MapPin, Ruler, Scale, Dumbbell } from 'lucide-react';
+import { Bell, Lock, User, Shield, LogOut, Loader2, Save, Smartphone, Mail, MapPin, Ruler, Scale, Dumbbell } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
 import { Profile } from '@/types/database';

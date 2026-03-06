@@ -10,7 +10,6 @@ import {
     TrendingDown,
     DollarSign,
     Eye,
-    X,
     BarChart3,
     Calendar,
     ArrowUpRight,

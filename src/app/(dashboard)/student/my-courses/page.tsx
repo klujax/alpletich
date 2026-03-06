@@ -3,10 +3,10 @@
 import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
 import { Purchase, GymStore, SalesPackage } from '@/lib/types'; // Correct types import
 import { useEffect, useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
-    Package, Calendar, MessageCircle, Star, Clock, ShoppingBag, ChevronRight, Store, Dumbbell, FileText, ArrowLeft, CheckCircle2
+    Package, Calendar, Clock, ShoppingBag, ChevronRight, Store, Dumbbell, FileText, ArrowLeft, CheckCircle2
 } from 'lucide-react';
 import Link from 'next/link';
 import { Modal } from '@/components/ui/modal';
@@ -292,7 +292,7 @@ export default function StudentCoursesPage() {
                             {activeModalTab === 'workout' && (
                                 <div className="space-y-4 animate-fade-in">
                                     <div className="p-4 bg-orange-50 rounded-xl border border-orange-100 text-orange-800 text-sm font-medium">
-                                        Bu programın antrenman detayları aşağıdadır. Uygulamaya başlamak için "Programı Uygula" butonunu kullanabilirsiniz.
+                                        Bu programın antrenman detayları aşağıdadır. Uygulamaya başlamak için &quot;Programı Uygula&quot; butonunu kullanabilirsiniz.
                                     </div>
                                     {packages.find(p => p.id === selectedPurchase.packageId)?.features?.map((feature, idx) => (
                                         <div key={idx} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">

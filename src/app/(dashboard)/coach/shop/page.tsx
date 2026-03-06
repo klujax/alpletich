@@ -8,12 +8,13 @@ import { Modal } from '@/components/ui/modal';
 import {
     Store, Edit, Star, Users, DollarSign, Package, Camera, Upload, X,
     Image as ImageIcon, TrendingUp, CalendarDays, Dumbbell, BarChart3,
-    ShoppingBag, ChevronRight, Plus, MessageCircle
+    ShoppingBag, ChevronRight, Plus
 } from 'lucide-react';
 import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
 import { GymStore, SalesPackage, Review, SportCategory, GroupClass, Purchase } from '@/lib/types';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export const dynamic = 'force-dynamic';
 
@@ -178,7 +179,7 @@ export default function CoachShopPage() {
                 {/* Banner */}
                 <div className="relative h-36 sm:h-48 md:h-56 lg:h-64 bg-gradient-to-br from-green-600 via-emerald-500 to-teal-600 overflow-hidden">
                     {bannerUrl ? (
-                        <img src={bannerUrl} alt="Banner" className="w-full h-full object-cover" />
+                        <Image src={bannerUrl} alt="Banner" fill className="object-cover" />
                     ) : (
                         <>
                             <div className="absolute w-40 h-40 rounded-full bg-white/10 blur-3xl top-2 right-8" />
@@ -189,9 +190,10 @@ export default function CoachShopPage() {
                         </>
                     )}
                     <button onClick={() => bannerInputRef.current?.click()}
-                        className="absolute top-3 right-3 md:top-4 md:right-4 bg-black/40 hover:bg-black/60 backdrop-blur-sm text-white rounded-lg md:rounded-xl px-3 py-1.5 md:px-4 md:py-2 text-[10px] md:text-xs font-bold flex items-center gap-1.5 transition-all opacity-70 md:opacity-0 md:group-hover:opacity-100">
+                        disabled={isUploadingBanner}
+                        className="absolute top-3 right-3 md:top-4 md:right-4 bg-black/40 hover:bg-black/60 backdrop-blur-sm text-white rounded-lg md:rounded-xl px-3 py-1.5 md:px-4 md:py-2 text-[10px] md:text-xs font-bold flex items-center gap-1.5 transition-all opacity-70 md:opacity-0 md:group-hover:opacity-100 disabled:opacity-50">
                         <Camera className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                        <span className="hidden sm:inline">{bannerUrl ? 'Değiştir' : 'Banner Ekle'}</span>
+                        <span className="hidden sm:inline">{isUploadingBanner ? 'Yükleniyor...' : bannerUrl ? 'Değiştir' : 'Banner Ekle'}</span>
                     </button>
                     <input ref={bannerInputRef} type="file" accept="image/*" className="hidden"
                         onChange={e => { const f = e.target.files?.[0]; if (f) handleBannerUpload(f); e.target.value = ''; }} />
@@ -316,7 +318,7 @@ export default function CoachShopPage() {
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
                         {galleryUrls.map((url, i) => (
                             <div key={i} className="relative group rounded-xl md:rounded-2xl overflow-hidden border border-slate-200 aspect-square">
-                                <img src={url} alt={`Galeri ${i + 1}`} className="w-full h-full object-cover" />
+                                <Image src={url} alt={`Galeri ${i + 1}`} fill className="object-cover" />
                                 <button onClick={() => setGalleryUrls(prev => prev.filter((_, idx) => idx !== i))}
                                     className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600">
                                     <X className="w-3 h-3 sm:w-4 sm:h-4" />

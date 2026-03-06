@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
-import { Plus, Trash2, Smile } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 
@@ -76,8 +76,8 @@ export default function CoachSportsPage() {
                 toast.error('Spor dalı oluşturma henüz backend tarafında aktif değil.');
             }
 
-        } catch (error) {
-            console.error(error);
+        } catch (err) {
+            console.error(err);
             toast.error('Branş oluşturulurken hata oluştu');
         }
     };
@@ -92,7 +92,7 @@ export default function CoachSportsPage() {
                 } else {
                     toast.error('Silme işlemi henüz aktif değil');
                 }
-            } catch (error) {
+            } catch {
                 toast.error('Silinirken hata oluştu');
             }
         }

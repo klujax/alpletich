@@ -7,8 +7,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
-    ArrowLeft, Construction, Dumbbell, Calendar, Clock, PlayCircle,
-    ChevronRight, Utensils, Flame, AlertCircle
+    ArrowLeft, Dumbbell, PlayCircle, Utensils, Flame
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -34,13 +33,13 @@ export default function StudentWorkoutsPage() {
 
                 // Check if user has active_program_id in profile (assuming we added it to profile type or we check locally)
                 // Since Supabase Profile type might not have it updated yet in frontend types, we check purchases logic
-                let targetId = (user as any).active_program_id;
+                let targetId = (user as { active_program_id?: string }).active_program_id;
 
                 // If no active program explicitly set, try to find from purchases
                 if (!targetId) {
                     // Start by checking if there is a locally stored active program
                     if (typeof window !== 'undefined') {
-                        targetId = localStorage.getItem('activeProgramId');
+                        targetId = localStorage.getItem('activeProgramId') || undefined;
                     }
                 }
 
@@ -89,7 +88,7 @@ export default function StudentWorkoutsPage() {
                 </div>
                 <h1 className="text-2xl font-black text-slate-900 mb-2">Aktif Program Bulunamadı</h1>
                 <p className="text-slate-500 font-medium max-w-md mb-8">
-                    Henüz seçili bir antrenman programınız yok. "Derslerim" sayfasından satın aldığınız bir paketi uygulamaya başlayın.
+                    Henüz seçili bir antrenman programınız yok. &quot;Derslerim&quot; sayfasından satın aldığınız bir paketi uygulamaya başlayın.
                 </p>
                 <Link href="/student/my-courses">
                     <Button className="bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl px-8 h-12 shadow-lg shadow-green-600/20">
