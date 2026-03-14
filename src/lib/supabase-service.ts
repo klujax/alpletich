@@ -96,30 +96,100 @@ export const supabaseDataService = {
 
     // --- SPORTS ---
     async getSports(): Promise<any[]> {
-        // Return static list for now as per mock-service
+        // Try to fetch from sport_categories table first
+        try {
+            const sb = getSupabase() as any;
+            const { data, error } = await sb.from('sport_categories').select('*').order('name');
+            if (!error && data && data.length > 0) {
+                return data.map((s: any) => ({
+                    id: s.id,
+                    coachId: s.coach_id || 'system',
+                    name: s.name,
+                    icon: s.icon || '🏋️',
+                    description: s.description || '',
+                    color: s.color || 'slate',
+                    isSystemDefault: s.is_system_default ?? true,
+                    createdAt: s.created_at
+                }));
+            }
+        } catch {
+            // Table might not exist, fall through to defaults
+        }
+
+        // Fallback: Return system default sports
         return [
-            { id: 'fitness', name: 'Fitness', icon: '🏋️', coachId: '', description: '', color: 'bg-blue-500', createdAt: new Date().toISOString() },
-            { id: 'yoga', name: 'Yoga', icon: '🧘', coachId: '', description: '', color: 'bg-indigo-500', createdAt: new Date().toISOString() },
-            { id: 'pilates', name: 'Pilates', icon: '🤸', coachId: '', description: '', color: 'bg-pink-500', createdAt: new Date().toISOString() },
-            { id: 'swimming', name: 'Yüzme', icon: '🏊', coachId: '', description: '', color: 'bg-cyan-500', createdAt: new Date().toISOString() },
-            { id: 'basketball', name: 'Basketbol', icon: '🏀', coachId: '', description: '', color: 'bg-orange-500', createdAt: new Date().toISOString() },
-            { id: 'football', name: 'Futbol', icon: '⚽', coachId: '', description: '', color: 'bg-green-500', createdAt: new Date().toISOString() },
-            { id: 'volleyball', name: 'Voleybol', icon: '🏐', coachId: '', description: '', color: 'bg-yellow-500', createdAt: new Date().toISOString() },
-            { id: 'tennis', name: 'Tenis', icon: '🎾', coachId: '', description: '', color: 'bg-lime-500', createdAt: new Date().toISOString() },
-            { id: 'table_tennis', name: 'Masa Tenisi', icon: '🏓', coachId: '', description: '', color: 'bg-red-400', createdAt: new Date().toISOString() },
-            { id: 'boxing', name: 'Boks', icon: '🥊', coachId: '', description: '', color: 'bg-red-600', createdAt: new Date().toISOString() },
-            { id: 'kickboxing', name: 'Kick Boks', icon: '🥋', coachId: '', description: '', color: 'bg-red-700', createdAt: new Date().toISOString() },
-            { id: 'karate', name: 'Karate', icon: '🥋', coachId: '', description: '', color: 'bg-stone-800', createdAt: new Date().toISOString() },
-            { id: 'taekwondo', name: 'Tekvando', icon: '🥋', coachId: '', description: '', color: 'bg-blue-800', createdAt: new Date().toISOString() },
-            { id: 'wrestling', name: 'Güreş', icon: '🤼', coachId: '', description: '', color: 'bg-amber-700', createdAt: new Date().toISOString() },
-            { id: 'crossfit', name: 'Crossfit', icon: '🏋️‍♂️', coachId: '', description: '', color: 'bg-slate-900', createdAt: new Date().toISOString() },
-            { id: 'gymnastics', name: 'Jimnastik', icon: '🤸‍♀️', coachId: '', description: '', color: 'bg-purple-500', createdAt: new Date().toISOString() },
-            { id: 'dance', name: 'Dans', icon: '💃', coachId: '', description: '', color: 'bg-rose-500', createdAt: new Date().toISOString() },
-            { id: 'chess', name: 'Satranç', icon: '♟️', coachId: '', description: '', color: 'bg-slate-700', createdAt: new Date().toISOString() },
-            { id: 'archery', name: 'Okçuluk', icon: '🏹', coachId: '', description: '', color: 'bg-teal-600', createdAt: new Date().toISOString() },
-            { id: 'cycling', name: 'Bisiklet', icon: '🚴', coachId: '', description: '', color: 'bg-sky-500', createdAt: new Date().toISOString() },
-            { id: 'running', name: 'Koşu', icon: '🏃', coachId: '', description: '', color: 'bg-orange-400', createdAt: new Date().toISOString() },
+            { id: 'football', coachId: 'system', name: 'Futbol', icon: '⚽', description: 'Taktik, kondisyon, top kontrolü', color: 'green', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'basketball', coachId: 'system', name: 'Basketbol', icon: '🏀', description: 'Şut, dribling, kondisyon', color: 'orange', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'volleyball', coachId: 'system', name: 'Voleybol', icon: '🏐', description: 'Smaç, manşet, takım oyunu', color: 'pink', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'boxing', coachId: 'system', name: 'Boks', icon: '🥊', description: 'Yumruk teknikleri, savunma, kondisyon', color: 'red', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'kickboxing', coachId: 'system', name: 'Kick Boks', icon: '🦵', description: 'Tekme, yumruk kombinasyonları', color: 'orange', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'taekwondo', coachId: 'system', name: 'Tekvando', icon: '🥋', description: 'Yüksek tekme teknikleri, disiplin', color: 'blue', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'muaythai', coachId: 'system', name: 'Muay Thai', icon: '👊', description: 'Diz, dirsek, sert vuruşlar', color: 'red', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'mma', coachId: 'system', name: 'MMA', icon: '🤼', description: 'Karma dövüş sanatları', color: 'slate', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'wrestling', coachId: 'system', name: 'Güreş', icon: '🤼‍♂️', description: 'Grekoromen ve serbest stil', color: 'yellow', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'judo', coachId: 'system', name: 'Judo', icon: '🥋', description: 'Fırlatma, tutuş teknikleri', color: 'blue', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'karate', coachId: 'system', name: 'Karate', icon: '🥋', description: 'Kata, kumite, disiplin', color: 'red', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'tennis', coachId: 'system', name: 'Tenis', icon: '🎾', description: 'Servis, forehand, backhand', color: 'green', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'table_tennis', coachId: 'system', name: 'Masa Tenisi', icon: '🏓', description: 'Hız, refleks, spin', color: 'blue', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'badminton', coachId: 'system', name: 'Badminton', icon: '🏸', description: 'Çeviklik, hız, teknik', color: 'teal', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'swimming', coachId: 'system', name: 'Yüzme', icon: '🏊', description: 'Serbest, sırtüstü, kelebek', color: 'blue', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'fitness', coachId: 'system', name: 'Fitness', icon: '🏋️', description: 'Vücut geliştirme, güç, hipertrofi', color: 'slate', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'pilates', coachId: 'system', name: 'Pilates', icon: '🧘‍♀️', description: 'Core gücü, esneklik, duruş', color: 'pink', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'yoga', coachId: 'system', name: 'Yoga', icon: '🧘', description: 'Zihin-beden dengesi, esneklik', color: 'purple', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'crossfit', coachId: 'system', name: 'CrossFit', icon: '⛓️', description: 'Yüksek yoğunluklu fonksiyonel antrenman', color: 'slate', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'calisthenics', coachId: 'system', name: 'Kalistenik', icon: '🤸‍♂️', description: 'Vücut ağırlığı ile antrenman', color: 'orange', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'athletics', coachId: 'system', name: 'Atletizm', icon: '🏃', description: 'Koşu, atlama, atma branşları', color: 'yellow', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'running', coachId: 'system', name: 'Koşu', icon: '🏃‍♂️', description: 'Maraton, sprint, jogging', color: 'green', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'cycling', coachId: 'system', name: 'Bisiklet', icon: '🚴', description: 'Yol, dağ bisikleti kondisyonu', color: 'sky', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'archery', coachId: 'system', name: 'Okçuluk', icon: '🏹', description: 'Odaklanma, isabet, teknik', color: 'amber', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'gymnastics', coachId: 'system', name: 'Cimnastik', icon: '🤸‍♀️', description: 'Esneklik, denge, güç', color: 'purple', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
+            { id: 'dance', coachId: 'system', name: 'Dans', icon: '💃', description: 'Ritim, hareket, ifade', color: 'rose', isSystemDefault: true, createdAt: '2025-01-01T00:00:00Z' },
         ];
+    },
+
+    async createSport(sport: any): Promise<any> {
+        try {
+            const sb = getSupabase() as any;
+            const dbSport = {
+                name: sport.name,
+                icon: sport.icon,
+                description: sport.description,
+                color: sport.color,
+                coach_id: sport.coachId || null,
+                is_system_default: false
+            };
+            const { data, error } = await sb.from('sport_categories').insert(dbSport).select().single();
+            if (error) throw error;
+            return {
+                id: data.id,
+                coachId: data.coach_id || '',
+                name: data.name,
+                icon: data.icon,
+                description: data.description,
+                color: data.color,
+                isSystemDefault: data.is_system_default,
+                createdAt: data.created_at
+            };
+        } catch (err) {
+            console.warn('Sport creation failed (table may not exist):', err);
+            // Return a generated sport object as fallback
+            return {
+                id: sport.name.toLowerCase().replace(/ /g, '-') + '-' + Math.random().toString(36).substr(2, 5),
+                ...sport,
+                createdAt: new Date().toISOString()
+            };
+        }
+    },
+
+    async deleteSport(sportId: string): Promise<boolean> {
+        try {
+            const sb = getSupabase() as any;
+            const { error } = await sb.from('sport_categories').delete().eq('id', sportId);
+            return !error;
+        } catch {
+            console.warn('Sport deletion failed (table may not exist)');
+            return false;
+        }
     },
 
     // --- STORES ---
@@ -489,20 +559,22 @@ export const supabaseDataService = {
     async getConversations(userId: string): Promise<Conversation[]> {
         const sb = getSupabase() as any;
 
+        const { data: userProfile } = await sb.from('profiles').select('role').eq('id', userId).single();
+        const role = userProfile?.role;
+
         const { data: messages, error } = await sb
             .from('messages')
             .select('*')
             .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
             .order('created_at', { ascending: false });
 
-        if (error || !messages) return [];
-
-        const camelMessagesRaw = toCamels(messages);
+        const camelMessagesRaw = toCamels(messages || []);
         const camelMessages = (camelMessagesRaw || []).map((m: any) => ({
             ...m,
             timestamp: m.createdAt,
             read: m.isRead !== undefined ? m.isRead : m.read
         })) as Message[];
+
         const partnerIds = new Set<string>();
         const lastMessages = new Map<string, Message>();
         const unreadCounts = new Map<string, number>();
@@ -521,6 +593,31 @@ export const supabaseDataService = {
             }
         });
 
+        const activePartners = new Set<string>();
+
+        // Fetch valid partners (students for coach, coaches for student)
+        try {
+            if (role === 'coach') {
+                const students = await this.getCoachStudents(userId);
+                students.forEach(s => {
+                    activePartners.add(s.id);
+                    partnerIds.add(s.id);
+                });
+            } else if (role === 'student') {
+                const purchases = await this.getPurchases(userId);
+                purchases.forEach((p: any) => {
+                    // Check if package has chat support
+                    const hasSharedChat = p.packageSnapshot?.has_chat_support === true || p.packageSnapshot?.hasChatSupport === true;
+                    if (p.coachId && p.status === 'active' && hasSharedChat) {
+                        activePartners.add(p.coachId);
+                        partnerIds.add(p.coachId);
+                    }
+                });
+            }
+        } catch (e) {
+            console.warn("Could not fetch active partners:", e);
+        }
+
         if (partnerIds.size === 0) return [];
 
         const { data: profiles } = await sb
@@ -530,19 +627,24 @@ export const supabaseDataService = {
 
         if (!profiles) return [];
 
-        // Profiles might not have camelCase keys if coming straight from DB via select('*')? 
-        // toCamels handles it if we wrap it, but Profile interface usually expects snake_case from DB raw or we need mapping?
-        // Wait, supabaseDataService uses toCamels everywhere. Let's use it for profiles too.
         const camelProfiles = toCamels(profiles) as Profile[];
 
-        return camelProfiles.map((partner) => {
-            const lastMsg = lastMessages.get(partner.id);
-            return {
-                partner,
-                lastMessage: lastMsg,
-                unreadCount: unreadCounts.get(partner.id) || 0
-            };
-        });
+        // Yalnızca mesajı olanları veya "aktif partner" olanları filtrele (eski ama package süresi bitmiş mesajlar kalsın)
+        return camelProfiles
+            .filter(p => lastMessages.has(p.id) || activePartners.has(p.id))
+            .map((partner) => {
+                const lastMsg = lastMessages.get(partner.id);
+                return {
+                    partner,
+                    lastMessage: lastMsg || null,
+                    unreadCount: unreadCounts.get(partner.id) || 0
+                } as unknown as Conversation;
+            })
+            .sort((a, b) => {
+                const timeA = a.lastMessage ? new Date(a.lastMessage.timestamp).getTime() : 0;
+                const timeB = b.lastMessage ? new Date(b.lastMessage.timestamp).getTime() : 0;
+                return timeB - timeA;
+            });
     },
 
     async sendMessage(senderId: string, receiverId: string, content: string, imageUrl?: string) {
@@ -606,6 +708,35 @@ export const supabaseDataService = {
         // Get public URL
         const { data: { publicUrl } } = sb.storage.from(bucket).getPublicUrl(path);
         return publicUrl;
+    },
+
+    async listFiles(bucket: string, folderPath?: string) {
+        const sb = getSupabase();
+        const { data, error } = await sb.storage.from(bucket).list(folderPath || '', {
+            limit: 100,
+            offset: 0,
+            sortBy: { column: 'created_at', order: 'desc' },
+        });
+
+        if (error) throw error;
+        
+        return data.map(file => {
+            const path = folderPath ? `${folderPath}/${file.name}` : file.name;
+            const { data: { publicUrl } } = sb.storage.from(bucket).getPublicUrl(path);
+            return {
+                name: file.name,
+                url: publicUrl,
+                created_at: file.created_at,
+                size: file.metadata?.size || 0
+            };
+        });
+    },
+
+    async deleteFile(bucket: string, path: string) {
+        const sb = getSupabase();
+        const { error } = await sb.storage.from(bucket).remove([path]);
+        if (error) throw error;
+        return true;
     },
 
     // --- REALTIME ---
@@ -786,7 +917,7 @@ export const supabaseAuthService = {
         } catch (err) {
             console.warn("Supabase getUser failed, falling back to localStorage:", err);
         }
-        // Fallback: read from localStorage (set during signUp/signIn in mock-service)
+        // Fallback: read from localStorage (set during signUp/signIn)
         if (typeof window !== 'undefined') {
             const stored = localStorage.getItem('sportaly_user');
             if (stored) {

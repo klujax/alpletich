@@ -1,11 +1,12 @@
 /**
  * API Service - Backend abstraction layer
  * 
- * Bu dosya Supabase backend'ini kullanır.
- * Eğer Supabase yapılandırılmamışsa, mock-service'e fallback yapar.
+ * Bu dosya tamamen Supabase backend'ini kullanır.
+ * Mock-service bağımlılığı kaldırılmıştır.
  */
 
-import { supabase, isSupabaseConfigured, getSupabase } from './supabase';
+import { isSupabaseConfigured, getSupabase } from './supabase';
+import { supabaseDataService, supabaseAuthService } from './supabase-service';
 import {
     Profile,
     Exercise,
@@ -14,6 +15,17 @@ import {
     ProgressLog,
     UserRole
 } from '@/types/database';
+import {
+    SalesPackage,
+    SportCategory,
+    GymStore,
+    Purchase,
+    GroupClass,
+    Review,
+    Message,
+    Conversation,
+    SystemStats,
+} from './types';
 
 // =============================================
 // AUTH SERVICE
@@ -23,12 +35,6 @@ export const authAPI = {
      * Kullanıcı girişi
      */
     signIn: async (email: string, password: string) => {
-        if (!isSupabaseConfigured) {
-            const { authService } = await import('./mock-service');
-            // Mock service doesn't use password
-            return authService.signIn(email);
-        }
-
         const sb = getSupabase();
         const { data, error } = await sb.auth.signInWithPassword({ email, password });
 
@@ -40,6 +46,11 @@ export const authAPI = {
             .eq('id', data.user.id)
             .single();
 
+        if (profile && typeof window !== 'undefined') {
+            localStorage.setItem('sportaly_user', JSON.stringify(profile));
+            document.cookie = `mock_role=${(profile as any).role}; path=/`;
+        }
+
         return { user: profile, error: null };
     },
 
@@ -47,11 +58,6 @@ export const authAPI = {
      * Kullanıcı kaydı
      */
     signUp: async (email: string, password: string, role: UserRole, fullName: string) => {
-        if (!isSupabaseConfigured) {
-            const { authService } = await import('./mock-service');
-            return authService.signUp(email, role, fullName);
-        }
-
         const sb = getSupabase();
         const { data, error } = await sb.auth.signUp({
             email,
@@ -73,53 +79,41 @@ export const authAPI = {
      * Çıkış yap
      */
     signOut: async () => {
-        if (!isSupabaseConfigured) {
-            const { authService } = await import('./mock-service');
-            return authService.signOut();
-        }
-
         const sb = getSupabase();
         await sb.auth.signOut();
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('sportaly_user');
+            document.cookie = "mock_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+        }
     },
 
     /**
      * Mevcut kullanıcıyı getir
      */
     getUser: (): Profile | null => {
-        if (!isSupabaseConfigured) {
-            // Senkron mock
-            if (typeof window !== 'undefined') {
-                const stored = localStorage.getItem('sportaly_user');
-                if (stored) return JSON.parse(stored);
-            }
-            return null;
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('sportaly_user');
+            if (stored) return JSON.parse(stored);
         }
-        return null; // Supabase için async çağrı lazım
+        return null;
     },
 
     /**
      * Profil güncelle
      */
     updateProfile: async (userId: string, updates: Partial<Profile>) => {
-        if (!isSupabaseConfigured) {
-            if (typeof window !== 'undefined') {
-                const stored = localStorage.getItem('sportaly_user');
-                if (stored) {
-                    const user = JSON.parse(stored);
-                    const updated = { ...user, ...updates };
-                    localStorage.setItem('sportaly_user', JSON.stringify(updated));
-                }
+        const result = await supabaseDataService.updateProfile(userId, updates);
+
+        if (!result.error && typeof window !== 'undefined') {
+            const stored = localStorage.getItem('sportaly_user');
+            if (stored) {
+                const user = JSON.parse(stored);
+                const updated = { ...user, ...updates };
+                localStorage.setItem('sportaly_user', JSON.stringify(updated));
             }
-            return { error: null };
         }
 
-        const sb = getSupabase() as any;
-        const { error } = await sb
-            .from('profiles')
-            .update(updates)
-            .eq('id', userId);
-
-        return { error: error?.message || null };
+        return { error: result.error?.message || null };
     }
 };
 
@@ -131,57 +125,70 @@ export const studentsAPI = {
      * Koçun öğrencilerini getir
      */
     getStudents: async (): Promise<Profile[]> => {
-        if (!isSupabaseConfigured) {
-            const { dataService } = await import('./mock-service');
-            return dataService.getStudents();
-        }
-
         const sb = getSupabase() as any;
         const { data: { user } } = await sb.auth.getUser();
         if (!user) return [];
 
-        const { data } = await sb
-            .from('coach_students')
-            .select(`
-                student:profiles!student_id(*)
-            `)
-            .eq('coach_id', user.id)
-            .eq('status', 'active');
+        // Try coach_students table first
+        try {
+            const students = await supabaseDataService.getCoachStudents(user.id);
+            if (students && students.length > 0) return students;
+        } catch {
+            // Fallback: get students from purchases
+        }
 
-        return data?.map((d: any) => d.student as Profile) || [];
+        // Fallback: Get students from active purchases
+        const purchases = await supabaseDataService.getCoachPurchases(user.id);
+        const studentIds = [...new Set(purchases.map((p: any) => p.studentId || p.userId))];
+        
+        const profiles: Profile[] = [];
+        for (const id of studentIds) {
+            if (id) {
+                const profile = await supabaseDataService.getProfile(id);
+                if (profile) profiles.push(profile);
+            }
+        }
+        return profiles;
     },
 
     /**
-     * Öğrenci ekle
+     * Öğrenci ekle (koç-öğrenci ilişkisi oluştur)
      */
     addStudent: async (fullName: string, email: string): Promise<Profile> => {
-        if (!isSupabaseConfigured) {
-            const { dataService } = await import('./mock-service');
-            return (dataService as any).addStudent(fullName, email);
+        const sb = getSupabase() as any;
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) throw new Error('Oturum açmanız gerekiyor.');
+
+        // Find or create student profile by email
+        const { data: existingProfile } = await sb
+            .from('profiles')
+            .select('*')
+            .eq('email', email)
+            .single();
+
+        if (!existingProfile) {
+            throw new Error('Bu e-posta adresine sahip bir kullanıcı bulunamadı. Öğrencinin önce kayıt olması gerekiyor.');
         }
 
-        // Supabase için
-        throw new Error('Supabase addStudent not implemented');
+        // Create coach-student relationship
+        const { error: relationError } = await sb.from('coach_students').insert({
+            coach_id: user.id,
+            student_id: existingProfile.id,
+            status: 'active'
+        });
+
+        if (relationError && !relationError.message?.includes('duplicate')) {
+            throw new Error('Öğrenci eklenirken bir hata oluştu: ' + relationError.message);
+        }
+
+        return existingProfile as Profile;
     },
 
     /**
      * Öğrenci detayını getir
      */
     getStudentById: async (studentId: string): Promise<Profile | null> => {
-        if (!isSupabaseConfigured) {
-            const { dataService } = await import('./mock-service');
-            const students = await dataService.getStudents();
-            return students.find((s: Profile) => s.id === studentId) || null;
-        }
-
-        const sb = getSupabase();
-        const { data } = await sb
-            .from('profiles')
-            .select('*')
-            .eq('id', studentId)
-            .single();
-
-        return data;
+        return supabaseDataService.getProfile(studentId);
     }
 };
 
@@ -193,11 +200,6 @@ export const exercisesAPI = {
      * Egzersizleri getir
      */
     getExercises: async (): Promise<Exercise[]> => {
-        if (!isSupabaseConfigured) {
-            const { dataService } = await import('./mock-service');
-            return (dataService as any).getExercises();
-        }
-
         const sb = getSupabase();
         const { data } = await sb
             .from('exercises')
@@ -211,11 +213,6 @@ export const exercisesAPI = {
      * Egzersiz oluştur
      */
     createExercise: async (exercise: Omit<Exercise, 'id' | 'created_at' | 'updated_at'>): Promise<Exercise> => {
-        if (!isSupabaseConfigured) {
-            const { dataService } = await import('./mock-service');
-            return (dataService as any).addExercise(exercise);
-        }
-
         const sb = getSupabase();
         const { data } = await sb
             .from('exercises')
@@ -235,11 +232,6 @@ export const nutritionAPI = {
      * Beslenme planlarını getir
      */
     getNutritionPlans: async (): Promise<NutritionPlan[]> => {
-        if (!isSupabaseConfigured) {
-            const { dataService } = await import('./mock-service');
-            return (dataService as any).getNutritionPlans();
-        }
-
         const sb = getSupabase();
         const { data: { user } } = await sb.auth.getUser();
         if (!user) return [];
@@ -257,11 +249,6 @@ export const nutritionAPI = {
      * Öğrencinin beslenme planını getir
      */
     getStudentNutritionPlan: async (studentId: string): Promise<NutritionPlan | null> => {
-        if (!isSupabaseConfigured) {
-            const { dataService } = await import('./mock-service');
-            return (dataService as any).getNutritionPlan(studentId);
-        }
-
         const sb = getSupabase();
         const { data } = await sb
             .from('nutrition_plans')
@@ -278,19 +265,74 @@ export const nutritionAPI = {
      * Beslenme planı oluştur
      */
     createNutritionPlan: async (plan: any): Promise<NutritionPlan> => {
-        if (!isSupabaseConfigured) {
-            const { dataService } = await import('./mock-service');
-            return (dataService as any).addNutritionPlan(plan) as unknown as NutritionPlan;
-        }
-
         const sb = getSupabase();
-        const { data } = await sb
+        const { meals, ...planData } = plan;
+
+        const { data: createdPlan, error } = await sb
             .from('nutrition_plans')
-            .insert(plan)
+            .insert(planData)
             .select()
             .single();
 
-        return (data || null) as unknown as NutritionPlan;
+        if (error) throw error;
+
+        // Insert meals if provided
+        if (meals && meals.length > 0 && createdPlan) {
+            const mealsWithPlanId = meals.map((meal: any, index: number) => ({
+                ...meal,
+                nutrition_plan_id: (createdPlan as any).id,
+                order_index: index
+            }));
+
+            await sb.from('meals').insert(mealsWithPlanId);
+        }
+
+        return (createdPlan || null) as unknown as NutritionPlan;
+    },
+
+    /**
+     * Beslenme planı güncelle
+     */
+    updateNutritionPlan: async (planId: string, updates: any): Promise<NutritionPlan | null> => {
+        const sb = getSupabase();
+        const { meals, ...planData } = updates;
+
+        const { data, error } = await sb
+            .from('nutrition_plans')
+            .update(planData as any)
+            .eq('id', planId)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        // Update meals if provided
+        if (meals) {
+            // Delete old meals
+            await sb.from('meals').delete().eq('nutrition_plan_id', planId);
+            // Insert new meals
+            if (meals.length > 0) {
+                const mealsWithPlanId = meals.map((meal: any, index: number) => ({
+                    ...meal,
+                    nutrition_plan_id: planId,
+                    order_index: index
+                }));
+                await sb.from('meals').insert(mealsWithPlanId);
+            }
+        }
+
+        return data as unknown as NutritionPlan;
+    },
+
+    /**
+     * Beslenme planı sil
+     */
+    deleteNutritionPlan: async (planId: string): Promise<boolean> => {
+        const sb = getSupabase();
+        // Meals will be cascade deleted if FK is set, otherwise delete manually
+        await sb.from('meals').delete().eq('nutrition_plan_id', planId);
+        const { error } = await sb.from('nutrition_plans').delete().eq('id', planId);
+        return !error;
     }
 };
 
@@ -302,11 +344,6 @@ export const progressAPI = {
      * İlerleme kayıtlarını getir
      */
     getProgressLogs: async (studentId: string): Promise<any[]> => {
-        if (!isSupabaseConfigured) {
-            const { dataService } = await import('./mock-service');
-            return (dataService as any).getProgressHistory(studentId);
-        }
-
         const sb = getSupabase();
         const { data } = await sb
             .from('progress_logs')
@@ -321,11 +358,6 @@ export const progressAPI = {
      * İlerleme kaydı ekle
      */
     addProgressLog: async (studentId: string, log: any): Promise<ProgressLog | null> => {
-        if (!isSupabaseConfigured) {
-            const { dataService } = await import('./mock-service');
-            return (dataService as any).addProgressLog(log) as any;
-        }
-
         const sb = getSupabase();
         const { data } = await sb
             .from('progress_logs')
@@ -345,33 +377,35 @@ export const messagesAPI = {
      * Mesajları getir
      */
     getMessages: async (userId: string, partnerId: string) => {
-        // Her zaman mock kullan (Supabase'de henüz yok)
-        const { dataService } = await import('./mock-service');
-        return dataService.getMessages(userId, partnerId);
+        return supabaseDataService.getMessages(userId, partnerId);
     },
 
     /**
      * Mesaj gönder
      */
     sendMessage: async (senderId: string, receiverId: string, content: string, imageUrl?: string) => {
-        const { dataService } = await import('./mock-service');
-        return dataService.sendMessage(senderId, receiverId, content, imageUrl);
+        return supabaseDataService.sendMessage(senderId, receiverId, content, imageUrl);
     },
 
     /**
      * Konuşmaları getir
      */
     getConversations: async (userId: string) => {
-        const { dataService } = await import('./mock-service');
-        return dataService.getConversations(userId);
+        return supabaseDataService.getConversations(userId);
     },
 
     /**
      * Mesajları okundu işaretle
      */
     markAsRead: async (userId: string, partnerId: string) => {
-        const { dataService } = await import('./mock-service');
-        return dataService.markMessagesAsRead(userId, partnerId);
+        return supabaseDataService.markMessagesAsRead(userId, partnerId);
+    },
+
+    /**
+     * Gerçek zamanlı mesaj subscribe
+     */
+    subscribeToMessages: (callback: (payload: any) => void) => {
+        return supabaseDataService.subscribeToMessages(callback);
     }
 };
 
@@ -382,42 +416,101 @@ export const packagesAPI = {
     /**
      * Paketleri getir
      */
-    getPackages: async () => {
-        const { dataService } = await import('./mock-service');
-        return dataService.getPackages();
+    getPackages: async (coachId?: string) => {
+        return supabaseDataService.getPackages(coachId);
     },
 
     /**
      * Paket oluştur
      */
     createPackage: async (pkg: any) => {
-        const { dataService } = await import('./mock-service');
-        return dataService.createPackage(pkg);
+        return supabaseDataService.createPackage(pkg);
+    },
+
+    /**
+     * Paket güncelle
+     */
+    updatePackage: async (pkg: any) => {
+        return supabaseDataService.updatePackage(pkg);
+    },
+
+    /**
+     * Paket sil
+     */
+    deletePackage: async (packageId: string) => {
+        return supabaseDataService.deletePackage(packageId);
     },
 
     /**
      * Sporları getir
      */
     getSports: async () => {
-        const { dataService } = await import('./mock-service');
-        return dataService.getSports();
+        return supabaseDataService.getSports();
     },
 
     /**
      * Spor ekle
      */
     addSport: async (sport: any) => {
-        const { dataService } = await import('./mock-service');
-        return dataService.createSport(sport);
+        return supabaseDataService.createSport(sport);
     },
 
     /**
      * Spor sil
      */
     deleteSport: async (sportId: string) => {
-        const { dataService } = await import('./mock-service');
-        return dataService.deleteSport(sportId);
+        return supabaseDataService.deleteSport(sportId);
     }
+};
+
+// =============================================
+// STORES SERVICE
+// =============================================
+export const storesAPI = {
+    getStores: async () => supabaseDataService.getStores(),
+    getStoreById: async (storeId: string) => supabaseDataService.getStoreById(storeId),
+    getStoreByCoachId: async (coachId: string) => supabaseDataService.getCoachStore(coachId),
+    getStoreByOwnerId: async (ownerId: string) => supabaseDataService.getStoreByOwnerId(ownerId),
+    createStore: async (store: Partial<GymStore>) => supabaseDataService.createStore(store),
+    updateStore: async (store: Partial<GymStore>) => supabaseDataService.updateStore(store),
+};
+
+// =============================================
+// PURCHASES SERVICE
+// =============================================
+export const purchasesAPI = {
+    getPurchases: async (userId?: string) => supabaseDataService.getPurchases(userId),
+    purchasePackage: async (userId: string, packageId: string) => supabaseDataService.purchasePackage(userId, packageId),
+    getCoachPurchases: async (coachId: string) => supabaseDataService.getCoachPurchases(coachId),
+};
+
+// =============================================
+// REVIEWS SERVICE
+// =============================================
+export const reviewsAPI = {
+    getReviews: async (shopId?: string, coachId?: string) => supabaseDataService.getReviews(shopId, coachId),
+    createReview: async (review: Partial<Review>) => supabaseDataService.createReview(review),
+};
+
+// =============================================
+// GROUP CLASSES SERVICE
+// =============================================
+export const classesAPI = {
+    getGroupClasses: async (coachId?: string, shopId?: string) => supabaseDataService.getGroupClasses(coachId, shopId),
+    createGroupClass: async (cls: Partial<GroupClass>) => supabaseDataService.createGroupClass(cls),
+    enrollClass: async (classId: string, userId: string) => supabaseDataService.enrollClass(classId, userId),
+};
+
+// =============================================
+// ADMIN SERVICE
+// =============================================
+export const adminAPI = {
+    getAllUsers: async () => supabaseDataService.getAllUsers(),
+    banUser: async (userId: string, reason?: string) => supabaseDataService.banUser(userId, reason),
+    unbanUser: async (userId: string) => supabaseDataService.unbanUser(userId),
+    deleteUser: async (userId: string) => supabaseDataService.deleteUser(userId),
+    getSystemStats: async () => supabaseDataService.getSystemStats(),
+    getStoreFinancials: async (storeId: string) => supabaseDataService.getStoreFinancials(storeId),
 };
 
 // =============================================
@@ -431,9 +524,14 @@ export const api = {
     progress: progressAPI,
     messages: messagesAPI,
     packages: packagesAPI,
+    stores: storesAPI,
+    purchases: purchasesAPI,
+    reviews: reviewsAPI,
+    classes: classesAPI,
+    admin: adminAPI,
 
-    // Helper: hangi backend kullanılıyor
-    isUsingSupabase: isSupabaseConfigured
+    // Helper: backend bilgisi
+    isUsingSupabase: true
 };
 
 export default api;

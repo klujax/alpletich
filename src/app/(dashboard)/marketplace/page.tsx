@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 export const dynamic = 'force-dynamic';
 
 export default function MarketplacePage() {
+    const router = useRouter();
     const [stores, setStores] = useState<GymStore[]>([]);
     const [packages, setPackages] = useState<SalesPackage[]>([]);
     const [groupClasses, setGroupClasses] = useState<GroupClass[]>([]);
@@ -76,15 +77,9 @@ export default function MarketplacePage() {
         if (!user) { toast.error('Giriş yapmalısınız'); return; }
         if (user.role !== 'student') { toast.error('Sadece öğrenciler satın alabilir'); return; }
 
-        try {
-            await dataService.purchasePackage(user.id, pkg.id);
-            setIsDetailOpen(false);
-            toast.success('Paket satın alındı! 🎉 Derslerim sayfasından erişebilirsin.');
-            loadData();
-        } catch (error) {
-            console.error(error);
-            toast.error('Satın alma işlemi başarısız oldu.');
-        }
+        // İyzico ödeme sayfasına yönlendir
+        setIsDetailOpen(false);
+        router.push(`/checkout/${pkg.id}`);
     };
 
     const handleClassPurchase = async (cls: GroupClass) => {

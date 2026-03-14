@@ -32,32 +32,32 @@ export default function WorkoutsPage() {
         const user = await supabaseAuthService.getUser();
         if (!user) return;
 
-        // In a real app we might query a 'videos' table.
-        // For now we'll list files from storage directly if possible, or simulate.
-        // Since listFiles is not exposed in dataService, for this "Add feature" request
-        // we will just show the upload UI and maybe a local list for the session, 
-        // OR we can expand dataService to list files.
-        // Let's assume we can't easily list files without a new service method.
-        // I'll add a simple 'listVideos' placeholder to dataService or handle it here via mock for perceived functionality
-        // but actually better: show empty state if no API.
-
-        // Wait, I can add listFiles to service.
-        /* 
-           But to keep it simple and safe:
-           I'll show the upload component. When uploaded, I add to a list.
-           Features: "Video Kütüphanem"
-        */
-        setIsLoading(false);
+        try {
+            // "videos" bucket'ında koçun id'si ile bir klasör oluşturup oraya yüklenmişse veya direkt "coach-videos" klasörüyse.
+            // Biz yüklerken "coach-videos" dedik ama dosyaları oradan listeleyebiliriz.
+            // TODO: Eğer ileride sadece koçun videolarını listelemek istersen folder ismi `${user.id}` ile başlamalı
+            // Şimdilik "coach-videos" altındaki tüm videoları listeliyor
+            
+            // Note: src/components/ui/video-upload.tsx icerisinde folder="coach-videos" pasliyoruz.
+            // Fakat 'uploadFile' methodunda bucket: 'videos', folderPath: upload ederkenki path.
+            const { supabaseDataService: dataService } = await import('@/lib/supabase-service');
+            const data = await (dataService as any).listFiles('videos', 'coach-videos');
+            
+            // Supabase API'sinden gelen "." (".emptyFolderPlaceholder" vb.) dizin işaretçilerini göstermemek için
+            const validFiles = data.filter((f: any) => f.name && f.name !== '.emptyFolderPlaceholder');
+            
+            setVideos(validFiles as VideoFile[]);
+        } catch (error) {
+            console.error("Error loading videos:", error);
+            toast.error("Videolar yüklenirken bir hata oluştu.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleUploadComplete = (url: string) => {
-        const newVideo: VideoFile = {
-            name: `Video ${videos.length + 1}`,
-            url: url,
-            created_at: new Date().toISOString(),
-            size: 0
-        };
-        setVideos(prev => [newVideo, ...prev]);
+        // Yeniden listeleme yapabiliriz veya sadece url bilgisini kullanarak manuel ekleyebiliriz
+        loadVideos(); 
     };
 
     const copyToClipboard = (url: string) => {
@@ -65,6 +65,20 @@ export default function WorkoutsPage() {
         setCopiedUrl(url);
         toast.success('Video bağlantısı kopyalandı');
         setTimeout(() => setCopiedUrl(null), 2000);
+    };
+
+    const handleDelete = async (videoName: string) => {
+        if (!confirm('Bu videoyu silmek istediğinize emin misiniz?')) return;
+        
+        try {
+            const { supabaseDataService: dataService } = await import('@/lib/supabase-service');
+            await (dataService as any).deleteFile('videos', `coach-videos/${videoName}`);
+            toast.success('Video başarıyla silindi.');
+            loadVideos();
+        } catch (error) {
+            console.error("Error deleting video:", error);
+            toast.error('Video silinirken bir hata oluştu.');
+        }
     };
 
     return (
@@ -134,6 +148,7 @@ export default function WorkoutsPage() {
                                             size="icon"
                                             variant="ghost"
                                             className="h-9 w-9 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                                            onClick={() => handleDelete(video.name)}
                                             title="Sil"
                                         >
                                             <Trash2 className="w-4 h-4" />

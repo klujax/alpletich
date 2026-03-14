@@ -11,7 +11,8 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: '/:path*',
+        // iyzico checkout sayfası hariç tüm sayfalar
+        source: '/((?!checkout).*)',
         headers: [
           {
             key: 'X-Frame-Options',
