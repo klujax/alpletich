@@ -54,9 +54,8 @@ export function DashboardTopbar() {
 
                 <div className="w-px h-6 bg-slate-100 mx-2 hidden sm:block" />
 
-                <button
-                    onClick={() => router.push('/profile')}
-                    className="flex items-center gap-3 hover:bg-slate-50 p-2 rounded-xl transition-all"
+                <div
+                    className="flex items-center gap-3 p-2 rounded-xl"
                 >
                     <div className="text-right hidden sm:block">
                         <p className="text-sm font-black text-slate-900 leading-none mb-1">{user.full_name}</p>
@@ -70,7 +69,7 @@ export function DashboardTopbar() {
                             {user.full_name?.charAt(0).toUpperCase()}
                         </AvatarFallback>
                     </Avatar>
-                </button>
+                </div>
             </div>
         </header>
     );

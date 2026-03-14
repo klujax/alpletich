@@ -96,9 +96,10 @@ export function Sidebar({ role }: SidebarProps) {
 
     const links = role === 'admin' ? adminLinks : (role === 'coach' ? coachLinks : studentLinks);
 
-    const handleLogout = async () => {
+    const handleLogout = async (e?: React.MouseEvent) => {
+        if (e) e.preventDefault();
         await authService.signOut();
-        router.push('/');
+        window.location.href = '/login';
     };
 
     return (
