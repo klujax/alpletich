@@ -1,18 +1,46 @@
-// POST /api/payment/callback
-// iyzico ödeme tamamlandığında bu endpoint'i çağırır
+/**
+ * POST /api/payment/callback
+ * iyzico ödeme tamamlandığında çağrılır
+ * 
+ * Güvenlik Düzeltmeleri:
+ * - Cookie HMAC imza doğrulaması
+ * - Mock mod sadece development'ta kabul edilir
+ * - Service role key zorunlu (üretimde)
+ */
 
 import { NextRequest, NextResponse } from 'next/server';
 import iyzipay, { isIyzicoConfigured } from '@/lib/iyzico';
 import { createClient } from '@supabase/supabase-js';
+import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const COOKIE_SECRET = process.env.COOKIE_SECRET || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'dev-secret-key';
+
+function verifyCookieSignature(data: string, signature: string): boolean {
+    const hmac = crypto.createHmac('sha256', COOKIE_SECRET);
+    hmac.update(data);
+    const expected = hmac.digest('hex');
+    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+}
+
+function getSupabaseAdmin() {
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    if (isProduction && !supabaseServiceKey) {
+        throw new Error('SUPABASE_SERVICE_ROLE_KEY gerekli (production)');
+    }
+
+    const key = supabaseServiceKey || supabaseAnonKey;
+    return createClient(supabaseUrl, key);
+}
 
 export async function POST(request: NextRequest) {
     try {
-        // iyzico callback'ten gelen token
+        const isProduction = process.env.NODE_ENV === 'production';
         const formData = await request.formData();
         const token = formData.get('token') as string;
 
@@ -20,20 +48,42 @@ export async function POST(request: NextRequest) {
             return redirectWithStatus(request, 'error', 'Token bulunamadı');
         }
 
-        // Cookie'den ödeme meta verisini al
+        // Cookie'den ödeme meta verisini al ve doğrula
         const paymentMetaCookie = request.cookies.get('payment_meta')?.value;
         let paymentMeta: any = null;
 
         if (paymentMetaCookie) {
             try {
-                paymentMeta = JSON.parse(paymentMetaCookie);
-            } catch { }
+                const parsed = JSON.parse(paymentMetaCookie);
+                
+                // HMAC imza doğrulaması
+                if (parsed.data && parsed.sig) {
+                    if (!verifyCookieSignature(parsed.data, parsed.sig)) {
+                        console.error('⚠️ Cookie imza doğrulaması başarısız! Olası manipülasyon.');
+                        return redirectWithStatus(request, 'error', 'Güvenlik doğrulaması başarısız');
+                    }
+                    paymentMeta = JSON.parse(parsed.data);
+                } else {
+                    // Legacy format (imzasız) — sadece development'ta kabul et
+                    if (!isProduction) {
+                        paymentMeta = parsed;
+                    } else {
+                        return redirectWithStatus(request, 'error', 'Güvenlik doğrulaması başarısız');
+                    }
+                }
+            } catch {
+                return redirectWithStatus(request, 'error', 'Ödeme verisi okunamadı');
+            }
         }
 
-        // MOCK MOD kontrolü
+        // MOCK MOD — sadece development'ta kabul et
         if (token.startsWith('mock_token_')) {
-            // Mock senaryosunda her zaman başarılı say
-            console.log('✅ Mock token yakalandı, ödeme başarılı sayılıyor:', token);
+            if (isProduction) {
+                console.error('⚠️ Production ortamında mock token reddedildi:', token);
+                return redirectWithStatus(request, 'error', 'Geçersiz ödeme token\'ı');
+            }
+
+            console.log('✅ [DEV] Mock token, ödeme başarılı sayılıyor:', token);
             return handleSuccessfulPayment(request, paymentMeta, {
                 price: paymentMeta?.price,
                 paymentId: `mock_payment_${Date.now()}`,
@@ -44,8 +94,13 @@ export async function POST(request: NextRequest) {
                 cardAssociation: 'MASTER_CARD',
                 cardFamily: 'Bonus',
                 lastFourDigits: '0000',
-                binNumber: '554960'
+                binNumber: '554960',
             });
+        }
+
+        // iyzico kontrol
+        if (!isIyzicoConfigured() || !iyzipay) {
+            return redirectWithStatus(request, 'error', 'Ödeme sistemi yapılandırılmamış');
         }
 
         // iyzico'dan ödeme sonucunu sorgula
@@ -71,7 +126,6 @@ export async function POST(request: NextRequest) {
                     return;
                 }
 
-                // ✅ Ödeme başarılı
                 const response = await handleSuccessfulPayment(request, paymentMeta, result);
                 resolve(response);
             });
@@ -83,15 +137,18 @@ export async function POST(request: NextRequest) {
     }
 }
 
-async function handleSuccessfulPayment(request: NextRequest, paymentMeta: any, result: any): Promise<NextResponse> {
+async function handleSuccessfulPayment(
+    request: NextRequest,
+    paymentMeta: any,
+    result: any
+): Promise<NextResponse> {
     try {
-        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+        const supabase = getSupabaseAdmin();
 
-        // Bitiş tarihini hesapla
         let expiresAt = null;
-        if (paymentMeta?.packageSnapshot?.packageType === 'coaching' && paymentMeta?.packageSnapshot?.totalWeeks) {
+        if (paymentMeta?.packageType === 'coaching' && paymentMeta?.totalWeeks) {
             const date = new Date();
-            date.setDate(date.getDate() + (paymentMeta.packageSnapshot.totalWeeks * 7));
+            date.setDate(date.getDate() + paymentMeta.totalWeeks * 7);
             expiresAt = date.toISOString();
         }
 
@@ -104,28 +161,29 @@ async function handleSuccessfulPayment(request: NextRequest, paymentMeta: any, r
             purchased_at: new Date().toISOString(),
             expires_at: expiresAt,
             package_snapshot: {
-                ...paymentMeta?.packageSnapshot,
+                packageName: paymentMeta?.packageName,
+                packageType: paymentMeta?.packageType,
+                totalWeeks: paymentMeta?.totalWeeks,
                 iyzicoPaymentId: result.paymentId,
-                iyzicoPaymentTransactionId: result.itemTransactions?.[0]?.paymentTransactionId,
                 paidPrice: result.paidPrice,
                 currency: result.currency,
                 installment: result.installment,
                 cardType: result.cardType,
-                cardAssociation: result.cardAssociation,
-                cardFamily: result.cardFamily,
                 lastFourDigits: result.lastFourDigits,
-                binNumber: result.binNumber,
             },
         });
 
         if (insertError) {
             console.error('Purchase insert error:', insertError);
-            return redirectWithStatus(request, 'error', 'Ödeme alındı ama kayıt oluşturulamadı. Lütfen destek ile iletişime geçin.');
+            return redirectWithStatus(
+                request,
+                'error',
+                'Ödeme alındı ama kayıt oluşturulamadı. Destek ile iletişime geçin.'
+            );
         }
 
-        // Coach-student ilişkisi oluştur (eğer yoksa)
+        // Coach-student ilişkisi
         if (paymentMeta?.coachId && paymentMeta?.userId) {
-            // Mevcut ilişki var mı kontrol et
             const { data: existingRelation } = await supabase
                 .from('coach_students')
                 .select('id')
@@ -142,31 +200,30 @@ async function handleSuccessfulPayment(request: NextRequest, paymentMeta: any, r
             }
         }
 
-        // enrolled_students sayısını artır
+        // enrolled_students artır
         if (paymentMeta?.packageId) {
             try {
                 const { error: rpcError } = await supabase.rpc('increment_enrolled_students', {
-                    pkg_id: paymentMeta.packageId
+                    pkg_id: paymentMeta.packageId,
                 });
                 if (rpcError) {
-                    // RPC yoksa manual güncelle
                     const { data: pkgData } = await supabase
                         .from('sales_packages')
                         .select('enrolled_students')
                         .eq('id', paymentMeta.packageId)
                         .single();
                     if (pkgData) {
-                        await supabase.from('sales_packages').update({
-                            enrolled_students: (pkgData.enrolled_students || 0) + 1
-                        }).eq('id', paymentMeta.packageId);
+                        await supabase
+                            .from('sales_packages')
+                            .update({ enrolled_students: ((pkgData as any).enrolled_students || 0) + 1 } as any)
+                            .eq('id', paymentMeta.packageId);
                     }
                 }
             } catch {
-                // Ignore error in incrementing
+                // İgnore
             }
         }
 
-        // Cookie'yi temizle
         const response = redirectWithStatus(
             request,
             'success',
@@ -178,7 +235,11 @@ async function handleSuccessfulPayment(request: NextRequest, paymentMeta: any, r
 
     } catch (dbError: any) {
         console.error('Database error after payment:', dbError);
-        return redirectWithStatus(request, 'error', 'Ödeme alındı ama kayıt oluşturulamadı. Lütfen destek ile iletişime geçin.');
+        return redirectWithStatus(
+            request,
+            'error',
+            'Ödeme alındı ama kayıt oluşturulamadı. Destek ile iletişime geçin.'
+        );
     }
 }
 
