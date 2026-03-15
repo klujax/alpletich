@@ -20,7 +20,7 @@ export const profileService = {
     async updateProfile(userId: string, updates: Partial<Profile>) {
         return await getSupabase()
             .from('profiles')
-            .update(updates as any)
+            .update(updates as never)
             .eq('id', userId);
     },
 
@@ -35,7 +35,7 @@ export const profileService = {
     async setActiveProgram(userId: string, packageId: string) {
         const { error } = await getSupabase()
             .from('profiles')
-            .update({ active_program_id: packageId } as any)
+            .update({ active_program_id: packageId } as never)
             .eq('id', userId);
 
         if (error) {
