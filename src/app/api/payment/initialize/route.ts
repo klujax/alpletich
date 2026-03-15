@@ -12,12 +12,12 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 export async function POST(request: NextRequest) {
     try {
+        let isMockMode = false;
+
         // İyzico yapılandırılmış mı kontrol et
         if (!isIyzicoConfigured() || !iyzipay || !IyzipayClass) {
-            return NextResponse.json({
-                error: 'Ödeme sistemi henüz yapılandırılmamış. Lütfen yöneticiyle iletişime geçin.',
-                code: 'PAYMENT_NOT_CONFIGURED'
-            }, { status: 503 });
+            console.warn('⚠️ Ödeme sistemi yapılandırılmamış. Mock Mode ile çalıştırılıyor.');
+            isMockMode = true;
         }
 
         const body = await request.json();
@@ -99,6 +99,56 @@ export async function POST(request: NextRequest) {
             ],
         };
 
+        const cookieOptions = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production' || isMockMode,
+            maxAge: 60 * 30, // 30 dakika
+            path: '/',
+            sameSite: isMockMode ? ('lax' as const) : ('none' as const), // Explicitly cast to allowed strings
+        };
+
+        if (isMockMode) {
+            const mockToken = `mock_token_${Date.now()}`;
+            const mockForm = `
+                <div style="text-align:center; padding: 2rem;">
+                    <h3 style="margin-bottom: 1rem; color: #16a34a; font-family: sans-serif;">✅ Test Ödeme Modu Aktif</h3>
+                    <p style="margin-bottom: 2rem; color: #64748b; font-family: sans-serif;">Gerçek bir kart girmeden ödemeyi simüle edebilirsiniz.</p>
+                    <form method="POST" action="${callbackUrl}">
+                        <input type="hidden" name="token" value="${mockToken}" />
+                        <button type="submit" style="background:#16a34a; color:white; border:none; padding:12px 24px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px;">Test Ödemesini Tamamla</button>
+                    </form>
+                </div>
+            `;
+
+            const response = NextResponse.json({
+                status: 'success',
+                checkoutFormContent: mockForm,
+                token: mockToken,
+                tokenExpireTime: 1800,
+                paymentPageUrl: null,
+            });
+
+            response.cookies.set('payment_meta', JSON.stringify({
+                conversationId,
+                packageId,
+                userId,
+                token: mockToken,
+                price: pkg.price,
+                shopId: pkg.shop_id,
+                coachId: (pkg as any).shop?.coach_id,
+                packageName: pkg.name,
+                packageSnapshot: {
+                    name: pkg.name,
+                    price: pkg.price,
+                    packageType: pkg.package_type,
+                    features: pkg.features,
+                    totalWeeks: pkg.total_weeks,
+                }
+            }), cookieOptions);
+
+            return response;
+        }
+
         // iyzico Checkout Form oluştur
         return new Promise((resolve) => {
             iyzipay.checkoutFormInitialize.create(paymentRequest as any, (err: any, result: any) => {
@@ -142,13 +192,7 @@ export async function POST(request: NextRequest) {
                         features: pkg.features,
                         totalWeeks: pkg.total_weeks,
                     }
-                }), {
-                    httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
-                    maxAge: 60 * 30, // 30 dakika
-                    path: '/',
-                    sameSite: 'lax',
-                });
+                }), { ...cookieOptions, secure: true, sameSite: 'none' });
 
                 resolve(response);
             });

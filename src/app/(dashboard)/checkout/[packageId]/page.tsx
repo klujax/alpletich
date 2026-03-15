@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Loader2, CreditCard, Shield, Lock, ArrowLeft, Check, Store, Star, Clock, Award } from 'lucide-react';
+import { Loader2, CreditCard, Shield, Lock, ArrowLeft, Check, Store, Star, Clock, Award, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
@@ -284,39 +284,74 @@ export default function CheckoutPage() {
                                 </p>
 
                                 {error && (
-                                    <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl text-sm font-bold text-red-600">
-                                        {error}
+                                    <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl text-sm font-extrabold text-red-600 animate-in shake duration-500">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <XCircle className="w-4 h-4" />
+                                            {error}
+                                        </div>
                                     </div>
                                 )}
 
                                 <Button
                                     onClick={handlePayment}
                                     disabled={isProcessing}
-                                    className="w-full bg-green-600 hover:bg-green-700 text-white h-16 rounded-2xl font-black text-lg shadow-xl shadow-green-600/20 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white h-16 rounded-2xl font-black text-lg shadow-xl shadow-green-600/20 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
                                 >
                                     {isProcessing ? (
                                         <>
-                                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                                            Ödeme formu hazırlanıyor...
+                                            <Loader2 className="w-6 h-6 mr-3 animate-spin" />
+                                            Ödeme Hazırlanıyor...
                                         </>
                                     ) : (
                                         <>
-                                            <Lock className="w-5 h-5 mr-2" />
+                                            <Lock className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" />
                                             Güvenli Ödemeye Geç — ₺{pkg?.price}
                                         </>
                                     )}
                                 </Button>
 
-                                <p className="text-[10px] text-slate-400 font-bold mt-4 uppercase tracking-widest">
-                                    iyzico güvenli ödeme altyapısı
-                                </p>
+                                <div className="mt-8">
+                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mb-4">
+                                        Desteklenen Ödeme Yöntemleri
+                                    </p>
+                                    <div className="flex flex-wrap items-center justify-center gap-3">
+                                        {/* Visa */}
+                                        <div className="h-8 px-3 rounded-lg bg-white border border-slate-100 flex items-center justify-center shadow-sm hover:border-blue-200 transition-colors group/logo">
+                                            <span className="text-[14px] font-black italic text-[#1a1f71] group-hover:scale-110 transition-transform">VISA</span>
+                                        </div>
+                                        {/* Mastercard */}
+                                        <div className="h-8 px-3 rounded-lg bg-white border border-slate-100 flex items-center justify-center shadow-sm hover:border-orange-200 transition-colors group/logo">
+                                            <div className="flex items-center gap-1.5 group-hover:scale-110 transition-transform">
+                                                <div className="flex -space-x-2">
+                                                    <div className="w-4 h-4 rounded-full bg-[#eb001b] opacity-90" />
+                                                    <div className="w-4 h-4 rounded-full bg-[#f79e1b] opacity-90" />
+                                                </div>
+                                                <span className="text-[10px] font-black text-slate-700">mastercard</span>
+                                            </div>
+                                        </div>
+                                        {/* Troy */}
+                                        <div className="h-8 px-3 rounded-lg bg-white border border-slate-100 flex items-center justify-center shadow-sm hover:border-red-200 transition-colors group/logo">
+                                            <div className="flex items-center gap-1 group-hover:scale-110 transition-transform">
+                                                <span className="text-[13px] font-black text-slate-900 tracking-tighter">TR</span>
+                                                <span className="text-[13px] font-black text-red-600 tracking-tighter">OY</span>
+                                            </div>
+                                        </div>
+                                        {/* Amex */}
+                                        <div className="h-8 px-3 rounded-lg bg-[#016fd0] flex items-center justify-center shadow-sm hover:brightness-110 transition-all group/logo">
+                                            <span className="text-[10px] font-black text-white group-hover:scale-110 transition-transform">AMEX</span>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                {/* Kart Logoları */}
-                                <div className="flex items-center justify-center gap-4 mt-6 opacity-40">
-                                    <div className="text-xs font-black text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg">VISA</div>
-                                    <div className="text-xs font-black text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg">MASTERCARD</div>
-                                    <div className="text-xs font-black text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg">TROY</div>
-                                    <div className="text-xs font-black text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg">AMEX</div>
+                                <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-center gap-6 opacity-60">
+                                    <div className="flex items-center gap-1.5 grayscale hover:grayscale-0 transition-all cursor-default">
+                                        <Shield className="w-4 h-4 text-green-600" />
+                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider">3D Secure</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 grayscale hover:grayscale-0 transition-all cursor-default">
+                                        <Lock className="w-4 h-4 text-blue-600" />
+                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider">PCI-DSS</span>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>

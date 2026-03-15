@@ -3,6 +3,7 @@
 
 let Iyzipay: any;
 try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     Iyzipay = require('iyzipay');
 } catch {
     // iyzipay modülü yüklenemezse boş obje döndür

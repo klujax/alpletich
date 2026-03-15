@@ -299,7 +299,8 @@ export const nutritionAPI = {
 
         const { data, error } = await sb
             .from('nutrition_plans')
-            .update(planData as any)
+            // @ts-expect-error (TS2345 type mismatch)
+            .update(planData)
             .eq('id', planId)
             .select()
             .single();
