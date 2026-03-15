@@ -27,15 +27,18 @@ export default function LoginPage() {
             if (data?.user) {
                 // Fetch profile to get role
                 const profile = await authService.getUser();
-                if (profile) {
-                    // Store in localStorage for session fallback
-                    if (typeof window !== 'undefined') {
-                        localStorage.setItem('sportaly_user', JSON.stringify(profile));
-                    }
-                    if (profile.role === 'admin') router.push('/admin');
-                    else if (profile.role === 'coach') router.push('/coach');
-                    else router.push('/student');
+                
+                // Fallback to metadata if profile fetch fails or hasn't sync'd yet
+                const userRole = profile?.role || data.user.user_metadata?.role || 'student';
+
+                // Store in localStorage for session fallback
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem('sportaly_user', JSON.stringify(profile || { id: data.user.id, role: userRole }));
                 }
+
+                if (userRole === 'admin') router.push('/admin');
+                else if (userRole === 'coach') router.push('/coach');
+                else router.push('/student');
             }
 
         } catch (err: any) {
@@ -59,7 +62,7 @@ export default function LoginPage() {
     return (
         <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="w-full mb-5 lg:mb-6 text-center">
-                <button onClick={() => router.push('/')} className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-green-600 flex items-center gap-1 mx-auto mb-2">
+                <button type="button" onClick={() => router.push('/')} className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-green-600 flex items-center gap-1 mx-auto mb-2">
                     <ArrowLeft className="w-3 h-3" /> Ana Sayfaya Dön
                 </button>
                 <h1 className="text-2xl lg:text-2xl font-black text-slate-900 mb-1 tracking-tighter">Tekrar Hoşgeldiniz</h1>

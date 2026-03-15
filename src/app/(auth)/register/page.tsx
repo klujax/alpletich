@@ -237,7 +237,7 @@ function RegisterContent() {
         return (
             <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <div className="w-full mb-5 lg:mb-6 text-center">
-                    <button onClick={() => { setStep('role_selection'); setRole(null); }} className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-green-600 flex items-center gap-1 mx-auto mb-2">
+                    <button type="button" onClick={() => { setStep('role_selection'); setRole(null); }} className="text-[10px] lg:text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-green-600 flex items-center gap-1 mx-auto mb-2">
                         <ArrowLeft className="w-3 h-3" /> Geri Dön
                     </button>
                     <h1 className="text-2xl lg:text-2xl font-black text-slate-900 mb-1 tracking-tighter">
@@ -355,7 +355,7 @@ function RegisterContent() {
         return (
             <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700 overflow-hidden">
                 <div className="w-full mb-5 md:mb-3 text-center">
-                    <button onClick={() => setStep('personal_info')} className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-green-600 flex items-center gap-1 mx-auto mb-2">
+                    <button type="button" onClick={() => setStep('personal_info')} className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-green-600 flex items-center gap-1 mx-auto mb-2">
                         <ArrowLeft className="w-3 h-3" /> Bilgilere Dön
                     </button>
                     <h1 className="text-2xl md:text-lg font-black text-slate-900 mb-1 tracking-tighter leading-tight">İlgi Alanlarınızı Seçin</h1>
@@ -369,6 +369,7 @@ function RegisterContent() {
                         const isSelected = interestedSports.includes(sport.id);
                         return (
                             <button
+                                type="button"
                                 key={sport.id}
                                 onClick={() => toggleSport(sport.id)}
                                 className={cn(
