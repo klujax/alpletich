@@ -1,4 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
 import { Database } from '@/types/database';
 
 // Environment variables for Supabase connection
@@ -8,17 +9,20 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 // Check if Supabase is configured
 export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
 
-// Create Supabase client only if configured
-let supabase: ReturnType<typeof createClient<Database>> | null = null;
+let supabase: any = null;
 
-if (isSupabaseConfigured && supabaseUrl && supabaseAnonKey) {
-    supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-        auth: {
-            autoRefreshToken: true,
-            persistSession: true,
-            detectSessionInUrl: true
-        }
-    });
+if (isSupabaseConfigured) {
+    if (typeof window !== 'undefined') {
+        supabase = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
+    } else {
+        supabase = createSupabaseClient<Database>(supabaseUrl, supabaseAnonKey, {
+            auth: {
+                persistSession: false,
+                autoRefreshToken: false,
+                detectSessionInUrl: false
+            }
+        });
+    }
 }
 
 export { supabase };
