@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import {
-    Star, Users, ShoppingBag, Store, Check, ChevronRight, ChevronLeft, Clock, Award, Target, Sparkles, CalendarDays
+    Star, Users, ShoppingBag, Store, Check, ChevronRight, ChevronLeft, Clock, Award, Target, Sparkles, CalendarDays, MoveRight
 } from 'lucide-react';
 import { supabaseAuthService as authService, supabaseDataService as dataService } from '@/lib/supabase-service';
 import { GymStore, SalesPackage, SportCategory, Review, GroupClass } from '@/lib/types';
@@ -407,161 +407,284 @@ export default function MarketplacePage() {
             )}
 
 
-            {/* --- DETAIL MODAL REAMPED --- */}
+            {/* --- PREMIUM DETAIL MODAL --- */}
             <Modal isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)} title="" size="lg">
-                <div className="absolute top-0 left-0 w-full h-32 bg-slate-50 -z-10" />
                 {selectedPackage && (
-                    <div className="space-y-8 py-2">
-                        {/* Header Info */}
-                        <div className="flex flex-col md:flex-row gap-6 md:items-end -mt-10">
-                            <div className="w-24 h-24 rounded-[1.5rem] bg-white shadow-2xl border border-slate-100 flex items-center justify-center text-4xl">
-                                {detailStore?.logoEmoji || '🏪'}
+                    <div className="relative overflow-hidden -m-6 flex flex-col h-[85vh]">
+                        {/* Hero Header Section */}
+                        <div className="relative h-64 md:h-72 w-full flex-shrink-0">
+                            {/* Background Pattern/Gradient */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-green-900" />
+                            <div className="absolute inset-0 opacity-20" 
+                                 style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
+                            
+                            {/* Decorative Icon */}
+                            <div className="absolute -right-8 -top-8 w-64 h-64 opacity-10 blur-2xl bg-green-400 rounded-full animate-pulse" />
+                            <div className="absolute right-8 bottom-8 text-8xl md:text-9xl opacity-20 pointer-events-none select-none grayscale invert drop-shadow-2xl translate-y-4 animate-in slide-in-from-bottom-8 duration-1000">
+                                {sports.find(s => s.id === selectedPackage.sport)?.icon}
                             </div>
-                            <div className="flex-1">
-                                <h3 className="text-3xl font-black text-slate-900 mb-2 tracking-tight">{selectedPackage.name}</h3>
-                                <div className="flex flex-wrap items-center gap-4">
-                                    <div className="flex items-center gap-1.5 font-bold text-slate-600">
-                                        <Store className="w-4 h-4 text-green-500" />
-                                        {detailStore?.name}
+
+                            {/* Close Button - Sticky or absolute */}
+                            <button 
+                                onClick={() => setIsDetailOpen(false)}
+                                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/20 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/40 transition-all z-20"
+                            >
+                                <ChevronRight className="w-5 h-5 rotate-90" />
+                            </button>
+
+                            {/* Content Over Hero */}
+                            <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8 bg-gradient-to-t from-slate-940 via-slate-900/40 to-transparent">
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1.5 px-3 py-1 bg-green-500 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-green-500/20">
+                                            <Sparkles className="w-3 h-3" />
+                                            {selectedPackage.packageType === 'coaching' ? 'Birebir Koçluk' : 'Program'}
+                                        </div>
+                                        <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md text-white rounded-full text-[10px] font-black uppercase tracking-widest border border-white/10">
+                                            {selectedPackage.accessDuration} Erişim
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm font-bold border border-amber-100">
-                                        <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
-                                        {detailStore?.rating || '5.0'}
+                                    <h3 className="text-3xl md:text-4xl font-black text-white tracking-tighter leading-none max-w-2xl drop-shadow-lg">
+                                        {selectedPackage.name}
+                                    </h3>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-xl bg-white shadow-lg flex items-center justify-center text-lg border border-slate-100">
+                                            {detailStore?.logoEmoji || '🏪'}
+                                        </div>
+                                        <span className="text-white font-bold text-sm tracking-tight opacity-90">{detailStore?.name}</span>
+                                        <div className="w-1 h-1 rounded-full bg-white/20" />
+                                        <div className="flex items-center gap-1 text-amber-400">
+                                            <Star className="w-4 h-4 fill-amber-400" />
+                                            <span className="font-black text-sm">{selectedPackage.rating || '5.0'}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Fiyat</p>
-                                <p className="text-2xl font-black text-green-600">₺{selectedPackage.price}</p>
-                            </div>
-                            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Süre</p>
-                                <p className="text-2xl font-black text-slate-900">{selectedPackage.accessDuration}</p>
-                            </div>
-                            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Program</p>
-                                <p className="text-2xl font-black text-slate-900">{selectedPackage.totalWeeks} Hafta</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <h4 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                                <Award className="w-5 h-5 text-primary" />
-                                Neler Alacaksın?
-                            </h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                {selectedPackage.features?.map((f, i) => (
-                                    <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-green-50/50 border border-green-100/50 group hover:bg-green-50 transition-colors">
-                                        <div className="w-6 h-6 rounded-lg bg-green-100 flex items-center justify-center text-green-600 flex-shrink-0 group-hover:scale-110 transition-transform">
-                                            <Check className="w-3.5 h-3.5" />
-                                        </div>
-                                        <span className="text-sm font-bold text-slate-700 leading-tight">{f}</span>
+                        {/* Scrollable Body Content */}
+                        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 space-y-10 bg-white">
+                            {/* Summary Stats Grid */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div className="p-4 rounded-3xl bg-slate-50 border border-slate-100 flex flex-col justify-between group hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
+                                    <Clock className="w-5 h-5 text-blue-500 mb-3 group-hover:scale-110 transition-transform" />
+                                    <div>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Program Süresi</p>
+                                        <p className="text-lg font-black text-slate-900">{selectedPackage.totalWeeks} Hafta</p>
                                     </div>
-                                ))}
+                                </div>
+                                <div className="p-4 rounded-3xl bg-slate-50 border border-slate-100 flex flex-col justify-between group hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
+                                    <Users className="w-5 h-5 text-purple-500 mb-3 group-hover:scale-110 transition-transform" />
+                                    <div>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Öğrenci Sayısı</p>
+                                        <p className="text-lg font-black text-slate-900">{selectedPackage.enrolledStudents || 0} Aktif</p>
+                                    </div>
+                                </div>
+                                <div className="p-4 rounded-3xl bg-slate-50 border border-slate-100 flex flex-col justify-between group hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
+                                    <Target className="w-5 h-5 text-green-500 mb-3 group-hover:scale-110 transition-transform" />
+                                    <div>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Destek</p>
+                                        <p className="text-lg font-black text-slate-900">{selectedPackage.hasChatSupport ? 'Soru-Cevap' : 'Sadece Plan'}</p>
+                                    </div>
+                                </div>
+                                <div className="p-4 rounded-3xl bg-slate-50 border border-slate-100 flex flex-col justify-between group hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
+                                    <Award className="w-5 h-5 text-amber-500 mb-3 group-hover:scale-110 transition-transform" />
+                                    <div>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Popülerlik</p>
+                                        <p className="text-lg font-black text-slate-900">En Çok Satan</p>
+                                    </div>
+                                </div>
                             </div>
+
+                            {/* Features Section */}
+                            <div className="space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <h4 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-2xl bg-green-50 text-green-600 flex items-center justify-center border border-green-100">
+                                            <Check className="w-5 h-5" />
+                                        </div>
+                                        Paket İçeriği & Avantajlar
+                                    </h4>
+                                    <span className="text-xs font-bold text-slate-400">{selectedPackage.features?.length || 0} Özellik</span>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {selectedPackage.features?.map((f, i) => (
+                                        <div key={i} className="flex items-start gap-4 p-5 rounded-[2rem] bg-slate-50/50 border border-slate-100 group hover:bg-green-50/50 hover:border-green-100 transition-all duration-300">
+                                            <div className="w-6 h-6 rounded-full bg-green-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform shadow-lg shadow-green-600/20">
+                                                <Check className="w-3.5 h-3.5" />
+                                            </div>
+                                            <span className="text-sm font-bold text-slate-700 leading-tight tracking-tight group-hover:text-slate-900 transition-colors">{f}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Description Section */}
+                            <div className="space-y-4">
+                                <h4 className="text-lg font-black text-slate-900 tracking-tight">Hakkında</h4>
+                                <p className="text-slate-500 font-bold leading-relaxed text-sm">
+                                    {selectedPackage.description || "Bu paket henüz açıklama içermiyor."}
+                                </p>
+                            </div>
+
+                            {/* Store Reviews in Modal */}
+                            {detailReviews.length > 0 && (
+                                <div className="pt-10 border-t border-slate-100 space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="text-xl font-black text-slate-900 tracking-tight">Eğitmen Değerlendirmeleri</h4>
+                                        <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-black">
+                                            <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                                            {selectedPackage.rating} / 5.0
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-4">
+                                        {detailReviews.slice(0, 3).map(r => {
+                                            const isComplaint = r.comment.includes('ŞİKAYET');
+                                            return (
+                                                <div key={r.id} className={`p-6 rounded-[2rem] border ${isComplaint ? 'bg-red-50/30 border-red-100' : 'bg-slate-50/50 border-slate-100'} hover:scale-[1.01] transition-transform`}>
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-black text-slate-500 overflow-hidden uppercase">
+                                                                {r.studentName?.[0] || 'U'}
+                                                            </div>
+                                                            <span className={`font-black text-xs ${isComplaint ? 'text-red-900' : 'text-slate-900'}`}>{r.studentName || 'Anonim Kullanıcı'}</span>
+                                                        </div>
+                                                        <div className="flex gap-0.5">
+                                                            {Array.from({ length: 5 }).map((_, i) => (
+                                                                <Star key={i} className={`w-3.5 h-3.5 ${i < r.rating ? (isComplaint ? 'text-red-500 fill-red-500' : 'text-amber-400 fill-amber-400') : 'text-slate-200'}`} />
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                    <p className={`text-sm font-bold leading-relaxed italic ${isComplaint ? 'text-red-600' : 'text-slate-500'}`}>&quot;{r.comment}&quot;</p>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
-                        <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-6">
+                        {/* Sticky Action Footer */}
+                        <div className="p-6 md:p-8 bg-white border-t border-slate-100 flex items-center justify-between gap-6 flex-shrink-0">
                             <div>
-                                <p className="text-xs text-slate-400 font-black mb-1 uppercase tracking-widest">Hemen Başla</p>
-                                <p className="text-xl font-black text-slate-900 tracking-tight">Değişime hazır mısın?</p>
+                                <p className="text-[10px] text-slate-400 font-black mb-1 uppercase tracking-widest">Ödenecek Tutar</p>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-3xl font-black text-slate-900 tracking-tight">₺{selectedPackage.price}</span>
+                                    <span className="text-xs font-bold text-slate-400">/ Tek Sefer</span>
+                                </div>
                             </div>
                             <Button
                                 onClick={() => handlePurchase(selectedPackage)}
-                                className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white h-16 px-12 rounded-2xl font-black text-lg shadow-xl shadow-green-600/20 active:scale-95 transition-all"
+                                className="flex-1 max-w-[240px] bg-green-600 hover:bg-green-700 text-white h-16 rounded-2xl font-black text-lg shadow-xl shadow-green-600/20 active:scale-95 transition-all group"
                             >
-                                Satın Al
+                                <span className="flex items-center gap-3">
+                                    Eğitime Başla <MoveRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                </span>
                             </Button>
                         </div>
-
-                        {/* Store Reviews in Modal */}
-                        {detailReviews.length > 0 && (
-                            <div className="pt-4 border-t border-slate-100">
-                                <h4 className="text-lg font-black text-slate-900 mb-4 tracking-tight">Eğitmen Değerlendirmeleri</h4>
-                                <div className="space-y-4 max-h-48 overflow-y-auto pr-2 no-scrollbar">
-                                    {detailReviews.map(r => {
-                                        const isComplaint = r.comment.includes('ŞİKAYET');
-                                        return (
-                                            <div key={r.id} className={`p-4 rounded-2xl border ${isComplaint ? 'bg-red-50/50 border-red-100' : 'bg-slate-50/50 border-slate-100'}`}>
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <span className={`font-bold text-sm ${isComplaint ? 'text-red-900' : 'text-slate-900'}`}>{r.studentName || 'Kullanıcı'}</span>
-                                                    <div className="flex gap-0.5">
-                                                        {Array.from({ length: 5 }).map((_, i) => (
-                                                            <Star key={i} className={`w-3.5 h-3.5 ${i < r.rating ? (isComplaint ? 'text-red-500 fill-red-500' : 'text-amber-400 fill-amber-400') : 'text-slate-200'}`} />
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                <p className={`text-sm font-medium leading-relaxed italic ${isComplaint ? 'text-red-600' : 'text-slate-500'}`}>&quot;{r.comment}&quot;</p>
-                                            </div>
-                                        )
-                                    })}
-                                </div>
-                            </div>
-                        )}
                     </div>
                 )}
             </Modal>
-            {/* --- GROUP CLASS DETAIL MODAL --- */}
+            {/* --- GROUP CLASS DETAIL MODAL REAMPED --- */}
             <Modal isOpen={isClassDetailOpen} onClose={() => setIsClassDetailOpen(false)} title="" size="lg">
-                <div className="absolute top-0 left-0 w-full h-32 bg-slate-50 -z-10" />
                 {selectedClass && (
-                    <div className="space-y-8 py-2">
-                        {/* Header Info */}
-                        <div className="flex flex-col md:flex-row gap-6 md:items-end -mt-10">
-                            <div className="w-24 h-24 rounded-[1.5rem] bg-white shadow-2xl border border-slate-100 flex items-center justify-center text-4xl">
-                                {detailStore?.logoEmoji || '🏪'}
+                    <div className="relative overflow-hidden -m-6 flex flex-col h-[85vh]">
+                        {/* Hero Header Section */}
+                        <div className="relative h-64 md:h-72 w-full flex-shrink-0">
+                            <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900" />
+                            <div className="absolute inset-0 opacity-10" 
+                                 style={{ backgroundImage: 'linear-gradient(45deg, #ffffff 25%, transparent 25%, transparent 75%, #ffffff 75%, #ffffff), linear-gradient(45deg, #ffffff 25%, transparent 25%, transparent 75%, #ffffff 75%, #ffffff)', backgroundSize: '40px 40px', backgroundPosition: '0 0, 20px 20px' }} />
+                                
+                            <div className="absolute right-8 bottom-8 text-8xl md:text-9xl opacity-20 pointer-events-none select-none grayscale invert drop-shadow-2xl translate-y-4">
+                                {sports.find(s => s.id === selectedClass.sport)?.icon}
                             </div>
-                            <div className="flex-1">
-                                <div className={`inline-flex items-center px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest mb-3`}>
-                                    {sports.find(s => s.id === selectedClass.sport)?.name} Grup Dersi
-                                </div>
-                                <h3 className="text-3xl font-black text-slate-900 mb-2 tracking-tight">{selectedClass.title}</h3>
-                                <div className="flex items-center gap-1.5 font-bold text-slate-600">
-                                    <Store className="w-4 h-4 text-green-500" />
-                                    {detailStore?.name}
-                                </div>
-                            </div>
-                        </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100">
-                                <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Tarih</p>
-                                <p className="text-lg font-black text-blue-900">{new Date(selectedClass.scheduledAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' })}</p>
-                            </div>
-                            <div className="p-4 rounded-2xl bg-orange-50/50 border border-orange-100">
-                                <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-1">Saat</p>
-                                <p className="text-lg font-black text-orange-900">{new Date(selectedClass.scheduledAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</p>
-                            </div>
-                            <div className="p-4 rounded-2xl bg-green-50/50 border border-green-100">
-                                <p className="text-[10px] font-black text-green-400 uppercase tracking-widest mb-1">Kapasite</p>
-                                <p className="text-lg font-black text-green-900">{selectedClass.enrolledParticipants.length} / {selectedClass.maxParticipants}</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <h4 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                                <Target className="w-5 h-5 text-primary" />
-                                Ders Hakkında
-                            </h4>
-                            <p className="text-slate-500 font-medium leading-relaxed">
-                                {selectedClass.description}
-                            </p>
-                        </div>
-
-                        <div className="p-8 bg-slate-900 rounded-[2.5rem] border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
-                            <div>
-                                <p className="text-xs text-slate-400 font-black mb-1 uppercase tracking-widest">Katılım Ücreti</p>
-                                <p className="text-2xl font-black text-white">{selectedClass.price === 0 ? 'Ücretsiz' : `₺${selectedClass.price}`}</p>
-                            </div>
-                            <Button
-                                onClick={() => handleClassPurchase(selectedClass)}
-                                className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white h-16 px-12 rounded-2xl font-black text-lg shadow-xl shadow-green-600/20 active:scale-95 transition-all"
+                            <button 
+                                onClick={() => setIsClassDetailOpen(false)}
+                                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/20 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/40 transition-all z-20"
                             >
-                                {selectedClass.price === 0 ? 'Hemen Katıl' : 'Dersi Satın Al'}
-                            </Button>
+                                <ChevronRight className="w-5 h-5 rotate-90" />
+                            </button>
+
+                            <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8 bg-gradient-to-t from-slate-940 via-slate-900/40 to-transparent">
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1.5 px-3 py-1 bg-indigo-500 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20">
+                                            <Users className="w-3 h-3" />
+                                            Canlı Grup Dersi
+                                        </div>
+                                        <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md text-white rounded-full text-[10px] font-black uppercase tracking-widest border border-white/10">
+                                            {selectedClass.durationMinutes} Dakika
+                                        </div>
+                                    </div>
+                                    <h3 className="text-3xl md:text-4xl font-black text-white tracking-tighter leading-none max-w-2xl drop-shadow-lg">
+                                        {selectedClass.title}
+                                    </h3>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-xl bg-white shadow-lg flex items-center justify-center text-lg border border-slate-100">
+                                            {detailStore?.logoEmoji || '🏪'}
+                                        </div>
+                                        <span className="text-white font-bold text-sm tracking-tight opacity-90">{detailStore?.name}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 space-y-10 bg-white">
+                            {/* Schedule Info Card */}
+                            <div className="p-8 rounded-[2.5rem] bg-indigo-50/50 border border-indigo-100 flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
+                                <div className="w-20 h-20 rounded-3xl bg-white shadow-xl flex flex-col items-center justify-center flex-shrink-0 border border-indigo-100 animate-in zoom-in duration-500">
+                                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-tighter">{new Date(selectedClass.scheduledAt).toLocaleDateString('tr-TR', { month: 'short' })}</p>
+                                    <p className="text-3xl font-black text-indigo-900 leading-none">{new Date(selectedClass.scheduledAt).getDate()}</p>
+                                </div>
+                                <div className="flex-1 space-y-1">
+                                    <p className="text-2xl font-black text-slate-900 border-b border-indigo-200/50 pb-2 mb-2">
+                                        {new Date(selectedClass.scheduledAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' })}
+                                    </p>
+                                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-slate-600 font-bold">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-6 h-6 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center">
+                                                <Clock className="w-3.5 h-3.5" />
+                                            </div>
+                                            {new Date(selectedClass.scheduledAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })} Başlangıç
+                                        </div>
+                                        <div className="w-1 h-1 rounded-full bg-slate-300" />
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-6 h-6 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
+                                                <Users className="w-3.5 h-3.5" />
+                                            </div>
+                                            {selectedClass.enrolledParticipants.length} / {selectedClass.maxParticipants} Katılımcı
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <h4 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
+                                        <Target className="w-5 h-5" />
+                                    </div>
+                                    Ders Hakkında Detaylar
+                                </h4>
+                                <p className="text-slate-500 font-bold leading-relaxed text-sm p-6 rounded-[2rem] bg-slate-50 border border-slate-100">
+                                    {selectedClass.description}
+                                </p>
+                            </div>
+
+                            <div className="p-8 rounded-[2.5rem] bg-slate-900 border border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xl">
+                                <div>
+                                    <p className="text-xs text-slate-400 font-black mb-1 uppercase tracking-widest">Rezervasyon Ücreti</p>
+                                    <p className="text-3xl font-black text-white">{selectedClass.price === 0 ? 'Tamamen Ücretsiz' : `₺${selectedClass.price}`}</p>
+                                </div>
+                                <Button
+                                    onClick={() => handleClassPurchase(selectedClass)}
+                                    className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white h-16 px-12 rounded-2xl font-black text-lg shadow-xl shadow-green-600/20 active:scale-95 transition-all group"
+                                >
+                                    <span className="flex items-center gap-3">
+                                        {selectedClass.price === 0 ? 'Yerini Ayırt' : 'Dersi Satın Al'} <MoveRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                    </span>
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 )}

@@ -23,24 +23,32 @@ export default function CoachStudentsPage() {
         const user = await authService.getUser();
         if (!user) return;
 
-        // In a real app we would have a specific query for this
-        // For now, get all purchases and filter for this coach, then get unique students
-        const allPurchases = await dataService.getPurchases();
-        const myPurchases = allPurchases.filter((p: Purchase) => p.coachId === user.id);
-        const studentIds = Array.from(new Set(myPurchases.map(p => p.studentId)));
+        try {
+            // Get purchases and students in parallel
+            const [myPurchases, coachStudents] = await Promise.all([
+                dataService.getCoachPurchases(user.id),
+                dataService.getCoachStudents(user.id)
+            ]);
 
-        // Fetch student profiles
-        // We need a bulk fetch method or loop. Loop for now as num students is small
-        // Ideally: dataService.getProfiles(studentIds)
-        const studentProfiles: Profile[] = [];
-        for (const id of studentIds) {
-            const profile = await dataService.getProfile(id);
-            if (profile) studentProfiles.push(profile);
+            // Combine students from relation table and purchases
+            const purchaseStudentIds = Array.from(new Set(myPurchases.map(p => p.studentId)));
+            const existingStudentIds = new Set(coachStudents.map(s => s.id));
+            
+            const additionalStudents: Profile[] = [];
+            for (const id of purchaseStudentIds) {
+                if (!existingStudentIds.has(id)) {
+                    const profile = await dataService.getProfile(id);
+                    if (profile) additionalStudents.push(profile);
+                }
+            }
+
+            setStudents([...coachStudents, ...additionalStudents]);
+            setPurchases(myPurchases);
+        } catch (error) {
+            console.error('Error loading coach students:', error);
+        } finally {
+            setIsLoading(false);
         }
-
-        setStudents(studentProfiles);
-        setPurchases(myPurchases);
-        setIsLoading(false);
     };
 
     if (isLoading) return (

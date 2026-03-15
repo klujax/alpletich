@@ -19,6 +19,7 @@ export default function StudentCoachesPage() {
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [selectedCoachId, setSelectedCoachId] = useState<string | null>(null);
     const [selectedShopId, setSelectedShopId] = useState<string | null>(null);
+    const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
     const [reviewRating, setReviewRating] = useState(5);
     const [reviewComment, setReviewComment] = useState('');
 
@@ -72,14 +73,12 @@ export default function StudentCoachesPage() {
         if (!reviewComment.trim()) { toast.error(isComplaintMode ? 'Şikayet metni boş olamaz' : 'Yorum yazmalısınız'); return; }
 
         let shopId = selectedShopId;
-        if (!shopId) {
+        let packageId = selectedPackageId;
+        
+        if (!shopId || !packageId) {
             const coachData = coaches.find(c => c.coach.id === selectedCoachId);
-            shopId = coachData?.purchases[0]?.shopId || '';
-        }
-
-        if (!shopId) {
-            toast.error('Koçun mağazası bulunamadı, işlem yapılamıyor.');
-            return;
+            if (!shopId) shopId = coachData?.purchases[0]?.shopId || '';
+            if (!packageId) packageId = coachData?.purchases[0]?.packageId || '';
         }
 
         const finalRating = isComplaintMode ? 1 : reviewRating;
@@ -87,9 +86,11 @@ export default function StudentCoachesPage() {
 
         try {
             await dataService.createReview({
-                userId: user.id, // Supabase expects user_id
+                studentId: user.id,
+                studentName: user.full_name || 'Öğrenci',
                 coachId: selectedCoachId,
                 shopId: shopId,
+                packageId: packageId,
                 rating: finalRating,
                 comment: finalComment,
             });
@@ -105,9 +106,10 @@ export default function StudentCoachesPage() {
         }
     };
 
-    const openReviewModal = (coachId: string, shopId: string | null, isComplaint: boolean = false) => {
+    const openReviewModal = (coachId: string, shopId: string | null, packageId: string | null, isComplaint: boolean = false) => {
         setSelectedCoachId(coachId);
         setSelectedShopId(shopId);
+        setSelectedPackageId(packageId);
         setIsComplaintMode(isComplaint);
         setReviewRating(isComplaint ? 1 : 5);
         setReviewComment('');
@@ -199,14 +201,14 @@ export default function StudentCoachesPage() {
                                         <Button
                                             variant="outline"
                                             className="border-amber-200 text-amber-600 hover:bg-amber-50 font-bold text-sm flex-1"
-                                            onClick={() => openReviewModal(coach.id, store?.id || null, false)}
+                                            onClick={() => openReviewModal(coach.id, store?.id || null, purchases[0]?.packageId || null, false)}
                                         >
                                             <Star className="w-4 h-4 mr-1" /> Değerlendir
                                         </Button>
                                         <Button
                                             variant="outline"
                                             className="border-red-200 text-red-600 hover:bg-red-50 font-bold text-sm flex-1"
-                                            onClick={() => openReviewModal(coach.id, store?.id || null, true)}
+                                            onClick={() => openReviewModal(coach.id, store?.id || null, purchases[0]?.packageId || null, true)}
                                         >
                                             <AlertTriangle className="w-4 h-4 mr-1" /> Şikayet Et
                                         </Button>
